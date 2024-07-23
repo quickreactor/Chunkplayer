@@ -101,17 +101,23 @@
         const videoPlayer = document.getElementById('videoPlayer');
         const dayCountDisplay = document.getElementById('dayCount');
 
+        function isTodaySunday() {
+            const today = new Date();
+            return today.getDay() === 0;
+        }
+
         function updateVideo() {
             // Set the default date to July 22, 2024 in NZ timezone
             const defaultDate = new Date('2024-07-22T00:00:00+12:00');
-            // const startDate = new Date(dateInput.value + 'T00:00:00+12:00');
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
-            // Reset the time to midnight for both dates
-            // startDate.setHours(0, 0, 0, 0);
-            // now.setHours(0, 0, 0, 0);
+            let daysPassed = 0;
+            for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
+                if (d.getDay() !== 0) { // Skip Sundays (0 is Sunday in JavaScript)
+                    daysPassed++;
+                }
+            }
 
-            const daysPassed = Math.floor((now - defaultDate) / (1000 * 60 * 60 * 24)) + 1;
             const videoNumber = daysPassed.toString().padStart(2, '0');
 
             videoPlayer.src = beaverArray[videoNumber - 1];
@@ -121,7 +127,21 @@
         // dateInput.addEventListener('change', updateVideo);
 
         // dateInput.value = defaultDate.toLocaleDateString('en-CA', { timeZone: 'Pacific/Auckland' });
-        updateVideo();
+        if (isTodaySunday()) {
+            var body = document.querySelector("body");
+            body.innerHTML = `
+            <h1> Today is Sunday, the day of rest, no chunk today!""
+            `;
+        } else {
+            updateVideo();
+        }
+
+        function sundayTest() {
+            var body = document.querySelector("body");
+            body.innerHTML = `
+            <h1> Today is Sunday, the day of rest, no chunk today!""
+            `;
+        }
     </script>
 </body>
 
