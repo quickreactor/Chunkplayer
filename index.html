@@ -209,7 +209,7 @@
 
             const timeDifference = nextEightAM - now;
             // Unlock if it's 8AM or later
-            if (timeDifference <= 0) {
+            if (isPastMidnight === false) {
                 updateVideo()
                 return
             }
