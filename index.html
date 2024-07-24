@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="favicon.png" rel="icon" type="image/x-icon">
-    <title>Beaver Video Player</title>
+    <title>Movie Chunk Player</title>
     <style>
         body,
         html {
@@ -14,7 +14,7 @@
             height: 100%;
             font-family: Arial, sans-serif;
             background-color: #1a1a1a;
-            color: #f0f0f0;
+            color: #7f7f7f;
         }
 
         .container {
@@ -26,12 +26,18 @@
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
-            color: #f0f0f0
+            color: #7f7f7f
+        }
+
+        .emoji {
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
         }
 
         .videoContainer {
             display: flex;
             flex-direction: column;
+            justify-content: center;
+            background-color: #1a1a1a;
         }
 
         h1 {
@@ -40,9 +46,20 @@
         }
 
         #videoPlayer {
+            display: block;
             max-width: 100%;
-            width: 640px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 50vw;
+            border-radius: 7px;
+            object-fit: cover;
+            /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
+            
+
+        }
+
+        .videoContainer {
+            display: block;
+            /* border-radius: 7px; */
+            overflow: hidden;
         }
 
         .date-container {
@@ -59,8 +76,8 @@
         }
 
         #dayCount {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-top: 10px;
         }
 
         .timer-container {
@@ -77,17 +94,17 @@
 
 <body>
     <div class="container">
-        <h1 class="heading1">Beaver Video Player</h1>
+        <h1 class="heading1"></h1>
         <!-- <div class="date-container">
             <label for="dateInput">Start Date</label>
             <input type="date" id="dateInput">
         </div> -->
         <div class="videoContainer">
-            <div id="dayCount"></div>
             <video id="videoPlayer" controls>
                 <source src="" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+            <div id="dayCount"></div>
         </div>
         <div class="timer-container">
             <div id="countdown-timer">00:00:00</div>
@@ -96,7 +113,7 @@
 
     <script>
 
-        const beaverArray = [
+        const chunkArray = [
             "https://www.dropbox.com/scl/fi/93u2v2d1hlhz455w7693x/beaver00.mp4?rlkey=le4g8623buurr6hp56g3ktesa&dl=1",
             "https://www.dropbox.com/scl/fi/g7ftx1h9wnuln3w7epz1f/beaver01.mp4?rlkey=w1k33nblszqys058akwj1o4e5&dl=1",
             "https://www.dropbox.com/scl/fi/1h6e0iqv86f50ef05n377/beaver02.mp4?rlkey=8ln2z2ws40neyhwxu3c4l2uvh&dl=1",
@@ -149,9 +166,7 @@
 
             videoContainer.style.display = "flex";
             timerContainer.style.display = "none";
-            heading1.innerText = `
-            Beaver Chunk Player
-            `;
+            heading1.innerText = ``;
             // Set the default date to July 22, 2024 in NZ timezone
             const defaultDate = new Date('2024-07-22T00:00:00+12:00');
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
@@ -165,8 +180,8 @@
 
             const videoNumber = daysPassed.toString().padStart(2, '0');
 
-            videoPlayer.src = beaverArray[videoNumber - 1];
-            dayCountDisplay.textContent = `Day ${daysPassed}`;
+            videoPlayer.src = chunkArray[videoNumber - 1];
+            dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
         }
 
         function sundayTest() {
@@ -179,18 +194,19 @@
 
         function lockdown() {
             hideElement(videoContainer); //flex
+            timerContainer.style.display = "block";
             heading1.innerText = `
             Today's chunk is currently locked, it will unlock in
             `;
+            updateCountdown();
         }
 
 
         // DO THE THING
         if (isTodaySunday()) {
             sundayTest();
-        } else if (isPastMidnight === true) {
+        } else if (isPastMidnight() === true) {
             lockdown();
-            updateCountdown();
         }
         else {
             updateVideo();
@@ -209,22 +225,19 @@
 
             const timeDifference = nextEightAM - now;
             // Unlock if it's 8AM or later
-            if (isPastMidnight === false) {
+            if (isPastMidnight() === false) {
                 updateVideo()
-                return
             } else {
+                const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
-                
-                            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-                
-                            const formattedHours = String(hours).padStart(2, '0');
-                            const formattedMinutes = String(minutes).padStart(2, '0');
-                            const formattedSeconds = String(seconds).padStart(2, '0');
-                
-                            document.getElementById('countdown-timer').textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-                            setTimeout(updateCountdown, 1000);
+                const formattedHours = String(hours).padStart(2, '0');
+                const formattedMinutes = String(minutes).padStart(2, '0');
+                const formattedSeconds = String(seconds).padStart(2, '0');
+
+                document.getElementById('countdown-timer').textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+                setTimeout(updateCountdown, 1000);
             }
         }
     </script>
