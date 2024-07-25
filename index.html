@@ -52,7 +52,7 @@
             border-radius: 7px;
             object-fit: cover;
             /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
-            
+
 
         }
 
@@ -89,6 +89,24 @@
             font-size: 48px;
             margin-top: 20px;
         }
+
+        #chunkSelector {
+            color: #7f7f7f;
+            background-color: #1a1a1a;
+            width: 4ch;
+            padding: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            border: none;
+            text-align: right;
+        }
+
+        .selectContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -104,7 +122,11 @@
                 <source src="" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            <div id="dayCount"></div>
+            <div class="selectContainer">
+
+                <select id="chunkSelector"></select>
+                <div id="dayCount"></div>
+            </div>
         </div>
         <div class="timer-container">
             <div id="countdown-timer">00:00:00</div>
@@ -144,6 +166,7 @@
         let videoContainer = document.querySelector(".videoContainer");
         let timerContainer = document.querySelector(".timer-container");
         let heading1 = document.querySelector(".heading1");
+        const selector = document.getElementById('chunkSelector');
 
         function hideElement(el) {
             el.style.display = 'none';
@@ -181,7 +204,29 @@
             const videoNumber = daysPassed.toString().padStart(2, '0');
 
             videoPlayer.src = chunkArray[videoNumber - 1];
-            dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
+            dayCountDisplay.textContent = `/${chunkArray.length}`;
+            // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
+
+            // SELECTOR STUFF
+            // Populate the dropdown
+
+            for (let i = 0; i < daysPassed; i++) {
+                const option = document.createElement('option');
+                option.value = i+1;
+                option.textContent = i+1;
+                selector.prepend(option);
+            }
+
+            // Set default value to 3
+            selector.value = 3;
+
+            // Event listener for dropdown changes
+            selector.addEventListener('change', function () {
+                const selectedValue = this.value;
+                const videoNumber = selectedValue.toString().padStart(2, '0');
+                videoPlayer.src = chunkArray[videoNumber - 1];
+            });
+            selector.value = daysPassed;
         }
 
         function sundayTest() {
