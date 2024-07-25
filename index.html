@@ -77,7 +77,7 @@
 
         #dayCount {
             font-size: 24px;
-            margin-top: 10px;
+            margin-top: 1px;
         }
 
         .timer-container {
@@ -204,7 +204,7 @@
             const videoNumber = daysPassed.toString().padStart(2, '0');
 
             videoPlayer.src = chunkArray[videoNumber - 1];
-            dayCountDisplay.textContent = `/${chunkArray.length}`;
+            dayCountDisplay.textContent = `/ ${chunkArray.length}`;
             // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
             // SELECTOR STUFF
