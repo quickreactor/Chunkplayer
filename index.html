@@ -162,7 +162,7 @@
             "https://www.dropbox.com/scl/fi/ec8cut96ay1em18ym8tue/beaver21.mp4?rlkey=eaca6pu612ee1ejdx0g4qbawo&raw=1"
         ]
         const titleArray = [
-            "Beaver Beginnings!",
+            "Once upon a Beaver!",
             "Bunnies 'n' Beavers",
             "The Birds and the Beavers!",
             "Buy me a Beaver!",
@@ -252,6 +252,7 @@
                 const selectedValue = this.value;
                 const videoNumber = selectedValue.toString().padStart(2, '0');
                 videoPlayer.src = chunkArray[videoNumber - 1];
+                epTitle.innerText = `${titleArray[parseInt(selectedValue) -1]}`;
             });
             selector.value = daysPassed;
         }
