@@ -23,7 +23,7 @@
             /* justify-content: center; */
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             box-sizing: border-box;
             text-align: center;
             color: #7f7f7f
@@ -43,6 +43,8 @@
         h1 {
             margin-bottom: 20px;
             align-self: center;
+            font-weight: 100;
+            font-size: 24px;
         }
 
         #videoPlayer {
@@ -93,7 +95,7 @@
         #chunkSelector {
             color: #7f7f7f;
             background-color: #1a1a1a;
-            width: 4ch;
+            width: auto;
             padding: 5px;
             font-size: 16px;
             cursor: pointer;
@@ -112,7 +114,7 @@
 
 <body>
     <div class="container">
-        <h1 class="heading1"></h1>
+        <h1 class="ep-title"></h1>
         <!-- <div class="date-container">
             <label for="dateInput">Start Date</label>
             <input type="date" id="dateInput">
@@ -159,13 +161,37 @@
             "https://www.dropbox.com/scl/fi/rbcvi7admp7c7y9k0lf12/beaver20.mp4?rlkey=u1n0vdi1004te20542glil0w9&raw=1",
             "https://www.dropbox.com/scl/fi/ec8cut96ay1em18ym8tue/beaver21.mp4?rlkey=eaca6pu612ee1ejdx0g4qbawo&raw=1"
         ]
+        const titleArray = [
+            "Beaver Beginnings!",
+            "Bunnies 'n' Beavers",
+            "The Birds and the Beavers!",
+            "Buy me a Beaver!",
+            "It's beaver time!",
+            "Beaver Blast!",
+            "Leave it to Beaver!",
+            "The staircase's disgraced blood expert Duane Beaver!",
+            "Beaver Binge!",
+            "Beaver Bliss!",
+            "Dam Good Fun!",
+            "Beaver Power!",
+            "Chew On This!",
+            "Beaver Brigade!",
+            "Dam It All!",
+            "Beaver Bonanza!",
+            "Woodland Wonders!",
+            "Beaver Magic!",
+            "To The Dam Moon!",
+            "Beaver Frenzy!",
+            "Beaver Tales!",
+            "The Final Beaver!"
+        ];
         const dateInput = document.getElementById('dateInput');
         const videoPlayer = document.getElementById('videoPlayer');
         const dayCountDisplay = document.getElementById('dayCount');
         let container = document.querySelector(".container");
         let videoContainer = document.querySelector(".videoContainer");
         let timerContainer = document.querySelector(".timer-container");
-        let heading1 = document.querySelector(".heading1");
+        let epTitle = document.querySelector(".ep-title");
         const selector = document.getElementById('chunkSelector');
 
         function hideElement(el) {
@@ -189,7 +215,7 @@
 
             videoContainer.style.display = "flex";
             timerContainer.style.display = "none";
-            heading1.innerText = ``;
+            epTitle.innerText = ``;
             // Set the default date to July 22, 2024 in NZ timezone
             const defaultDate = new Date('2024-07-22T00:00:00+12:00');
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
@@ -205,6 +231,7 @@
 
             videoPlayer.src = chunkArray[videoNumber - 1];
             dayCountDisplay.textContent = `/ ${chunkArray.length}`;
+            epTitle.innerText = `${titleArray[daysPassed + 1]}`;
             // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
             // SELECTOR STUFF
@@ -212,8 +239,8 @@
 
             for (let i = 0; i < daysPassed; i++) {
                 const option = document.createElement('option');
-                option.value = i+1;
-                option.textContent = i+1;
+                option.value = i + 1;
+                option.textContent = i + 1;
                 selector.prepend(option);
             }
 
@@ -231,7 +258,7 @@
 
         function sundayTest() {
             hideElement(videoContainer); //flex
-            heading1.innerText = `
+            epTitle.innerText = `
             Today is Sunday, the day of rest, no chunk today!
             `;
         }
