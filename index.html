@@ -93,21 +93,39 @@
         }
 
         #chunkSelector {
-            color: #7f7f7f;
+            color: transparent;
             background-color: #1a1a1a;
-            width: auto;
+            width: 60px;
             padding: 5px;
-            font-size: 16px;
             cursor: pointer;
-            font-size: 24px;
+            font-size: 12px;
             border: none;
             text-align: right;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: transparent;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiI+PHN3aXRjaD48Zz48cGF0aCBmaWxsPSIjOUM5QjlCIiBkPSJNNi4zMDcgMTAuNjY1bC01LjItNi4wODggMS4wOTYtLjkzNSA0LjA1NyA0Ljc1IDMuNzkxLTQuODMzIDEuMTM1Ljg4OHoiLz48L2c+PC9zd2l0Y2g+PC9zdmc+");
+            background-repeat: no-repeat;
+            background-position: 99% .5em;
+            z-index: 2;
         }
 
         .selectContainer {
             display: flex;
+            position: relative;
             justify-content: center;
             align-items: center;
+        }
+
+        .numberDisplay {
+            position: absolute;
+            width: 100px;
+            left: 192px;
+            font-size: 24px;
+            margin-top: 1px;
+            text-align: right;
+            z-index: 1;
         }
     </style>
 </head>
@@ -125,7 +143,7 @@
                 Your browser does not support the video tag.
             </video>
             <div class="selectContainer">
-
+                <div class="numberDisplay">12</div>
                 <select id="chunkSelector"></select>
                 <div id="dayCount"></div>
             </div>
@@ -164,8 +182,6 @@
         const titleArray = [
             "Once upon a Beaver!",
             "Bunnies 'n' Beavers",
-            "The Birds and the Beavers!",
-            "Buy me a Beaver!",
             "It's beaver time!",
             "Beaver Blast!",
             "Leave it to Beaver!",
@@ -178,11 +194,13 @@
             "Beaver Brigade!",
             "Dam It All!",
             "Beaver Bonanza!",
-            "Woodland Wonders!",
-            "Beaver Magic!",
+            "Wood you believe it!",
+            "Furry Fiends!",
             "To The Dam Moon!",
-            "Beaver Frenzy!",
-            "Beaver Tales!",
+            "Beaver of fate!",
+            "The Tail of the Beaver!",
+            "The Birds and the Beavers",
+            "Beave me alone!",
             "The Final Beaver!"
         ];
         const dateInput = document.getElementById('dateInput');
@@ -193,6 +211,7 @@
         let timerContainer = document.querySelector(".timer-container");
         let epTitle = document.querySelector(".ep-title");
         const selector = document.getElementById('chunkSelector');
+        const numberDisplay = document.querySelector(".numberDisplay");
 
         function hideElement(el) {
             el.style.display = 'none';
@@ -231,30 +250,55 @@
 
             videoPlayer.src = chunkArray[videoNumber - 1];
             dayCountDisplay.textContent = `/ ${chunkArray.length}`;
-            epTitle.innerText = `${titleArray[daysPassed + 1]}`;
+            epTitle.innerText = `${titleArray[daysPassed - 1]}`;
             // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
-            // SELECTOR STUFF
+            // SELECTOR STUFF -----------------------
             // Populate the dropdown
 
             for (let i = 0; i < daysPassed; i++) {
                 const option = document.createElement('option');
                 option.value = i + 1;
+                option.dataset.display = i + 1;
+                option.dataset.descr = titleArray[i];
                 option.textContent = i + 1;
                 selector.prepend(option);
             }
 
-            // Set default value to 3
-            selector.value = 3;
-
             // Event listener for dropdown changes
             selector.addEventListener('change', function () {
                 const selectedValue = this.value;
+                console.log(selectedValue);
                 const videoNumber = selectedValue.toString().padStart(2, '0');
                 videoPlayer.src = chunkArray[videoNumber - 1];
-                epTitle.innerText = `${titleArray[parseInt(selectedValue) -1]}`;
+                epTitle.innerText = `${titleArray[parseInt(selectedValue) - 1]}`;
+                numberDisplay.textContent = selectedValue;
+                this.blur();
             });
+
+            function focus() {
+                [].forEach.call(this.options, function (o) {
+                    o.textContent = `${o.getAttribute('value')}: ${o.getAttribute('data-descr')}`;
+                });
+            }
+            function blur() {
+                [].forEach.call(this.options, function (o) {
+                    console.log(o);
+                    o.textContent = o.getAttribute('value');
+                });
+            }
+            [].forEach.call(document.querySelectorAll('#chunkSelector'), function (s) {
+                s.addEventListener('focus', focus);
+                s.addEventListener('blur', blur);
+                blur.call(s);
+            });
+
+            // set starting value to 
             selector.value = daysPassed;
+            numberDisplay.textContent = daysPassed;
+            console.log(daysPassed);
+
+            // END SELECTOR STUFF -------------------
         }
 
         function sundayTest() {
