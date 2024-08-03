@@ -379,8 +379,34 @@
                     triggerAction();
                 }
             });
+        });
 
-            function triggerAction() {
+        function changeFavicon(src) {
+            const link = document.getElementById('dynamic-favicon');
+            link.href = src;
+        }
+        
+        let tapCount = 0;
+        let firstTapTime = 0;
+        document.body.addEventListener('click', () => {
+            const currentTime = new Date().getTime();
+
+            if (tapCount === 0) {
+                firstTapTime = currentTime;
+            }
+
+            tapCount++;
+
+            if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
+                triggerAction();
+                tapCount = 0; // Reset the tap count
+            } else if (currentTime - firstTapTime > 3000) {
+                tapCount = 1; // Reset the tap count and start over
+                firstTapTime = currentTime;
+            }
+        });
+
+        function triggerAction() {
                 // alert('You typed "morbius"!');
                 // changeFavicon('favicon2.png');
                 // Additional actions can be added here
@@ -393,12 +419,6 @@
                 const audio = document.getElementById('morbius-sound');
                 audio.play();
             }
-        });
-
-        function changeFavicon(src) {
-            const link = document.getElementById('dynamic-favicon');
-            link.href = src;
-        }
 
 
         // MORB ----------------------------------------------------------------------
