@@ -126,6 +126,10 @@
             text-align: right;
             z-index: 1;
         }
+
+        #morbius-sound {
+            display: hidden;
+        }
     </style>
 </head>
 
@@ -145,6 +149,7 @@
                 <div class="numberDisplay">12</div>
                 <select id="chunkSelector"></select>
                 <div id="dayCount"></div>
+                <audio id="morbius-sound" src="/audio/morb.mp3"></audio>
             </div>
         </div>
         <div class="timer-container">
@@ -356,6 +361,50 @@
                 setTimeout(updateCountdown, 1000);
             }
         }
+
+        // MORB ----------------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', (event) => {
+            let buffer = '';
+
+            document.addEventListener('keydown', (event) => {
+                buffer += event.key;
+
+                // Maintain the buffer length to match the length of "morbius"
+                if (buffer.length > 7) {
+                    buffer = buffer.slice(-7);
+                }
+
+                // Check if the buffer matches "morbius"
+                if (buffer.toLowerCase() === 'morbius') {
+                    triggerAction();
+                }
+            });
+
+            function triggerAction() {
+                // alert('You typed "morbius"!');
+                // changeFavicon('favicon2.png');
+                // Additional actions can be added here
+                videoPlayer.src = 'https://www.dropbox.com/scl/fi/05baa5gqwyd01tj349ne4/morbchunk01.mp4?rlkey=xw7o2sdsxaykaeje9529hjjoy&st=b68z2dg1&raw=1';
+                dayCountDisplay.textContent = `/ ${chunkArray.length}`;
+                epTitle.innerText = `It's Morbin' Time`
+                numberDisplay.textContent = '1';
+                selector.style.display = 'hidden'
+                dayCountDisplay.textContent = `??`;
+                const audio = document.getElementById('morbius-sound');
+                audio.play();
+            }
+        });
+
+        function changeFavicon(src) {
+            const link = document.getElementById('dynamic-favicon');
+            link.href = src;
+        }
+
+
+        // MORB ----------------------------------------------------------------------
+    </script>
+    <script>
+
     </script>
 </body>
 
