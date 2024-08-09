@@ -201,7 +201,7 @@
             "Wood you believe it!",
             "Furry Fiends!",
             "To The Dam Moon!",
-            "Beaver of fate!",
+            "The Legacy of Kain: Soul Beaver!",
             "The Tail of the Beaver!",
             "The Birds and the Beavers",
             "Beave me alone!",
@@ -331,6 +331,12 @@
         }
         else {
             updateVideo();
+            // Generate a random number between 1 and 20
+            const randomNumber = getRandomNumber(1, 20, getSeedFromDate());
+            console.log(randomNumber);
+            if (randomNumber === 1) {
+                morb();
+            }
         }
 
         // TIMER STUFF
@@ -362,7 +368,7 @@
             }
         }
 
-        // MORB ----------------------------------------------------------------------
+        // MORB UNLOCK ----------------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', (event) => {
             let buffer = '';
 
@@ -376,7 +382,7 @@
 
                 // Check if the buffer matches "morbius"
                 if (buffer.toLowerCase() === 'morbius') {
-                    triggerAction();
+                    morb();
                 }
             });
         });
@@ -385,7 +391,7 @@
             const link = document.getElementById('dynamic-favicon');
             link.href = src;
         }
-        
+
         let tapCount = 0;
         let firstTapTime = 0;
         document.body.addEventListener('click', () => {
@@ -398,7 +404,7 @@
             tapCount++;
 
             if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
-                triggerAction();
+                morb();
                 tapCount = 0; // Reset the tap count
             } else if (currentTime - firstTapTime > 3000) {
                 tapCount = 1; // Reset the tap count and start over
@@ -406,22 +412,46 @@
             }
         });
 
-        function triggerAction() {
-                // alert('You typed "morbius"!');
-                // changeFavicon('favicon2.png');
-                // Additional actions can be added here
-                videoPlayer.src = 'https://www.dropbox.com/scl/fi/05baa5gqwyd01tj349ne4/morbchunk01.mp4?rlkey=xw7o2sdsxaykaeje9529hjjoy&st=b68z2dg1&raw=1';
-                dayCountDisplay.textContent = `/ ${chunkArray.length}`;
-                epTitle.innerText = `It's Morbin' Time`
-                numberDisplay.textContent = '1';
-                selector.style.display = 'hidden'
-                dayCountDisplay.textContent = `??`;
-                const audio = document.getElementById('morbius-sound');
-                audio.play();
-            }
+        function morb() {
+            // alert('You typed "morbius"!');
+            // changeFavicon('favicon2.png');
+            // Additional actions can be added here
+            videoPlayer.src = 'https://www.dropbox.com/scl/fi/3xwxc029jj1i41067tzsd/morb02.mp4?rlkey=66nqyg5kuxbqx2bbw3i3uruz9&raw=1';
+            dayCountDisplay.textContent = `/ ${chunkArray.length}`;
+            epTitle.innerText = `It's Morbin' Time`
+            numberDisplay.textContent = '1';
+            selector.style.display = 'hidden'
+            dayCountDisplay.textContent = `??`;
+            const audio = document.getElementById('morbius-sound');
+            audio.play();
+        }
 
 
         // MORB ----------------------------------------------------------------------
+
+        // RANDOM -----------------------------------------
+        // Function to create a seed from the current date in YYYYMMDD format
+        function getSeedFromDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return parseInt(`${year}${month}${day}`);
+        }
+
+        // A simple seeded pseudo-random number generator
+        function seededRandom(seed) {
+            var x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        // Function to generate a random number between min and max (inclusive) using a seed
+        function getRandomNumber(min, max, seed) {
+            const randomValue = seededRandom(seed);
+            return Math.floor(randomValue * (max - min + 1)) + min;
+        }
+
+        // END RANDOM ----------------------------------------
     </script>
     <script>
 
