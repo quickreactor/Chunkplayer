@@ -514,7 +514,8 @@
             tapCount++;
 
             if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
-                morb();
+                // morb();
+                diceVideo(Math.floor(Math.random() * 20 + 1));
                 tapCount = 0; // Reset the tap count
             } else if (currentTime - firstTapTime > 3000) {
                 tapCount = 1; // Reset the tap count and start over
