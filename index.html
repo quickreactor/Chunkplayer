@@ -183,6 +183,9 @@
             "https://www.dropbox.com/scl/fi/rbcvi7admp7c7y9k0lf12/beaver20.mp4?rlkey=u1n0vdi1004te20542glil0w9&raw=1",
             "https://www.dropbox.com/scl/fi/ec8cut96ay1em18ym8tue/beaver21.mp4?rlkey=eaca6pu612ee1ejdx0g4qbawo&raw=1"
         ]
+        const morbChunkArray = [
+
+        ];
         const titleArray = [
             "Once upon a Beaver!",
             "Bunnies 'n' Beavers",
@@ -335,6 +338,7 @@
             const randomNumber = getRandomNumber(1, 20, getSeedFromDate());
             console.log(randomNumber);
             if (randomNumber === 1) {
+                morbCount = incrementMorbCount();
                 morb();
             } else {
                 updateVideo();
@@ -418,10 +422,11 @@
             // alert('You typed "morbius"!');
             // changeFavicon('favicon2.png');
             // Additional actions can be added here
-            videoPlayer.src = 'https://www.dropbox.com/scl/fi/3xwxc029jj1i41067tzsd/morb02.mp4?rlkey=66nqyg5kuxbqx2bbw3i3uruz9&raw=1';
+            // videoPlayer.src = morbChunkArray[videoNumber - 1];
+            videoPlayer.src = "https://www.dropbox.com/scl/fi/c76j3vm2q2z2qj9aruyob/morb02.mp4?rlkey=bd6s16kzycrucw1b1eoawiljm&raw=1";
             dayCountDisplay.textContent = `/ ${chunkArray.length}`;
             epTitle.innerText = `It's Morbin' Time`
-            numberDisplay.textContent = '1';
+            numberDisplay.textContent = morbCount;
             selector.style.display = 'hidden'
             dayCountDisplay.textContent = `??`;
             const audio = document.getElementById('morbius-sound');
@@ -430,17 +435,16 @@
 
         async function incrementMorbCount() {
             const url = "https://morbcount-worker.quickreactor.workers.dev/";
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Response status: ${response.status}`);
-                }
-                console.log(response);
-            } catch (error) {
-                console.error(error.message);
-            }
+            const response = await fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // This will log 5
+                    return parseInt(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
-
 
         // MORB ----------------------------------------------------------------------
 
