@@ -130,6 +130,31 @@
         #morbius-sound {
             display: hidden;
         }
+
+        option {
+            background-color: #1a1a1a;
+            color: #7f7f7f;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        #d20RollerVideo {
+            display: none;
+            z-index: 1000;
+            position: absolute;
+            width: 100%;
+            height: 720px;
+            transition: opacity 2s ease;
+            /* Fade out over 1 second */
+        }
+
+
+        .hidden {
+            opacity: 0;
+            /* Fully transparent */
+            pointer-events: none;
+            /* Prevent interactions when hidden */
+        }
     </style>
 </head>
 
@@ -140,6 +165,14 @@
             <label for="dateInput">Start Date</label>
             <input type="date" id="dateInput">
         </div> -->
+        <video id="d20RollerVideo" width="600" height="100%" autoplay muted playsinline>
+            <source id="diceSource1"
+                src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+                type='video/mp4; codecs="hvc1"'>
+            <source id="diceSource2"
+                src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+                type="video/webm">
+        </video>
         <div class="videoContainer">
             <video id="videoPlayer" controls playsinline>
                 <source src="" type="video/mp4">
@@ -184,7 +217,25 @@
             "https://www.dropbox.com/scl/fi/ec8cut96ay1em18ym8tue/beaver21.mp4?rlkey=eaca6pu612ee1ejdx0g4qbawo&raw=1"
         ]
         const morbChunkArray = [
-
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AAJlh7zugU3gxJExFeQgTvM/morb01.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AOuef5IgedUftxz0a506iIM/morb02.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ACsejBPnREzuSc6bkEQAuJk/morb03.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AHRhKLlbW4tNmiGcxTHJzZA/morb05.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AH5nOkv37l9MmU9hB1jxZbc/morb06.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AMsNLU6nvX6G1hQp5sneh1I/morb07.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AOp2vdKx7anFTq_C1CneJyQ/morb08.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AAXivF--C5BzvUnpBn9PqOI/morb09.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AK6LqWKaPKjeh4pO4CyKVyk/morb10.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ABAzDFz15gRqJ_y3J4Q43Dk/morb11.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AEVUb8qIUXE4KKjnYiyJEcg/morb12.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AHVqK7VJwreRF2AeMqe_I8I/morb13.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AF_5BjnCHgr4A9bppwAleGw/morb14.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AMpgeDPhVbdsfIDOlODBsdQ/morb15.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ALHzexDkET7gIMfmOvovWzs/morb16.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AN78-veyagU1PGrDUMVd_hU/morb17.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/APiGfaQv0RR9G0UnGbJVqCo/morb18.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AB5C06Vmtaaqum8n065PLgo/morb19.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1"
         ];
         const titleArray = [
             "Once upon a Beaver!",
@@ -210,8 +261,54 @@
             "Beave me alone!",
             "The Final Beaver!"
         ];
+        const d20HEVCArray = [
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEf2pGBxBZEwTJb-aEYpyKE/d20_02-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AFUheEJyd53hochS0XZ4R5M/d20_03-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AK1mTUTpcf51WFkIKyId1zU/d20_04-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ALAxfdEbQcIwqAoYiztaF5U/d20_05-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGDexdq-8QIkifHkxBJ6GQs/d20_06-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ANhB7xn0DxMTnZgM5irlAQE/d20_07-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABZ1T89OPjOmgsUfIm0PpZ8/d20_08-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ACy97P-yyn_Bs6Gz6zKRI_c/d20_09-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJMaS7QdgbXOvBG4zyrOVlE/d20_10-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AN4qfufmORSPYMJ3LegZ41c/d20_11-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AMgh-kF8-YMpeMncP5Mg63A/d20_12-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADwTwNfdIxYkrKFW4PGSFo0/d20_13-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ACV13KFzHsZ27RvAIf9T4Oc/d20_14-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABrSez9US3HXxWhtBTZuTeE/d20_15-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADAEL6FkC_6k8EpTYIgjRMI/d20_16-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEXFkdI0VUmhlZrobeMea9A/d20_17-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEGBWS7VAsOBgr_VA-a218U/d20_18-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AAbhrhdWQe1dJ0wbp0JlJWA/d20_19-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AKTj7pFikaGjNDWQ3Jw31_M/d20_20-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+        ];
+        const d20webmArray = [
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGr6kzpILzqXTYJ0RtL10xg/d20_02-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AFsAxT1biNPINi_rCLGtuW0/d20_03-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/APBS3KkGDnftWApeTGD0bzM/d20_04-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/APmycmMOWomemm3tyiFVXKw/d20_05-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AKe9pZdLUk7CCK6HD0kgpEM/d20_06-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGNSQPqtXCtJv6y-Qoo0qRk/d20_07-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ANFQm1MQFHzHigLciatVads/d20_08-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJTfGHb22-pA8pfOcma8xq0/d20_09-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AD341yQ96PBvoobWRU4khGI/d20_10-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AArKBWlvdjR_gFKfJlKd2c0/d20_11-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AALxIm6EE_gO0C7BzhTykc8/d20_12-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJBZRZtaf6qQKYW5DunoB9k/d20_13-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGkcSgnLZD-lSZMOy4sL8uc/d20_14-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ALVHBYJ2ZdQ5kD9Bdj6aqtU/d20_15-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGo3WZ2Ejrndq545Ybdnq94/d20_16-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABFVSAJSSVegwODQWS5vabo/d20_17-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIVY9N37SwzNhteRPJT0cso/d20_18-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADtxY-FtGhgYNGe2zgV2bvE/d20_19-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
+            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AImV8Pss7iyIKrE76NwPCIc/d20_20-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+        ]
+
         const dateInput = document.getElementById('dateInput');
         const videoPlayer = document.getElementById('videoPlayer');
+        const d20RollerVideo = document.getElementById('d20RollerVideo')
         const dayCountDisplay = document.getElementById('dayCount');
         let container = document.querySelector(".container");
         let videoContainer = document.querySelector(".videoContainer");
@@ -219,7 +316,8 @@
         let epTitle = document.querySelector(".ep-title");
         const selector = document.getElementById('chunkSelector');
         const numberDisplay = document.querySelector(".numberDisplay");
-        let morbCount = 0
+        let morbCount = 0;
+        let robMorbCount = 2;
 
         function hideElement(el) {
             el.style.display = 'none';
@@ -238,7 +336,7 @@
             return currentHour >= 0 && currentHour < 8;
         }
 
-        function updateVideo() {
+        async function updateVideo() {
 
             videoContainer.style.display = "flex";
             timerContainer.style.display = "none";
@@ -255,8 +353,8 @@
             }
 
             const videoNumber = daysPassed.toString().padStart(2, '0');
-
-            videoPlayer.src = chunkArray[videoNumber - 1];
+            morbCount = await getMorbCount();
+            videoPlayer.src = chunkArray[videoNumber - 1 - morbCount];
             dayCountDisplay.textContent = `/ ${chunkArray.length}`;
             epTitle.innerText = `${titleArray[daysPassed - 1]}`;
             // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
@@ -311,6 +409,7 @@
 
         function sundayTest() {
             hideElement(videoContainer); //flex
+            hideElement(timerContainer);
             epTitle.innerText = `
             Today is Sunday, the day of rest, no chunk today!
             `;
@@ -332,17 +431,22 @@
             sundayTest();
         } else if (isPastMidnight() === true) {
             lockdown();
-        }
-        else {
-            // Generate a random number between 1 and 20
-            const randomNumber = getRandomNumber(1, 20, getSeedFromDate());
-            console.log(randomNumber);
-            if (randomNumber === 1) {
-                morbCount = incrementMorbCount();
-                morb();
-            } else {
-                updateVideo();
-            }
+        } else {
+            (async () => {
+                // Generate a random number between 1 and 20
+                const randomNumber = await roll();
+                const randomNumberInt = parseInt(randomNumber);
+                console.log(`Daily roll is: ${randomNumber}`);
+                if (firstVistToday() === true) {
+                    diceVideo(randomNumberInt);
+                }
+                if (randomNumber === 1) {
+                    morbCount = incrementMorbCount();
+                    morb();
+                } else {
+                    updateVideo();
+                }
+            })();
         }
 
         // TIMER STUFF
@@ -418,59 +522,156 @@
             }
         });
 
-        function morb() {
+        async function morb() {
+            document.title = "Morbius Chunk Player";
+            let link = document.querySelector("link[rel~='icon']");
+            link.href = "morbicon.png";
             // alert('You typed "morbius"!');
             // changeFavicon('favicon2.png');
             // Additional actions can be added here
-            // videoPlayer.src = morbChunkArray[videoNumber - 1];
-            videoPlayer.src = "https://www.dropbox.com/scl/fi/c76j3vm2q2z2qj9aruyob/morb02.mp4?rlkey=bd6s16kzycrucw1b1eoawiljm&raw=1";
-            dayCountDisplay.textContent = `/ ${chunkArray.length}`;
+            let currentMorbCount = await getMorbCount();
+            currentMorbCount += robMorbCount;
+            videoPlayer.src = morbChunkArray[currentMorbCount - 1];
+            // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
+            dayCountDisplay.textContent = `/ ${morbChunkArray.length}`;
             epTitle.innerText = `It's Morbin' Time`
-            numberDisplay.textContent = morbCount;
+            numberDisplay.textContent = currentMorbCount;
             selector.style.display = 'hidden'
-            dayCountDisplay.textContent = `??`;
+            dayCountDisplay.textContent = `${morbChunkArray.length}`;
             const audio = document.getElementById('morbius-sound');
             audio.play();
         }
 
         async function incrementMorbCount() {
-            const url = "https://morbcount-worker.quickreactor.workers.dev/";
-            const response = await fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data); // This will log 5
-                    return parseInt(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+            const url = "https://morbcount-worker.quickreactor.workers.dev/increment";
+            try {
+                const response = await fetch(url);
+                const data = await response.text(); // Handling plain text response
+                console.log(`Morb Count incremented to ${data}`);
+                return parseInt(data, 10);
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
+
+        async function setMorbCount(value) {
+            const url = `https://morbcount-worker.quickreactor.workers.dev/set?newValue=${value}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.text(); // Handling plain text response
+                console.log(`Morb Count set to ${data}`);
+                return parseInt(data, 10);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function getMorbCount() {
+            const url = "https://morbcount-worker.quickreactor.workers.dev/check";
+            try {
+                const response = await fetch(url);
+                const data = await response.text(); // Handling plain text response
+                console.log(`Morb Count is currently: ${data}`);
+                return parseInt(data, 10);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function roll() {
+            const url = "https://morbcount-worker.quickreactor.workers.dev/roll";
+            try {
+                const response = await fetch(url);
+                const data = await response.text(); // Handling plain text response
+                console.log(`You rolled a: ${data}`);
+                return parseInt(data, 10);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
 
         // MORB ----------------------------------------------------------------------
 
-        // RANDOM -----------------------------------------
-        // Function to create a seed from the current date in YYYYMMDD format
-        function getSeedFromDate() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            return parseInt(`${year}${month}${day}`);
+        function diceVideo(number) {
+            // console.log("the number passed was" + number);
+            // console.log(typeof number);
+            // console.log(`${d20HEVCArray[number + 1]} url`);
+
+
+            // Update sources by ID
+            document.getElementById('diceSource1').src = `${d20HEVCArray[number - 1]}`;
+            document.getElementById('diceSource2').src = `${d20webmArray[number - 1]}`;
+
+            // Reload the video
+            d20RollerVideo.load();
+            d20RollerVideo.addEventListener('ended', function () {
+                // Hide the video element
+                setTimeout(() => {
+                    d20RollerVideo.classList.add('hidden');
+                }, 2000);
+                // setTimeout(() => {
+                //     d20RollerVideo.style.display = 'none';
+                // }, 1000);
+            });
+
+            d20RollerVideo.style.display = 'block';
         }
 
-        // A simple seeded pseudo-random number generator
-        function seededRandom(seed) {
-            var x = Math.sin(seed++) * 10000;
-            return x - Math.floor(x);
+        function firstVisitToday() {
+            let currentDate = getNZFormattedDate();
+            let lastVisit = localStorage.getItem('lastVisit');
+
+            if (lastVisit) {
+                if (lastVisit === currentDate) {
+                    return false
+                } else {
+                    localStorage.setItem('lastVisit', currentDate);
+                    return true
+                }
+            } else {
+                localStorage.setItem('lastVisit', currentDate);
+                return true;
+            }
         }
 
-        // Function to generate a random number between min and max (inclusive) using a seed
-        function getRandomNumber(min, max, seed) {
-            const randomValue = seededRandom(seed);
-            return Math.floor(randomValue * (max - min + 1)) + min;
+        function getNZFormattedDate() {
+            // Create a new Date object and set the time zone to New Zealand
+            const date = new Date().toLocaleString("en-NZ", { timeZone: "Pacific/Auckland" });
+            const nzDate = new Date(date);
+
+            // Extract year, month, and day
+            const year = nzDate.getFullYear();
+            const month = String(nzDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(nzDate.getDate()).padStart(2, '0');
+
+            // Return formatted date
+            return `${year}${month}${day}`;
         }
 
-        // END RANDOM ----------------------------------------
+        // // RANDOM -----------------------------------------
+        // // Function to create a seed from the current date in YYYYMMDD format
+        // function getSeedFromDate() {
+        //     const now = new Date();
+        //     const year = now.getFullYear();
+        //     const month = String(now.getMonth() + 1).padStart(2, '0');
+        //     const day = String(now.getDate()).padStart(2, '0');
+        //     return parseInt(`${year}${month}${day}`);
+        // }
+
+        // // A simple seeded pseudo-random number generator
+        // function seededRandom(seed) {
+        //     var x = Math.sin(seed++) * 10000;
+        //     return x - Math.floor(x);
+        // }
+
+        // // Function to generate a random number between min and max (inclusive) using a seed
+        // function getRandomNumber(min, max, seed) {
+        //     const randomValue = seededRandom(seed);
+        //     return Math.floor(randomValue * (max - min + 1)) + min;
+        // }
+
+        // // END RANDOM ----------------------------------------
     </script>
     <script>
 
