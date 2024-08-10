@@ -216,6 +216,7 @@
         let epTitle = document.querySelector(".ep-title");
         const selector = document.getElementById('chunkSelector');
         const numberDisplay = document.querySelector(".numberDisplay");
+        let morbCount = 0
 
         function hideElement(el) {
             el.style.display = 'none';
@@ -330,12 +331,13 @@
             lockdown();
         }
         else {
-            updateVideo();
             // Generate a random number between 1 and 20
             const randomNumber = getRandomNumber(1, 20, getSeedFromDate());
             console.log(randomNumber);
             if (randomNumber === 1) {
                 morb();
+            } else {
+                updateVideo();
             }
         }
 
@@ -424,6 +426,19 @@
             dayCountDisplay.textContent = `??`;
             const audio = document.getElementById('morbius-sound');
             audio.play();
+        }
+
+        async function incrementMorbCount() {
+            const url = "https://morbcount-worker.quickreactor.workers.dev/";
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                }
+                console.log(response);
+            } catch (error) {
+                console.error(error.message);
+            }
         }
 
 
