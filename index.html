@@ -314,6 +314,9 @@
         let videoContainer = document.querySelector(".videoContainer");
         let timerContainer = document.querySelector(".timer-container");
         let epTitle = document.querySelector(".ep-title");
+        epTitle.addEventListener('click', function () {
+            diceVideo(Math.floor(Math.random() * 20 + 1));
+        });
         const selector = document.getElementById('chunkSelector');
         const numberDisplay = document.querySelector(".numberDisplay");
         let morbCount = 0;
@@ -514,8 +517,7 @@
             tapCount++;
 
             if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
-                // morb();
-                diceVideo(Math.floor(Math.random() * 20 + 1));
+                morb();
                 tapCount = 0; // Reset the tap count
             } else if (currentTime - firstTapTime > 3000) {
                 tapCount = 1; // Reset the tap count and start over
@@ -611,9 +613,10 @@
                 setTimeout(() => {
                     d20RollerVideo.classList.add('hidden');
                 }, 2000);
-                // setTimeout(() => {
-                //     d20RollerVideo.style.display = 'none';
-                // }, 1000);
+                setTimeout(() => {
+                    d20RollerVideo.style.display = 'none';
+                    d20RollerVideo.classList.remove('hidden');
+                }, 4000);
             });
 
             d20RollerVideo.style.display = 'block';
