@@ -125,9 +125,6 @@ h1 {
     z-index: 1;
 }
 
-#morbius-sound {
-    display: hidden;
-}
 
 option {
     background-color: #1a1a1a;
@@ -142,8 +139,10 @@ option {
     position: absolute;
     top: -20px;
     width: 100%;
-    height: 720px;
-    width: 100vw;
+    max-width:100%;  /* added */
+    height: 80vw;
+    max-height: 80%;
+    width: 60vw;
     /* Set the width to 100% of the viewport width */
     height: auto;
     object-fit: cover;
@@ -151,6 +150,17 @@ option {
     /* Fade out over 1 second */
 }
 
+@media screen and (max-width: 768px) {
+    #d20RollerVideo {
+        width: 150vw;
+        left: -35vw;
+        max-width: 300vw;  /* added */
+        height: 80vw;
+        max-height: 300vw;
+        height: auto;
+        overflow: hidden;
+    }
+}
 
 .hidden {
     opacity: 0;
@@ -158,3 +168,4 @@ option {
     pointer-events: none;
     /* Prevent interactions when hidden */
 }
+
