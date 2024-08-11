@@ -81,6 +81,7 @@ h1 {
 }
 
 .timer-container {
+    display: none;
     text-align: center;
     padding: 20px;
 }
