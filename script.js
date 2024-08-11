@@ -145,7 +145,7 @@ if (isTodaySunday()) {
         const randomNumber = await roll();
         const randomNumberInt = parseInt(randomNumber);
         console.log(`Daily roll is: ${randomNumber}`);
-        if (firstVistToday() === true) {
+        if (firstVisitToday() === true) {
             diceVideo(randomNumberInt);
         }
         if (randomNumber === 1) {
