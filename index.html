@@ -17,6 +17,13 @@
             color: #7f7f7f;
         }
 
+        h1 {
+            user-select: none;
+            /* Prevent text selection */
+            cursor: default;
+            /* Set the cursor to the default (normal) */
+        }
+
         .container {
             display: flex;
             flex-direction: column;
@@ -142,8 +149,13 @@
             display: none;
             z-index: 1000;
             position: absolute;
+            top: -20px;
             width: 100%;
             height: 720px;
+            width: 100vw;
+            /* Set the width to 100% of the viewport width */
+            height: auto;
+            object-fit: cover;
             transition: opacity 2s ease;
             /* Fade out over 1 second */
         }
