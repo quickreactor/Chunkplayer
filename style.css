@@ -1,0 +1,160 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #7f7f7f;
+}
+
+h1 {
+    user-select: none;
+    /* Prevent text selection */
+    cursor: default;
+    /* Set the cursor to the default (normal) */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+    min-height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #7f7f7f
+}
+
+.emoji {
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
+}
+
+.videoContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #1a1a1a;
+}
+
+h1 {
+    margin-bottom: 20px;
+    align-self: center;
+    font-weight: 100;
+    font-size: 24px;
+}
+
+#videoPlayer {
+    display: block;
+    max-width: 100%;
+    width: 70vw;
+    border-radius: 7px;
+    object-fit: cover;
+    /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
+
+
+}
+
+.videoContainer {
+    display: block;
+    /* border-radius: 7px; */
+    overflow: hidden;
+}
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+}
+
+#dateInput {
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+#dayCount {
+    font-size: 24px;
+    margin-top: 1px;
+}
+
+.timer-container {
+    text-align: center;
+    padding: 20px;
+}
+
+#countdown-timer {
+    font-size: 48px;
+    margin-top: 20px;
+}
+
+#chunkSelector {
+    color: transparent;
+    background-color: #1a1a1a;
+    width: 60px;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    border: none;
+    text-align: right;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiI+PHN3aXRjaD48Zz48cGF0aCBmaWxsPSIjOUM5QjlCIiBkPSJNNi4zMDcgMTAuNjY1bC01LjItNi4wODggMS4wOTYtLjkzNSA0LjA1NyA0Ljc1IDMuNzkxLTQuODMzIDEuMTM1Ljg4OHoiLz48L2c+PC9zd2l0Y2g+PC9zdmc+");
+    background-repeat: no-repeat;
+    background-position: 99% .5em;
+    z-index: 2;
+}
+
+.selectContainer {
+    display: flex;
+    margin-top: 10px;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+.numberDisplay {
+    margin-right: -44px;
+    font-size: 24px;
+    margin-top: 1px;
+    text-align: right;
+    z-index: 1;
+}
+
+#morbius-sound {
+    display: hidden;
+}
+
+option {
+    background-color: #1a1a1a;
+    color: #7f7f7f;
+    text-align: left;
+    font-size: 16px;
+}
+
+#d20RollerVideo {
+    display: none;
+    z-index: 1000;
+    position: absolute;
+    top: -20px;
+    width: 100%;
+    height: 720px;
+    width: 100vw;
+    /* Set the width to 100% of the viewport width */
+    height: auto;
+    object-fit: cover;
+    transition: opacity 2s ease;
+    /* Fade out over 1 second */
+}
+
+
+.hidden {
+    opacity: 0;
+    /* Fully transparent */
+    pointer-events: none;
+    /* Prevent interactions when hidden */
+}

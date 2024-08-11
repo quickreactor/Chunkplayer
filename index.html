@@ -4,170 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <link href="favicon.png" rel="icon" type="image/x-icon">
     <title>Movie Chunk Player</title>
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: #7f7f7f;
-        }
-
-        h1 {
-            user-select: none;
-            /* Prevent text selection */
-            cursor: default;
-            /* Set the cursor to the default (normal) */
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            /* justify-content: center; */
-            align-items: center;
-            min-height: 100vh;
-            padding: 10px;
-            box-sizing: border-box;
-            text-align: center;
-            color: #7f7f7f
-        }
-
-        .emoji {
-            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
-        }
-
-        .videoContainer {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background-color: #1a1a1a;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-            align-self: center;
-            font-weight: 100;
-            font-size: 24px;
-        }
-
-        #videoPlayer {
-            display: block;
-            max-width: 100%;
-            width: 70vw;
-            border-radius: 7px;
-            object-fit: cover;
-            /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
-
-
-        }
-
-        .videoContainer {
-            display: block;
-            /* border-radius: 7px; */
-            overflow: hidden;
-        }
-
-        .date-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px 0;
-        }
-
-        #dateInput {
-            padding: 10px;
-            font-size: 16px;
-            margin-top: 5px;
-        }
-
-        #dayCount {
-            font-size: 24px;
-            margin-top: 1px;
-        }
-
-        .timer-container {
-            text-align: center;
-            padding: 20px;
-        }
-
-        #countdown-timer {
-            font-size: 48px;
-            margin-top: 20px;
-        }
-
-        #chunkSelector {
-            color: transparent;
-            background-color: #1a1a1a;
-            width: 60px;
-            padding: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            border: none;
-            text-align: right;
-            -moz-appearance: none;
-            -webkit-appearance: none;
-            appearance: none;
-            background-color: transparent;
-            background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMiI+PHN3aXRjaD48Zz48cGF0aCBmaWxsPSIjOUM5QjlCIiBkPSJNNi4zMDcgMTAuNjY1bC01LjItNi4wODggMS4wOTYtLjkzNSA0LjA1NyA0Ljc1IDMuNzkxLTQuODMzIDEuMTM1Ljg4OHoiLz48L2c+PC9zd2l0Y2g+PC9zdmc+");
-            background-repeat: no-repeat;
-            background-position: 99% .5em;
-            z-index: 2;
-        }
-
-        .selectContainer {
-            display: flex;
-            margin-top: 10px;
-            position: relative;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .numberDisplay {
-            margin-right: -44px;
-            font-size: 24px;
-            margin-top: 1px;
-            text-align: right;
-            z-index: 1;
-        }
-
-        #morbius-sound {
-            display: hidden;
-        }
-
-        option {
-            background-color: #1a1a1a;
-            color: #7f7f7f;
-            text-align: left;
-            font-size: 16px;
-        }
-
-        #d20RollerVideo {
-            display: none;
-            z-index: 1000;
-            position: absolute;
-            top: -20px;
-            width: 100%;
-            height: 720px;
-            width: 100vw;
-            /* Set the width to 100% of the viewport width */
-            height: auto;
-            object-fit: cover;
-            transition: opacity 2s ease;
-            /* Fade out over 1 second */
-        }
-
-
-        .hidden {
-            opacity: 0;
-            /* Fully transparent */
-            pointer-events: none;
-            /* Prevent interactions when hidden */
-        }
-    </style>
 </head>
 
 <body>
@@ -203,121 +42,6 @@
     </div>
 
     <script>
-
-        const chunkArray = [
-            "https://www.dropbox.com/scl/fi/93u2v2d1hlhz455w7693x/beaver00.mp4?rlkey=le4g8623buurr6hp56g3ktesa&raw=1",
-            "https://www.dropbox.com/scl/fi/g7ftx1h9wnuln3w7epz1f/beaver01.mp4?rlkey=w1k33nblszqys058akwj1o4e5&raw=1",
-            "https://www.dropbox.com/scl/fi/1h6e0iqv86f50ef05n377/beaver02.mp4?rlkey=8ln2z2ws40neyhwxu3c4l2uvh&raw=1",
-            "https://www.dropbox.com/scl/fi/k125w4vyz6l3vm3zxfyjq/beaver03.mp4?rlkey=wnxxm61jmteqhy0x02gih9v0n&raw=1",
-            "https://www.dropbox.com/scl/fi/i8h8xgclz91drgk1lfboo/beaver04.mp4?rlkey=j4ytawo74qexyplm0975yb659&raw=1",
-            "https://www.dropbox.com/scl/fi/pvapryf5glv98vsr9b00k/beaver05.mp4?rlkey=rdm9vsybmsuadlyo2t6vzd63c&raw=1",
-            "https://www.dropbox.com/scl/fi/4c68uhbr7qhwoh9e8ql6m/beaver06.mp4?rlkey=zwnzm4wd605zox2n1c1m9g6f6&raw=1",
-            "https://www.dropbox.com/scl/fi/wlw0ijoq0n4tp7vhpp5sh/beaver07.mp4?rlkey=1l9sweblot5wgur858x3bv07s&raw=1",
-            "https://www.dropbox.com/scl/fi/4hlbefnazicmkfooyjf84/beaver08.mp4?rlkey=506d852aj0ijfrne1t941jvkd&raw=1",
-            "https://www.dropbox.com/scl/fi/sky968hywlrtcrox9rnrx/beaver09.mp4?rlkey=9991oggt9eb0vuzvi30v2hc7m&raw=1",
-            "https://www.dropbox.com/scl/fi/yfxi0w7u05ln8o0g8hyvr/beaver10.mp4?rlkey=hg5lg1913gzfwv9tl2wlbivj9&raw=1",
-            "https://www.dropbox.com/scl/fi/z77kcimrdznybw42o4wii/beaver11.mp4?rlkey=gwya3xsseoj2cyauvcr3h5fwh&raw=1",
-            "https://www.dropbox.com/scl/fi/ak747oe721a9ri0wer5ef/beaver12.mp4?rlkey=f07cw2ij27xn6atoietsg4jrs&raw=1",
-            "https://www.dropbox.com/scl/fi/38l0tpbjb8a0yd4ka4yd8/beaver13.mp4?rlkey=pk65dd9790vh4baq3kcm3wx0p&raw=1",
-            "https://www.dropbox.com/scl/fi/yn4d2tfy5nf1agk3sq5at/beaver14.mp4?rlkey=b58ohj7o7biuij3umcsk0mayo&raw=1",
-            "https://www.dropbox.com/scl/fi/9fux2z07tcmvzf4p9r2ka/beaver15.mp4?rlkey=qmfudkyn8qie8yp02yrg0j2pr&raw=1",
-            "https://www.dropbox.com/scl/fi/m1gnsee52pglxath62j92/beaver16.mp4?rlkey=emydtsvchbw2ex0kk220lz112&raw=1",
-            "https://www.dropbox.com/scl/fi/6cuchyr1klkww5f1x2tai/beaver17.mp4?rlkey=ok726g94tx8to77g71yx01eor&raw=1",
-            "https://www.dropbox.com/scl/fi/1xemogq0lfjf1gvanxcxm/beaver18.mp4?rlkey=5ktjrmm7qiad4c4dr3jzobmtw&raw=1",
-            "https://www.dropbox.com/scl/fi/hmvfdq9smxthfxj1qkq78/beaver19.mp4?rlkey=yzph2fisojrlh1foklrbyphyj&raw=1",
-            "https://www.dropbox.com/scl/fi/rbcvi7admp7c7y9k0lf12/beaver20.mp4?rlkey=u1n0vdi1004te20542glil0w9&raw=1",
-            "https://www.dropbox.com/scl/fi/ec8cut96ay1em18ym8tue/beaver21.mp4?rlkey=eaca6pu612ee1ejdx0g4qbawo&raw=1"
-        ]
-        const morbChunkArray = [
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AAJlh7zugU3gxJExFeQgTvM/morb01.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AOuef5IgedUftxz0a506iIM/morb02.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ACsejBPnREzuSc6bkEQAuJk/morb03.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AHRhKLlbW4tNmiGcxTHJzZA/morb05.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AH5nOkv37l9MmU9hB1jxZbc/morb06.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AMsNLU6nvX6G1hQp5sneh1I/morb07.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AOp2vdKx7anFTq_C1CneJyQ/morb08.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AAXivF--C5BzvUnpBn9PqOI/morb09.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AK6LqWKaPKjeh4pO4CyKVyk/morb10.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ABAzDFz15gRqJ_y3J4Q43Dk/morb11.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AEVUb8qIUXE4KKjnYiyJEcg/morb12.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AHVqK7VJwreRF2AeMqe_I8I/morb13.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AF_5BjnCHgr4A9bppwAleGw/morb14.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AMpgeDPhVbdsfIDOlODBsdQ/morb15.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ALHzexDkET7gIMfmOvovWzs/morb16.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AN78-veyagU1PGrDUMVd_hU/morb17.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/APiGfaQv0RR9G0UnGbJVqCo/morb18.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-            "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AB5C06Vmtaaqum8n065PLgo/morb19.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1"
-        ];
-        const titleArray = [
-            "Once upon a Beaver!",
-            "Bunnies 'n' Beavers",
-            "It's beaver time!",
-            "Beaver Blast!",
-            "Leave it to Beaver!",
-            "The staircase's disgraced blood expert Duane Beaver!",
-            "Beaver Binge!",
-            "Beaver Bliss!",
-            "Dam Good Fun!",
-            "Beaver Power!",
-            "Chew On This!",
-            "Beaver Brigade!",
-            "Dam It All!",
-            "Beaver Bonanza!",
-            "Wood you believe it!",
-            "Furry Fiends!",
-            "To The Dam Moon!",
-            "The Legacy of Kain: Soul Beaver!",
-            "The Tail of the Beaver!",
-            "The Birds and the Beavers",
-            "Beave me alone!",
-            "The Final Beaver!"
-        ];
-        const d20HEVCArray = [
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEf2pGBxBZEwTJb-aEYpyKE/d20_02-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AFUheEJyd53hochS0XZ4R5M/d20_03-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AK1mTUTpcf51WFkIKyId1zU/d20_04-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ALAxfdEbQcIwqAoYiztaF5U/d20_05-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGDexdq-8QIkifHkxBJ6GQs/d20_06-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ANhB7xn0DxMTnZgM5irlAQE/d20_07-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABZ1T89OPjOmgsUfIm0PpZ8/d20_08-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ACy97P-yyn_Bs6Gz6zKRI_c/d20_09-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJMaS7QdgbXOvBG4zyrOVlE/d20_10-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AN4qfufmORSPYMJ3LegZ41c/d20_11-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AMgh-kF8-YMpeMncP5Mg63A/d20_12-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADwTwNfdIxYkrKFW4PGSFo0/d20_13-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ACV13KFzHsZ27RvAIf9T4Oc/d20_14-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABrSez9US3HXxWhtBTZuTeE/d20_15-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADAEL6FkC_6k8EpTYIgjRMI/d20_16-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEXFkdI0VUmhlZrobeMea9A/d20_17-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AEGBWS7VAsOBgr_VA-a218U/d20_18-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AAbhrhdWQe1dJ0wbp0JlJWA/d20_19-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AKTj7pFikaGjNDWQ3Jw31_M/d20_20-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
-        ];
-        const d20webmArray = [
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGr6kzpILzqXTYJ0RtL10xg/d20_02-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AFsAxT1biNPINi_rCLGtuW0/d20_03-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/APBS3KkGDnftWApeTGD0bzM/d20_04-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/APmycmMOWomemm3tyiFVXKw/d20_05-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AKe9pZdLUk7CCK6HD0kgpEM/d20_06-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGNSQPqtXCtJv6y-Qoo0qRk/d20_07-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ANFQm1MQFHzHigLciatVads/d20_08-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJTfGHb22-pA8pfOcma8xq0/d20_09-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AD341yQ96PBvoobWRU4khGI/d20_10-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AArKBWlvdjR_gFKfJlKd2c0/d20_11-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AALxIm6EE_gO0C7BzhTykc8/d20_12-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AJBZRZtaf6qQKYW5DunoB9k/d20_13-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGkcSgnLZD-lSZMOy4sL8uc/d20_14-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ALVHBYJ2ZdQ5kD9Bdj6aqtU/d20_15-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AGo3WZ2Ejrndq545Ybdnq94/d20_16-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ABFVSAJSSVegwODQWS5vabo/d20_17-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIVY9N37SwzNhteRPJT0cso/d20_18-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADtxY-FtGhgYNGe2zgV2bvE/d20_19-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
-            "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AImV8Pss7iyIKrE76NwPCIc/d20_20-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
-        ]
-
         const dateInput = document.getElementById('dateInput');
         const videoPlayer = document.getElementById('videoPlayer');
         const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -333,6 +57,19 @@
         const numberDisplay = document.querySelector(".numberDisplay");
         let morbCount = 0;
         let robMorbCount = 2;
+
+        // Define a global variable to store the JSON data
+        let urls = {};
+
+        // Fetch the JSON data
+        fetch('urls.json')
+            .then(response => response.json())
+            .then(data => {
+                // Store the data in the global variable
+                urls = data;
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+
 
         function hideElement(el) {
             el.style.display = 'none';
@@ -369,9 +106,9 @@
 
             const videoNumber = daysPassed.toString().padStart(2, '0');
             morbCount = await getMorbCount();
-            videoPlayer.src = chunkArray[videoNumber - 1 - morbCount];
-            dayCountDisplay.textContent = `/ ${chunkArray.length}`;
-            epTitle.innerText = `${titleArray[daysPassed - 1]}`;
+            videoPlayer.src = urls.chunkArray[videoNumber - 1 - morbCount];
+            dayCountDisplay.textContent = `/ ${urls.chunkArray.length}`;
+            epTitle.innerText = `${urls.titleArray[daysPassed - 1]}`;
             // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
             // SELECTOR STUFF -----------------------
@@ -381,7 +118,7 @@
                 const option = document.createElement('option');
                 option.value = i + 1;
                 option.dataset.display = i + 1;
-                option.dataset.descr = titleArray[i];
+                option.dataset.descr = urls.titleArray[i];
                 option.textContent = i + 1;
                 selector.prepend(option);
             }
@@ -391,8 +128,8 @@
                 const selectedValue = this.value;
                 console.log(selectedValue);
                 const videoNumber = selectedValue.toString().padStart(2, '0');
-                videoPlayer.src = chunkArray[videoNumber - 1];
-                epTitle.innerText = `${titleArray[parseInt(selectedValue) - 1]}`;
+                videoPlayer.src = urls.chunkArray[videoNumber - 1];
+                epTitle.innerText = `${urls.titleArray[parseInt(selectedValue) - 1]}`;
                 numberDisplay.textContent = selectedValue;
                 this.blur();
             });
@@ -546,13 +283,13 @@
             // Additional actions can be added here
             let currentMorbCount = await getMorbCount();
             currentMorbCount += robMorbCount;
-            videoPlayer.src = morbChunkArray[currentMorbCount - 1];
+            videoPlayer.src = urls.morbChunkArray[currentMorbCount - 1];
             // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
-            dayCountDisplay.textContent = `/ ${morbChunkArray.length}`;
+            dayCountDisplay.textContent = `/ ${urls.morbChunkArray.length}`;
             epTitle.innerText = `It's Morbin' Time`
             numberDisplay.textContent = currentMorbCount;
             selector.style.display = 'hidden'
-            dayCountDisplay.textContent = `${morbChunkArray.length}`;
+            dayCountDisplay.textContent = `${urls.morbChunkArray.length}`;
             const audio = document.getElementById('morbius-sound');
             audio.play();
         }
@@ -609,14 +346,9 @@
         // MORB ----------------------------------------------------------------------
 
         function diceVideo(number) {
-            // console.log("the number passed was" + number);
-            // console.log(typeof number);
-            // console.log(`${d20HEVCArray[number + 1]} url`);
-
-
             // Update sources by ID
-            document.getElementById('diceSource1').src = `${d20HEVCArray[number - 1]}`;
-            document.getElementById('diceSource2').src = `${d20webmArray[number - 1]}`;
+            document.getElementById('diceSource1').src = `${urls.d20HEVCArray[number - 1]}`;
+            document.getElementById('diceSource2').src = `${urls.d20webmArray[number - 1]}`;
 
             // Reload the video
             d20RollerVideo.load();
@@ -665,29 +397,6 @@
             return `${year}${month}${day}`;
         }
 
-        // // RANDOM -----------------------------------------
-        // // Function to create a seed from the current date in YYYYMMDD format
-        // function getSeedFromDate() {
-        //     const now = new Date();
-        //     const year = now.getFullYear();
-        //     const month = String(now.getMonth() + 1).padStart(2, '0');
-        //     const day = String(now.getDate()).padStart(2, '0');
-        //     return parseInt(`${year}${month}${day}`);
-        // }
-
-        // // A simple seeded pseudo-random number generator
-        // function seededRandom(seed) {
-        //     var x = Math.sin(seed++) * 10000;
-        //     return x - Math.floor(x);
-        // }
-
-        // // Function to generate a random number between min and max (inclusive) using a seed
-        // function getRandomNumber(min, max, seed) {
-        //     const randomValue = seededRandom(seed);
-        //     return Math.floor(randomValue * (max - min + 1)) + min;
-        // }
-
-        // // END RANDOM ----------------------------------------
     </script>
     <script>
 
