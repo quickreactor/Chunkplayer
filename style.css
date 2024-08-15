@@ -16,7 +16,7 @@ h1 {
 }
 
 .container {
-    display: flex;
+    display: none;
     flex-direction: column;
     /* justify-content: center; */
     align-items: center;
@@ -24,7 +24,8 @@ h1 {
     padding: 10px;
     box-sizing: border-box;
     text-align: center;
-    color: #7f7f7f
+    color: #7f7f7f;
+    transition: all 1s ease-in-out;
 }
 
 .emoji {
@@ -151,6 +152,70 @@ option {
     /* Fade out over 1 second */
 }
 
+
+.hidden {
+    opacity: 0;
+    /* Fully transparent */
+    pointer-events: none;
+    /* Prevent interactions when hidden */
+}
+
+.unhidden {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.poster-container {
+    position: absolute;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 100%;
+    z-index: 200;
+}
+
+.poster-image {
+    max-height: 80vh;
+    max-width: 40vw;
+    margin: 3vw;
+    object-fit: contain;
+}
+
+.winner2 {
+    transform: translate(-50%, 0);
+    transition: all 1s ease-in-out;
+}
+
+.winner1 {
+    transform: translate(20vw, 0);
+    transition: all 1s ease-in-out;
+}
+
+.fade-out-fast {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.fade-out-slow {
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+}
+
+#roll-button{
+    background: url(images/d20.png);
+    background-size: contain;
+    width: 4vw;
+    height: 4vw;
+    font-size: 0.9vw;
+    font-weight: 900;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+}
+
 @media screen and (max-width: 768px) {
     #d20RollerVideo {
         width: 150vw;
@@ -161,12 +226,10 @@ option {
         height: auto;
         overflow: hidden;
     }
-}
 
-.hidden {
-    opacity: 0;
-    /* Fully transparent */
-    pointer-events: none;
-    /* Prevent interactions when hidden */
+    #roll-button {
+        width: 4vh;
+        height: 4vh;
+        font-size: 2vw;
+    }
 }
-

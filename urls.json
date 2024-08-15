@@ -44,6 +44,21 @@
         "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/APiGfaQv0RR9G0UnGbJVqCo/morb18.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
         "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AB5C06Vmtaaqum8n065PLgo/morb19.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1"
     ],
+    "yarn" : {
+        "chunks" : [
+            "https://www.dropbox.com/scl/fi/pxw219qfaqnwnakctj1lv/SHANA-50.States.Of.Fright.S01E04.720p.QUIBI.WEBRip.x264-GalaxyTV.mp4?rlkey=zmi3n8wu7v324jebqfe9fuizf&raw=1",
+            "https://www.dropbox.com/scl/fi/quamvqubmhpu79t0dxkst/SHANA-50.States.Of.Fright.S01E05.720p.QUIBI.WEBRip.x264-GalaxyTV.mp4?rlkey=n4ckyyjo2ae6g8rt2phwdwee8&raw=1",
+            "https://www.dropbox.com/scl/fi/6uk2d3cno2b8ndhiae766/SHANA-50.States.Of.Fright.S01E06.720p.QUIBI.WEBRip.x264-GalaxyTV.mp4?rlkey=tnynjllp4sjzsh36tv0ie9aor&raw=1"
+        ],
+        "titles" : [
+            "Let me spin you a yarn...",
+            "What in yarnation?!",
+            "Goodness, gracious, great balls of yarn!"
+        ],
+        "poster" : [
+            "images/twine-poster.jpg"
+        ]
+    },
     "titleArray": [
         "Once upon a Beaver!",
         "Bunnies 'n' Beavers",

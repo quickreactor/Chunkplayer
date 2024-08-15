@@ -1,10 +1,19 @@
+const movieCode = 'yarn';
+const startDate = new Date('2024-08-15T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
 const dayCountDisplay = document.getElementById('dayCount');
+const rollButton = document.getElementById('roll-button');
+rollButton.addEventListener('click', rollForMovieChoice);
+const poster1 = document.getElementById('poster-image-1');
+const poster2 = document.getElementById('poster-image-2');
+const posterContainer = document.querySelector('.poster-container');
 let container = document.querySelector(".container");
 let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
+let chunkArray = [];
+let titleArray = [];
 let epTitle = document.querySelector(".ep-title");
 epTitle.addEventListener('click', function () {
     diceVideo(Math.floor(Math.random() * 20 + 1));
@@ -13,18 +22,10 @@ const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
 let robMorbCount = 2;
+let randomNumber = 0;
 
 // Define a global variable to store the JSON data
 let urls = {};
-
-// Fetch the JSON data
-fetch('urls.json')
-    .then(response => response.json())
-    .then(data => {
-        // Store the data in the global variable
-        urls = data;
-    })
-    .catch(error => console.error('Error loading JSON:', error));
 
 
 function hideElement(el) {
@@ -44,13 +45,11 @@ function isPastMidnight() {
     return currentHour >= 0 && currentHour < 8;
 }
 
-async function updateVideo() {
-
-    videoContainer.style.display = "flex";
+async function updateVideo(first) {
     timerContainer.style.display = "none";
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
-    const defaultDate = new Date('2024-07-22T00:00:00+12:00');
+    const defaultDate = startDate;
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
     let daysPassed = 0;
@@ -61,10 +60,21 @@ async function updateVideo() {
     }
 
     const videoNumber = daysPassed.toString().padStart(2, '0');
-    morbCount = await getMorbCount();
-    videoPlayer.src = urls.chunkArray[videoNumber - 1 - morbCount];
-    dayCountDisplay.textContent = `/ ${urls.chunkArray.length}`;
-    epTitle.innerText = `${urls.titleArray[daysPassed - 1]}`;
+    morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+    videoPlayer.src = chunkArray[parseInt(videoNumber) - 1 - morbCount];
+    // Trigger the transition after ensuring the container is in the DOM
+    if (first) {
+        container.style.display = 'flex';
+        requestAnimationFrame(() => {
+            container.classList.add('unhidden');
+        });
+    } else {
+        container.style.display = 'flex';
+        container.classList.remove('hidden');
+    }
+    // videoContainer.style.display = "flex";
+    dayCountDisplay.textContent = `/ ${chunkArray.length}`;
+    epTitle.innerText = `${titleArray[daysPassed - 1]}`;
     // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
     // SELECTOR STUFF -----------------------
@@ -74,7 +84,7 @@ async function updateVideo() {
         const option = document.createElement('option');
         option.value = i + 1;
         option.dataset.display = i + 1;
-        option.dataset.descr = urls.titleArray[i];
+        option.dataset.descr = titleArray[i];
         option.textContent = i + 1;
         selector.prepend(option);
     }
@@ -84,8 +94,8 @@ async function updateVideo() {
         const selectedValue = this.value;
         console.log(selectedValue);
         const videoNumber = selectedValue.toString().padStart(2, '0');
-        videoPlayer.src = urls.chunkArray[videoNumber - 1];
-        epTitle.innerText = `${urls.titleArray[parseInt(selectedValue) - 1]}`;
+        videoPlayer.src = chunkArray[videoNumber - 1];
+        epTitle.innerText = `${titleArray[parseInt(selectedValue) - 1]}`;
         numberDisplay.textContent = selectedValue;
         this.blur();
     });
@@ -140,19 +150,42 @@ if (isTodaySunday()) {
 } else if (isPastMidnight() === true) {
     lockdown();
 } else {
+    // Uncomment below to test rolling
+    clearLastVisit();
     (async () => {
+        // Fetch the JSON data
+        await fetch('urls.json')
+            .then(response => response.json())
+            .then(data => {
+                // Store the data in the global variable
+                urls = data;
+                chunkArray = urls[movieCode].chunks;
+                titleArray = urls[movieCode].titles;
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+
         // Generate a random number between 1 and 20
-        const randomNumber = await roll();
-        const randomNumberInt = parseInt(randomNumber);
-        console.log(`Daily roll is: ${randomNumber}`);
         if (firstVisitToday() === true) {
-            diceVideo(randomNumberInt);
-        }
-        if (randomNumber === 1) {
-            morbCount = incrementMorbCount();
-            morb();
+            posterContainer.style.display = 'flex';
+            // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
+            // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
+            // randomNumber = parseInt(localStorage.getItem('randomNumber'));
+            // console.log(`Daily roll is: ${randomNumber}`);
+            // morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+            // diceVideo(parseInt(randomNumber));
+            // if (randomNumber === 1) {
+            //     localStorage.setItem('dailyMorbCount', await incrementMorbCount());
+            //     morb();
+            // }
         } else {
-            updateVideo();
+            // any visit
+            randomNumber = parseInt(localStorage.getItem('randomNumber'));
+            morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+            if (randomNumber === 1) {
+                morb();
+            } else {
+                updateVideo();
+            }
         }
     })();
 }
@@ -230,21 +263,31 @@ document.body.addEventListener('click', () => {
     }
 });
 
-async function morb() {
+async function morb(first) {
     document.title = "Morbius Chunk Player";
     let link = document.querySelector("link[rel~='icon']");
     link.href = "morbicon.png";
     // alert('You typed "morbius"!');
     // changeFavicon('favicon2.png');
     // Additional actions can be added here
-    let currentMorbCount = await getMorbCount();
+    let currentMorbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+
     currentMorbCount += robMorbCount;
     videoPlayer.src = urls.morbChunkArray[currentMorbCount - 1];
     // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
+    container.style.display = 'flex';
+    // Trigger the transition after ensuring the container is in the DOM
+    if (first) {
+        requestAnimationFrame(() => {
+            container.classList.add('unhidden');
+        });
+    } else {
+        container.classList.remove('hidden');
+    }
     dayCountDisplay.textContent = `/ ${urls.morbChunkArray.length}`;
     epTitle.innerText = `It's Morbin' Time`
     numberDisplay.textContent = currentMorbCount;
-    selector.style.display = 'hidden'
+    selector.style.pointerEvents = 'none';
     dayCountDisplay.textContent = `${urls.morbChunkArray.length}`;
     const audio = document.getElementById('morbius-sound');
     audio.play();
@@ -255,6 +298,7 @@ async function incrementMorbCount() {
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
+        localStorage.setItem('dailyMorbCount', parseInt(data));
         console.log(`Morb Count incremented to ${data}`);
         return parseInt(data, 10);
     } catch (error) {
@@ -267,6 +311,7 @@ async function setMorbCount(value) {
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
+        localStorage.setItem('dailyMorbCount', parseInt(data));
         console.log(`Morb Count set to ${data}`);
         return parseInt(data, 10);
     } catch (error) {
@@ -274,23 +319,25 @@ async function setMorbCount(value) {
     }
 }
 
-async function getMorbCount() {
+async function fetchMorbCountToLocalStorage() {
     const url = "https://morbcount-worker.quickreactor.workers.dev/check";
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
-        console.log(`Morb Count is currently: ${data}`);
+        localStorage.setItem('dailyMorbCount', parseInt(data));
+        console.log(`Morb Count is currently: ${data}, and is in localStorage`);
         return parseInt(data, 10);
     } catch (error) {
         console.error('Error:', error);
     }
 }
 
-async function roll() {
+async function fetchRollToLocalStorage() {
     const url = "https://morbcount-worker.quickreactor.workers.dev/roll";
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
+        localStorage.setItem('dailyRoll', parseInt(data));
         console.log(`You rolled a: ${data}`);
         return parseInt(data, 10);
     } catch (error) {
@@ -301,26 +348,30 @@ async function roll() {
 
 // MORB ----------------------------------------------------------------------
 
-function diceVideo(number) {
+async function diceVideo(number) {
     // Update sources by ID
     document.getElementById('diceSource1').src = `${urls.d20HEVCArray[number - 1]}`;
     document.getElementById('diceSource2').src = `${urls.d20webmArray[number - 1]}`;
 
-    // Reload the video
-    d20RollerVideo.load();
-    playRandomSound();
-    d20RollerVideo.addEventListener('ended', function () {
-        // Hide the video element
-        setTimeout(() => {
-            d20RollerVideo.classList.add('hidden');
-        }, 2000);
-        setTimeout(() => {
-            d20RollerVideo.style.display = 'none';
-            d20RollerVideo.classList.remove('hidden');
-        }, 4000);
-    });
+    return new Promise((resolve) => {
+        // Reload the video
+        d20RollerVideo.style.display = 'block';
+        d20RollerVideo.load();
+        playRandomSound();
+        d20RollerVideo.addEventListener('ended', function () {
+            // Hide the video element
+            setTimeout(() => {
+                d20RollerVideo.classList.add('hidden');
+            }, 2000);
+            setTimeout(() => {
+                d20RollerVideo.style.display = 'none';
+                d20RollerVideo.classList.remove('hidden');
+            }, 4000);
 
-    d20RollerVideo.style.display = 'block';
+            resolve()
+        });
+
+    });
 }
 
 function firstVisitToday() {
@@ -342,13 +393,12 @@ function firstVisitToday() {
 
 function getNZFormattedDate() {
     // Create a new Date object and set the time zone to New Zealand
-    const date = new Date().toLocaleString("en-NZ", { timeZone: "Pacific/Auckland" });
-    const nzDate = new Date(date);
+    const date = new Date;
 
     // Extract year, month, and day
-    const year = nzDate.getFullYear();
-    const month = String(nzDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(nzDate.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
 
     // Return formatted date
     return `${year}${month}${day}`;
@@ -373,6 +423,48 @@ function playRandomSound() {
     // Play the audio
     setTimeout(() => {
         audioElement.play();
-    }, 1000);
+    }, 500);
 }
 
+
+async function rollForMovieChoice() {
+    localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
+    localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
+    randomNumber = parseInt(localStorage.getItem('randomNumber'));
+    console.log(`Daily roll is: ${randomNumber}`);
+    morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+    await diceVideo(parseInt(randomNumber));
+    if (randomNumber === 1) {
+        movieWinnerLoser(poster2, poster1);
+        const audio = document.getElementById('morbius-sound');
+        audio.play();
+        localStorage.setItem('dailyMorbCount', await incrementMorbCount());
+        setTimeout(() => {
+            morb(true);
+        }, 4000);
+    } else {
+        movieWinnerLoser(poster1, poster2);
+        setTimeout(() => {
+            updateVideo(true);
+        }, 4000);
+    }
+}
+
+function movieWinnerLoser(winner, loser) {
+    if (winner === poster1) {
+        winner.classList.add('winner1');
+    } else {
+        winner.classList.add('winner2');
+    }
+    loser.classList.add('hidden', 'fade-out-fast');
+    setTimeout(() => {
+        posterContainer.classList.add('hidden', 'fade-out-slow')
+    }, 2000);
+    setTimeout(() => {
+        posterContainer.style.display = 'none';
+    }, 4000);
+}
+
+function clearLastVisit() {
+    localStorage.setItem('lastVisit', '');
+}

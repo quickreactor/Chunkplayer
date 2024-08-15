@@ -10,20 +10,25 @@
 </head>
 
 <body>
-    <div class="container">
+    <video id="d20RollerVideo" autoplay muted playsinline>
+        <source id="diceSource1"
+            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+            type='video/mp4; codecs="hvc1"'>
+        <source id="diceSource2"
+            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+            type="video/webm">
+    </video>
+    <div class="poster-container">
+        <div id="poster1"><img class="poster-image" id="poster-image-1" src="images/twine-poster.jpg" alt=""></div>
+        <div id="roll-button">ROLL</div>
+        <div id="poster2"><img class="poster-image" src="images/morbius-poster.jpg" alt="" id="poster-image-2"></div>
+    </div>
+    <div class="container hidden">
         <h1 class="ep-title"></h1>
         <!-- <div class="date-container">
             <label for="dateInput">Start Date</label>
             <input type="date" id="dateInput">
         </div> -->
-        <video id="d20RollerVideo" autoplay muted playsinline>
-            <source id="diceSource1"
-                src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
-                type='video/mp4; codecs="hvc1"'>
-            <source id="diceSource2"
-                src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
-                type="video/webm">
-        </video>
         <div class="videoContainer">
             <video id="videoPlayer" controls playsinline>
                 <source src="" type="video/mp4">
@@ -33,7 +38,7 @@
                 <div class="numberDisplay"></div>
                 <select id="chunkSelector"></select>
                 <div id="dayCount"></div>
-                <audio id="morbius-sound" src="https://quickreactor.github.io/Chunkplayer/audio/morb.mp3"></audio>
+                <audio id="morbius-sound" src="audio/morb.mp3"></audio>
                 <audio id="diceAudio" preload="auto"></audio>
             </div>
         </div>
