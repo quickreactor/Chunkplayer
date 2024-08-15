@@ -1,5 +1,5 @@
 const movieCode = 'yarn';
-const startDate = new Date('2024-08-15T00:00:00+12:00');
+const startDate = new Date('2024-08-16T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -135,10 +135,12 @@ function sundayTest() {
 
 
 function lockdown() {
+    container.classList.remove('hidden');
+    container.style.display = 'flex';
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
     epTitle.innerText = `
-            Today's chunk is currently locked, it will unlock in
+            Today's ${movieCode}chunk is currently locked, it will unlock in
             `;
     updateCountdown();
 }
@@ -147,11 +149,11 @@ function lockdown() {
 // DO THE THING
 if (isTodaySunday()) {
     sundayTest();
-} else if (isPastMidnight() === true) {
+} else if (isPastMidnight() === true || startDate > new Date()) {
     lockdown();
 } else {
     // Uncomment below to test rolling
-    clearLastVisit();
+    // clearLastVisit();
     (async () => {
         // Fetch the JSON data
         await fetch('urls.json')
@@ -203,7 +205,7 @@ function updateCountdown() {
 
     const timeDifference = nextEightAM - now;
     // Unlock if it's 8AM or later
-    if (isPastMidnight() === false) {
+    if (isPastMidnight() === false && startDate < new Date()) {
         updateVideo()
     } else {
         const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
