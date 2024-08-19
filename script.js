@@ -5,7 +5,7 @@
 
 
 const movieCode = 'pineapple';
-const startDate = new Date('2024-08-19T00:00:00+12:00');
+const startDate = new Date('2024-08-20T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -175,6 +175,7 @@ if (isTodaySunday()) {
         // Generate a random number between 1 and 20
         if (firstVisitToday() === true) {
             posterContainer.style.display = 'flex';
+            poster1.src = urls[movieCode].poster;
             // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
             // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
             // randomNumber = parseInt(localStorage.getItem('randomNumber'));
