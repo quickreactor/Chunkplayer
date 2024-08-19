@@ -439,8 +439,8 @@ function playRandomSound() {
 
 
 async function rollForMovieChoice() {
-    localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
     localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
+    localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
     randomNumber = parseInt(localStorage.getItem('randomNumber'));
     console.log(`Daily roll is: ${randomNumber}`);
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
@@ -449,7 +449,7 @@ async function rollForMovieChoice() {
         movieWinnerLoser(poster2, poster1);
         const audio = document.getElementById('morbius-sound');
         audio.play();
-        localStorage.setItem('dailyMorbCount', await incrementMorbCount());
+        // localStorage.setItem('dailyMorbCount', await incrementMorbCount());
         setTimeout(() => {
             morb(true);
         }, 4000);
