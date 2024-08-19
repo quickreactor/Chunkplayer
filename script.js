@@ -1,5 +1,11 @@
-const movieCode = 'yarn';
-const startDate = new Date('2024-08-16T00:00:00+12:00');
+// TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
+
+// check on the localstorage stuff to test it works
+
+
+
+const movieCode = 'pineapple';
+const startDate = new Date('2024-08-19T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
