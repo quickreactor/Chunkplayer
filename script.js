@@ -366,7 +366,9 @@ async function diceVideo(number) {
         // Reload the video
         d20RollerVideo.style.display = 'block';
         d20RollerVideo.load();
-        playRandomSound();
+        setTimeout(() => {
+            playRandomSound();
+        }, 1500);
         d20RollerVideo.addEventListener('ended', function () {
             // Hide the video element
             setTimeout(() => {
@@ -430,9 +432,9 @@ function playRandomSound() {
     audioElement.src = selectedSound;
 
     // Play the audio
-    setTimeout(() => {
-        audioElement.play();
-    }, 500);
+
+    audioElement.play();
+
 }
 
 
