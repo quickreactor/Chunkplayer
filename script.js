@@ -2,8 +2,6 @@
 
 // check on the localstorage stuff to test it works
 
-
-
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
@@ -27,12 +25,64 @@ epTitle.addEventListener('click', function () {
 const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 2;
+let robMorbCount = 3;
 let randomNumber = 0;
 
 // Define a global variable to store the JSON data
 let urls = {};
 
+// DO THE THING
+if (isTodaySunday()) {
+    sundayTest();
+} else if (isPastMidnight() === true || startDate > new Date()) {
+    lockdown();
+} else {
+    // Uncomment below to test rolling
+    // clearLastVisit();
+    (async () => {
+        // Fetch the JSON data
+        await fetch('urls.json')
+            .then(response => response.json())
+            .then(data => {
+                // Store the data in the global variable
+                urls = data;
+                chunkArray = urls[movieCode].chunks;
+                titleArray = urls[movieCode].titles;
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+
+        // Generate a random number between 1 and 20
+        if (firstVisitToday() === true) {
+            posterContainer.style.display = 'flex';
+            poster1.src = urls[movieCode].poster;
+            poster2.src = urls.morb.poster;
+            // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
+            // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
+            // randomNumber = parseInt(localStorage.getItem('randomNumber'));
+            // console.log(`Daily roll is: ${randomNumber}`);
+            // morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+            // diceVideo(parseInt(randomNumber));
+            // if (randomNumber === 1) {
+            //     localStorage.setItem('dailyMorbCount', await incrementMorbCount());
+            //     morb();
+            // }
+        } else {
+            // 2nd visit onwards
+            randomNumber = parseInt(localStorage.getItem('randomNumber'));
+            morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+
+            // Uncomment to force non-morb
+            // randomNumber = 20;
+            // Uncomment to force morb
+            // randomNumber = 1;
+            if (randomNumber === 1) {
+                morb();
+            } else {
+                updateVideo();
+            }
+        }
+    })();
+}
 
 function hideElement(el) {
     el.style.display = 'none';
@@ -152,53 +202,6 @@ function lockdown() {
 }
 
 
-// DO THE THING
-if (isTodaySunday()) {
-    sundayTest();
-} else if (isPastMidnight() === true || startDate > new Date()) {
-    lockdown();
-} else {
-    // Uncomment below to test rolling
-    // clearLastVisit();
-    (async () => {
-        // Fetch the JSON data
-        await fetch('urls.json')
-            .then(response => response.json())
-            .then(data => {
-                // Store the data in the global variable
-                urls = data;
-                chunkArray = urls[movieCode].chunks;
-                titleArray = urls[movieCode].titles;
-            })
-            .catch(error => console.error('Error loading JSON:', error));
-
-        // Generate a random number between 1 and 20
-        if (firstVisitToday() === true) {
-            posterContainer.style.display = 'flex';
-            poster1.src = urls[movieCode].poster;
-            // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
-            // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
-            // randomNumber = parseInt(localStorage.getItem('randomNumber'));
-            // console.log(`Daily roll is: ${randomNumber}`);
-            // morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
-            // diceVideo(parseInt(randomNumber));
-            // if (randomNumber === 1) {
-            //     localStorage.setItem('dailyMorbCount', await incrementMorbCount());
-            //     morb();
-            // }
-        } else {
-            // any visit
-            randomNumber = parseInt(localStorage.getItem('randomNumber'));
-            morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
-            if (randomNumber === 1) {
-                morb();
-            } else {
-                updateVideo();
-            }
-        }
-    })();
-}
-
 // TIMER STUFF
 
 function updateCountdown() {
@@ -282,7 +285,7 @@ async function morb(first) {
     let currentMorbCount = parseInt(localStorage.getItem('dailyMorbCount'));
 
     currentMorbCount += robMorbCount;
-    videoPlayer.src = urls.morbChunkArray[currentMorbCount - 1];
+    videoPlayer.src = urls.morb.chunks[currentMorbCount - 1];
     // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
     container.style.display = 'flex';
     // Trigger the transition after ensuring the container is in the DOM
@@ -293,11 +296,11 @@ async function morb(first) {
     } else {
         container.classList.remove('hidden');
     }
-    dayCountDisplay.textContent = `/ ${urls.morbChunkArray.length}`;
+    dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
     epTitle.innerText = `It's Morbin' Time`
     numberDisplay.textContent = currentMorbCount;
     selector.style.pointerEvents = 'none';
-    dayCountDisplay.textContent = `${urls.morbChunkArray.length}`;
+    dayCountDisplay.textContent = `${urls.morb.chunks.length}`;
     const audio = document.getElementById('morbius-sound');
     audio.play();
 }
