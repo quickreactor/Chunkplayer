@@ -117,6 +117,7 @@ async function updateVideo(first) {
 
     const videoNumberText = daysPassed - morbCount;
     const videoNumberIndex = videoNumberText -1;
+    morbCount = await parseInt(fetchMorbCountToLocalStorage());
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
     videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
@@ -339,7 +340,8 @@ async function fetchMorbCountToLocalStorage() {
         const data = await response.text(); // Handling plain text response
         localStorage.setItem('dailyMorbCount', parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
-        return parseInt(data, 10);
+        console.log(data);
+        return data;
     } catch (error) {
         console.error('Error:', error);
     }
