@@ -1,5 +1,5 @@
 // TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
-
+// Make it update the favicon and title of page too
 // check on the localstorage stuff to test it works
 
 const movieCode = 'pineapple';
@@ -117,8 +117,7 @@ async function updateVideo(first) {
 
     const videoNumberText = daysPassed - morbCount;
     const videoNumberIndex = videoNumberText -1;
-    morbCount = await parseInt(fetchMorbCountToLocalStorage());
-    morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
+    morbCount = await fetchMorbCountToLocalStorage();
     videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
     if (first) {
@@ -341,7 +340,7 @@ async function fetchMorbCountToLocalStorage() {
         localStorage.setItem('dailyMorbCount', parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
         console.log(data);
-        return data;
+        return parseInt(data);
     } catch (error) {
         console.error('Error:', error);
     }
@@ -445,6 +444,7 @@ function playRandomSound() {
 
 
 async function rollForMovieChoice() {
+    rollButton.classList.add('rolled');
     localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
     localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
     randomNumber = parseInt(localStorage.getItem('randomNumber'));
