@@ -16,6 +16,7 @@ const posterContainer = document.querySelector('.poster-container');
 let container = document.querySelector(".container");
 let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
+let todaysPoster = document.querySelector("#todays-poster");
 let chunkArray = [];
 let titleArray = [];
 let epTitle = document.querySelector(".ep-title");
@@ -133,6 +134,8 @@ async function updateVideo(first) {
     dayCountDisplay.textContent = `/ ${chunkArray.length}`;
     epTitle.innerText = `${titleArray[videoNumberIndex]}`;
     // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
+
+    todaysPoster.src = urls[movieCode].poster;
 
     // SELECTOR STUFF -----------------------
     // Populate the dropdown
@@ -300,6 +303,7 @@ async function morb(first) {
     dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
     epTitle.innerText = `It's Morbin' Time`
     numberDisplay.textContent = currentMorbCount;
+    todaysPoster.src = urls.morb.poster;
     selector.style.pointerEvents = 'none';
     dayCountDisplay.textContent = `${urls.morb.chunks.length}`;
     const audio = document.getElementById('morbius-sound');
