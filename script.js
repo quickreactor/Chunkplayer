@@ -1,6 +1,4 @@
 // TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
-// Make it update the favicon and title of page too
-// check on the localstorage stuff to test it works
 
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
@@ -136,6 +134,8 @@ async function updateVideo(first) {
     // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
     todaysPoster.src = urls[movieCode].poster;
+    changeFavicon(urls[movieCode].favicon);
+    document.title = `${toSentenceCase(movieCode)} Chunk Player`
 
     // SELECTOR STUFF -----------------------
     // Populate the dropdown
@@ -281,8 +281,7 @@ document.body.addEventListener('click', () => {
 
 async function morb(first) {
     document.title = "Morbius Chunk Player";
-    let link = document.querySelector("link[rel~='icon']");
-    link.href = "morbicon.png";
+    changeFavicon(urls.morb.favicon);
     // alert('You typed "morbius"!');
     // changeFavicon('favicon2.png');
     // Additional actions can be added here
@@ -402,11 +401,9 @@ function firstVisitToday() {
         if (lastVisit === currentDate) {
             return false
         } else {
-            localStorage.setItem('lastVisit', currentDate);
             return true
         }
     } else {
-        localStorage.setItem('lastVisit', currentDate);
         return true;
     }
 }
@@ -455,6 +452,8 @@ async function rollForMovieChoice() {
     console.log(`Daily roll is: ${randomNumber}`);
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
     await diceVideo(parseInt(randomNumber));
+    // register visit
+    localStorage.setItem('lastVisit', currentDate);
     if (randomNumber === 1) {
         movieWinnerLoser(poster2, poster1);
         const audio = document.getElementById('morbius-sound');
@@ -488,4 +487,8 @@ function movieWinnerLoser(winner, loser) {
 
 function clearLastVisit() {
     localStorage.setItem('lastVisit', '');
+}
+
+function toSentenceCase(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
