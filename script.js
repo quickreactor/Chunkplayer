@@ -453,6 +453,7 @@ async function rollForMovieChoice() {
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
     await diceVideo(parseInt(randomNumber));
     // register visit
+    let currentDate = getNZFormattedDate();
     localStorage.setItem('lastVisit', currentDate);
     if (randomNumber === 1) {
         movieWinnerLoser(poster2, poster1);
