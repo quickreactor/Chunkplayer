@@ -25,7 +25,16 @@
         <div id="poster2"><img class="poster-image" src="" alt="" id="poster-image-2"></div>
     </div>
     <div class="container hidden">
-        <h1 class="ep-title"></h1>
+        <div id="top-bar">
+            <h1 class="ep-title"></h1>
+            <div class="selectContainer">
+                <div class="numberDisplay"></div>
+                <select id="chunkSelector"></select>
+                <div id="dayCount"></div>
+                <audio id="morbius-sound" src="audio/morb.mp3"></audio>
+                <audio id="diceAudio" preload="auto"></audio>
+            </div>
+        </div>
         <!-- <div class="date-container">
             <label for="dateInput">Start Date</label>
             <input type="date" id="dateInput">
@@ -35,13 +44,6 @@
                 <source src="" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
-            <div class="selectContainer">
-                <div class="numberDisplay"></div>
-                <select id="chunkSelector"></select>
-                <div id="dayCount"></div>
-                <audio id="morbius-sound" src="audio/morb.mp3"></audio>
-                <audio id="diceAudio" preload="auto"></audio>
-            </div>
             <div id="todays-poster-container">
                 <img src="" alt="" id="todays-poster">
             </div>
