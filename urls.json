@@ -24,9 +24,8 @@
         "titles": [
             "It's Morbin' Time"
         ],
-        "poster": [
-            "images/morbius-poster.jpg"
-        ]
+        "poster": "images/morbius-poster.jpg",
+        "favicon" : "images/favicons/morb.png"
     },
     "pineapple": {
         "chunks": [
@@ -60,7 +59,6 @@
             "Dial SPAM for Danger",
             "Get Shirty",
             "Frisbee of Doom",
-            "Tiki Time Takedown",
             "Hard Ticket to Hilarity",
             "Palm Trees and Perunga",
             "Ham 'n' Pineapple",
@@ -68,12 +66,10 @@
             "Just Juice Tropical Splash",
             "Jason Gunns",
             "Sunset Riders",
-            "Bikini Brouhaha",
             "Luau to Die For"
         ],
-        "poster": [
-            "images/frisbee-poster.jpg"
-        ]
+        "poster": "images/frisbee-poster.jpg",
+        "favicon": "images/favicons/pineapple.png"
     },
     "yarn": {
         "chunks": [
@@ -97,9 +93,8 @@
         "titles": [
 
         ],
-        "poster": [
-
-        ]
+        "poster": "",
+        "favicon": ""
     },
     "d20HEVCArray": [
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",

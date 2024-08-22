@@ -36,6 +36,7 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     background-color: #1a1a1a;
 }
 
@@ -51,16 +52,11 @@ h1 {
     max-width: 100%;
     width: 70vw;
     border-radius: 7px;
+    background-color: #eeb84e;
     object-fit: cover;
     /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
 
 
-}
-
-.videoContainer {
-    display: block;
-    /* border-radius: 7px; */
-    overflow: hidden;
 }
 
 .date-container {
@@ -180,16 +176,19 @@ option {
     max-width: 40vw;
     margin: 3vw;
     object-fit: contain;
+    position: relative;
 }
 
 .winner2 {
     transform: translate(-50%, 0);
     transition: all 1s ease-in-out;
+    z-index: 1000;
 }
 
 .winner1 {
     transform: translate(20vw, 0);
     transition: all 1s ease-in-out;
+    z-index: 1000;
 }
 
 .fade-out-fast {
@@ -216,6 +215,13 @@ option {
     cursor: default;
 }
 
+.rolled {
+    transform-origin: center;
+    transition: all 1s ease-in-out;
+    transform: translate(0, -20px);;
+    opacity: 0;
+}
+
 @media screen and (max-width: 768px) {
     #d20RollerVideo {
         width: 150vw;
@@ -232,4 +238,15 @@ option {
         height: 4vh;
         font-size: 2vw;
     }
+}
+
+#todays-poster-container {
+    margin-top: 20px;
+    width: 70vw;
+}
+
+#todays-poster {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
 }

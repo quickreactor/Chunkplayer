@@ -1,7 +1,5 @@
 // TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
 
-// check on the localstorage stuff to test it works
-
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
@@ -16,6 +14,7 @@ const posterContainer = document.querySelector('.poster-container');
 let container = document.querySelector(".container");
 let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
+let todaysPoster = document.querySelector("#todays-poster");
 let chunkArray = [];
 let titleArray = [];
 let epTitle = document.querySelector(".ep-title");
@@ -115,9 +114,10 @@ async function updateVideo(first) {
         }
     }
 
-    const videoNumber = daysPassed.toString().padStart(2, '0');
-    morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
-    videoPlayer.src = chunkArray[parseInt(videoNumber) - 1 - morbCount];
+    const videoNumberText = daysPassed - morbCount;
+    const videoNumberIndex = videoNumberText -1;
+    morbCount = await fetchMorbCountToLocalStorage();
+    videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
     if (first) {
         container.style.display = 'flex';
@@ -130,13 +130,17 @@ async function updateVideo(first) {
     }
     // videoContainer.style.display = "flex";
     dayCountDisplay.textContent = `/ ${chunkArray.length}`;
-    epTitle.innerText = `${titleArray[daysPassed - 1]}`;
+    epTitle.innerText = `${titleArray[videoNumberIndex]}`;
     // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
+
+    todaysPoster.src = urls[movieCode].poster;
+    changeFavicon(urls[movieCode].favicon);
+    document.title = `${toSentenceCase(movieCode)} Chunk Player`
 
     // SELECTOR STUFF -----------------------
     // Populate the dropdown
 
-    for (let i = 0; i < daysPassed; i++) {
+    for (let i = 0; i < daysPassed - morbCount; i++) {
         const option = document.createElement('option');
         option.value = i + 1;
         option.dataset.display = i + 1;
@@ -147,11 +151,11 @@ async function updateVideo(first) {
 
     // Event listener for dropdown changes
     selector.addEventListener('change', function () {
-        const selectedValue = this.value;
+        const selectedValue = parseInt(this.value);
+        const selectedIndex = selectedValue - 1;
         console.log(selectedValue);
-        const videoNumber = selectedValue.toString().padStart(2, '0');
-        videoPlayer.src = chunkArray[videoNumber - 1];
-        epTitle.innerText = `${titleArray[parseInt(selectedValue) - 1]}`;
+        videoPlayer.src = chunkArray[selectedIndex];
+        epTitle.innerText = `${titleArray[selectedIndex]}`;
         numberDisplay.textContent = selectedValue;
         this.blur();
     });
@@ -174,9 +178,9 @@ async function updateVideo(first) {
     });
 
     // set starting value to 
-    selector.value = daysPassed;
-    numberDisplay.textContent = daysPassed;
-    console.log(daysPassed);
+    selector.value = daysPassed - morbCount;
+    numberDisplay.textContent = daysPassed - morbCount;
+    console.log(`Days passed: ${daysPassed} - Morb count ${morbCount} = ${daysPassed - morbCount}`);
 
     // END SELECTOR STUFF -------------------
 }
@@ -277,8 +281,7 @@ document.body.addEventListener('click', () => {
 
 async function morb(first) {
     document.title = "Morbius Chunk Player";
-    let link = document.querySelector("link[rel~='icon']");
-    link.href = "morbicon.png";
+    changeFavicon(urls.morb.favicon);
     // alert('You typed "morbius"!');
     // changeFavicon('favicon2.png');
     // Additional actions can be added here
@@ -299,6 +302,7 @@ async function morb(first) {
     dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
     epTitle.innerText = `It's Morbin' Time`
     numberDisplay.textContent = currentMorbCount;
+    todaysPoster.src = urls.morb.poster;
     selector.style.pointerEvents = 'none';
     dayCountDisplay.textContent = `${urls.morb.chunks.length}`;
     const audio = document.getElementById('morbius-sound');
@@ -338,7 +342,8 @@ async function fetchMorbCountToLocalStorage() {
         const data = await response.text(); // Handling plain text response
         localStorage.setItem('dailyMorbCount', parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
-        return parseInt(data, 10);
+        console.log(data);
+        return parseInt(data);
     } catch (error) {
         console.error('Error:', error);
     }
@@ -396,11 +401,9 @@ function firstVisitToday() {
         if (lastVisit === currentDate) {
             return false
         } else {
-            localStorage.setItem('lastVisit', currentDate);
             return true
         }
     } else {
-        localStorage.setItem('lastVisit', currentDate);
         return true;
     }
 }
@@ -442,12 +445,16 @@ function playRandomSound() {
 
 
 async function rollForMovieChoice() {
+    rollButton.classList.add('rolled');
     localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
     localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
     randomNumber = parseInt(localStorage.getItem('randomNumber'));
     console.log(`Daily roll is: ${randomNumber}`);
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
     await diceVideo(parseInt(randomNumber));
+    // register visit
+    let currentDate = getNZFormattedDate();
+    localStorage.setItem('lastVisit', currentDate);
     if (randomNumber === 1) {
         movieWinnerLoser(poster2, poster1);
         const audio = document.getElementById('morbius-sound');
@@ -481,4 +488,8 @@ function movieWinnerLoser(winner, loser) {
 
 function clearLastVisit() {
     localStorage.setItem('lastVisit', '');
+}
+
+function toSentenceCase(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
