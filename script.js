@@ -37,7 +37,7 @@ if (isTodaySunday()) {
     lockdown();
 } else {
     // Uncomment below to test rolling
-    // clearLastVisit();
+    clearLastVisit();
     (async () => {
         // Fetch the JSON data
         await fetch('urls.json')
@@ -115,19 +115,11 @@ async function updateVideo(first) {
     }
 
     const videoNumberText = daysPassed - morbCount;
-    const videoNumberIndex = videoNumberText -1;
+    const videoNumberIndex = videoNumberText - 1;
     morbCount = await fetchMorbCountToLocalStorage();
     videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
-    if (first) {
-        container.style.display = 'flex';
-        requestAnimationFrame(() => {
-            container.classList.add('unhidden');
-        });
-    } else {
-        container.style.display = 'flex';
-        container.classList.remove('hidden');
-    }
+    container.style.display = 'flex';
     // videoContainer.style.display = "flex";
     dayCountDisplay.textContent = `/ ${chunkArray.length}`;
     epTitle.innerText = `${titleArray[videoNumberIndex]}`;
@@ -183,6 +175,18 @@ async function updateVideo(first) {
     console.log(`Days passed: ${daysPassed} - Morb count ${morbCount} = ${daysPassed - morbCount}`);
 
     // END SELECTOR STUFF -------------------
+
+    if (first) {
+        requestAnimationFrame(() => {
+            // Force a reflow before changing opacity
+            void container.offsetWidth;
+            container.style.opacity = 1;
+            // container.classList.remove('hidden');
+        });
+    } else {
+        container.classList.remove('hidden');
+    }
+
 }
 
 function sundayTest() {
@@ -464,30 +468,36 @@ async function rollForMovieChoice() {
             morb(true);
         }, 4000);
     } else {
-        movieWinnerLoser(poster1, poster2);
-        setTimeout(() => {
-            updateVideo(true);
-        }, 4000);
+        await movieWinnerLoser(poster1, poster2);
+        updateVideo(true);
     }
 }
 
+
 function movieWinnerLoser(winner, loser) {
-    if (winner === poster1) {
-        winner.classList.add('winner1');
-    } else {
-        winner.classList.add('winner2');
-    }
-    loser.classList.add('hidden', 'fade-out-fast');
-    setTimeout(() => {
-        posterContainer.classList.add('hidden', 'fade-out-slow')
-    }, 2000);
-    setTimeout(() => {
-        posterContainer.style.display = 'none';
-    }, 4000);
+    return new Promise(resolve => {
+        if (winner === poster1) {
+            winner.classList.add('winner1');
+        } else {
+            winner.classList.add('winner2');
+        }
+        loser.classList.add('hidden', 'fade-out-fast');
+        setTimeout(() => {
+            posterContainer.classList.add('hidden', 'fade-out-slow');
+        }, 2000);
+        setTimeout(() => {
+            posterContainer.style.display = 'none';
+            requestAnimationFrame(() => {
+
+                resolve(); // Resolve the promise after visual updates are done
+            });
+        }, 4000);
+    });
 }
 
 function clearLastVisit() {
     localStorage.setItem('lastVisit', '');
+    return "Last visit cleared, roll on!"
 }
 
 function toSentenceCase(string) {
