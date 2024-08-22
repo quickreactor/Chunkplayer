@@ -1,5 +1,10 @@
 // TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
 
+// redo a bunch of stuff with eventlisteners
+// sync playdiceaudio to when video plays with event
+// use metadata eventlistener to set size of vidoe player
+// use canplay event to show the video player (fade in) when it's ready
+
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
@@ -37,7 +42,7 @@ if (isTodaySunday()) {
     lockdown();
 } else {
     // Uncomment below to test rolling
-    clearLastVisit();
+    // clearLastVisit();
     (async () => {
         // Fetch the JSON data
         await fetch('urls.json')
