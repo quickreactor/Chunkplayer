@@ -47,13 +47,21 @@ h1 {
     font-size: 16px;
 }
 
+#video-frame {
+
+    /* z-index: 1;
+    overflow: hidden;
+    border-radius: 7px; */
+}
+
 #videoPlayer {
     display: block;
     max-width: 100%;
     width: 70vw;
-    border-radius: 7px;
-    background-color: #000000;
+    background-color: #FBDD74;
     object-fit: cover;
+    clip-path: inset(0% 0% 0% 0% round 7px);
+    /* border-radius: 7px; */
     /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
 
 
