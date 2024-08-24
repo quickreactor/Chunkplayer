@@ -268,3 +268,24 @@ option {
         font-size: 2vw;
     }
 }
+
+#sonic {
+    display: none;
+    position: absolute;
+    left: 100%;
+    transition: left ease-in-out 3s;
+    z-index: 2000;
+}
+
+.animate {
+    animation: slide 5s linear forwards;
+}
+
+@keyframes slide {
+    from {
+        left: 100%;
+    }
+    to {
+        left: -100%;
+    }
+}

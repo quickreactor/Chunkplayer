@@ -25,7 +25,7 @@
             "It's Morbin' Time"
         ],
         "poster": "images/morbius-poster.jpg",
-        "favicon" : "images/favicons/morb.png"
+        "favicon": "images/favicons/morb.png"
     },
     "pineapple": {
         "chunks": [
@@ -87,12 +87,8 @@
         ]
     },
     "placeholder": {
-        "chunks": [
-
-        ],
-        "titles": [
-
-        ],
+        "chunks": [],
+        "titles": [],
         "poster": "",
         "favicon": ""
     },
@@ -139,5 +135,29 @@
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIVY9N37SwzNhteRPJT0cso/d20_18-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADtxY-FtGhgYNGe2zgV2bvE/d20_19-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AImV8Pss7iyIKrE76NwPCIc/d20_20-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+    ],
+    "randomSounds": [
+        "audio/diceFX/20 - gotta_go_fast.mp3",
+        "audio/diceFX/01 - sokins.ogg",
+        "audio/diceFX/02 - jesus youre a pain in the ass.ogg",
+        "audio/diceFX/03 - 30_ZE.wav",
+        "audio/diceFX/04 - 214_OM_A.wav",
+        "audio/diceFX/05 - 370_GO.wav",
+        "audio/diceFX/06 - erb.wav",
+        "audio/diceFX/07 - get it off me.ogg",
+        "audio/diceFX/08 - go outside.ogg",
+        "audio/diceFX/09 - yes it works kickass.ogg",
+        "audio/diceFX/10 - Ill find a way - from the bad jack frost.wav",
+        "audio/diceFX/11 - 04 - quick reactor.mp3",
+        "audio/diceFX/12 - excelent.wav",
+        "audio/diceFX/13 - qyuiet im powering up.ogg",
+        "audio/diceFX/14 - ready n rifht n reeady to go.ogg",
+        "audio/diceFX/15 - 03 - Mad power.mp3",
+        "audio/diceFX/16 - somebody better call.wav",
+        "audio/diceFX/17 - sunset.wav",
+        "audio/diceFX/18 - sunset_bury_with_money.wav",
+        "audio/diceFX/19 - wuss.ogg",
+        "audio/diceFX/20 - gotta_go_fast.mp3"
+        
     ]
 }

@@ -21,6 +21,10 @@ let container = document.querySelector(".container");
 let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
 let todaysPoster = document.querySelector("#todays-poster");
+let topBar = document.querySelector('#top-bar');
+
+let sonic = document.querySelector('#sonic');
+
 let chunkArray = [];
 let titleArray = [];
 let epTitle = document.querySelector(".ep-title");
@@ -32,6 +36,15 @@ const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
 let robMorbCount = 3;
 let randomNumber = 0;
+let today = new Date();
+// uncomment to get around sunday detection
+// today = new Date('2024-08-24');
+let now = new Date();
+// uncomment to geta round midnight detection
+// now = new Date('2024-08-24T11:24:00')
+// Uncomment below to test rolling
+// clearLastVisit();
+
 
 // Define a global variable to store the JSON data
 let urls = {};
@@ -42,8 +55,7 @@ if (isTodaySunday()) {
 } else if (isPastMidnight() === true || startDate > new Date()) {
     lockdown();
 } else {
-    // Uncomment below to test rolling
-    // clearLastVisit();
+
     (async () => {
         // Fetch the JSON data
         await fetch('urls.json')
@@ -94,12 +106,10 @@ function hideElement(el) {
 }
 
 function isTodaySunday() {
-    const today = new Date();
     return today.getDay() === 0;
 }
 
 function isPastMidnight() {
-    const now = new Date();
     const currentHour = now.getHours();
 
     // Check if the current hour is between 0 (midnight) and 8 (8 AM)
@@ -196,6 +206,10 @@ async function updateVideo(first) {
 }
 
 function sundayTest() {
+    container.classList.remove('hidden');
+    container.style.display = 'flex';
+    topBar.style.justifyContent  = 'center';
+    epTitle.style.fontSize  = '40px';
     hideElement(videoContainer); //flex
     hideElement(timerContainer);
     epTitle.innerText = `
@@ -207,6 +221,7 @@ function sundayTest() {
 function lockdown() {
     container.classList.remove('hidden');
     container.style.display = 'flex';
+    
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
     epTitle.innerText = `
@@ -385,9 +400,12 @@ async function diceVideo(number) {
         d20RollerVideo.style.display = 'block';
         d20RollerVideo.load();
         setTimeout(() => {
-            playRandomSound();
+            playDiceSound();
         }, 1500);
         d20RollerVideo.addEventListener('ended', function () {
+            // play the specific audio clip
+            playRandomSound(number - 1);
+
             // Hide the video element
             setTimeout(() => {
                 d20RollerVideo.classList.add('hidden');
@@ -431,7 +449,7 @@ function getNZFormattedDate() {
     return `${year}${month}${day}`;
 }
 
-function playRandomSound() {
+function playDiceSound() {
     // Array of the audio file names
     const sounds = ['audio/dice-roll01.mp3', 'audio/dice-roll02.mp3', 'audio/dice-roll03.mp3'];
 
@@ -453,6 +471,25 @@ function playRandomSound() {
 
 }
 
+function playRandomSound(num) {
+    // Array of the audio file names
+    const sounds = urls.randomSounds;
+    // Get the audio element
+    const audioElement = document.getElementById('diceAudio');
+
+    console.log(sounds[num]);
+    // Set the source of the audio element to the selected sound
+    audioElement.src = sounds[num];
+
+    // Play the audio
+
+    audioElement.play();
+    if (num === 20) {
+        sonic.style.display = "block";
+        sonic.classList.add('animate');
+    }
+
+}
 
 async function rollForMovieChoice() {
     rollButton.classList.add('rolled');
