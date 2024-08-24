@@ -4,6 +4,7 @@
 // sync playdiceaudio to when video plays with event
 // use metadata eventlistener to set size of vidoe player
 // use canplay event to show the video player (fade in) when it's ready
+// 1 - 20 all do different sounds
 
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
@@ -185,8 +186,8 @@ async function updateVideo(first) {
         requestAnimationFrame(() => {
             // Force a reflow before changing opacity
             void container.offsetWidth;
-            container.style.opacity = 1;
-            // container.classList.remove('hidden');
+            // container.style.opacity = 1;
+            container.classList.remove('hidden');
         });
     } else {
         container.classList.remove('hidden');
