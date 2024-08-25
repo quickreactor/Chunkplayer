@@ -27,10 +27,13 @@ let sonic = document.querySelector('#sonic');
 
 let chunkArray = [];
 let titleArray = [];
+
 let epTitle = document.querySelector(".ep-title");
 epTitle.addEventListener('click', function () {
     diceVideo(Math.floor(Math.random() * 20 + 1));
 });
+let diceVideoEndListenerSet = false;
+
 const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
@@ -49,6 +52,19 @@ let now = new Date();
 // Define a global variable to store the JSON data
 let urls = {};
 
+(async () => {
+    // Fetch the JSON data
+    await fetch('urls.json')
+        .then(response => response.json())
+        .then(data => {
+            // Store the data in the global variable
+            urls = data;
+            chunkArray = urls[movieCode].chunks;
+            titleArray = urls[movieCode].titles;
+        })
+        .catch(error => console.error('Error loading JSON:', error));
+})();
+
 // DO THE THING
 if (isTodaySunday()) {
     sundayTest();
@@ -57,16 +73,7 @@ if (isTodaySunday()) {
 } else {
 
     (async () => {
-        // Fetch the JSON data
-        await fetch('urls.json')
-            .then(response => response.json())
-            .then(data => {
-                // Store the data in the global variable
-                urls = data;
-                chunkArray = urls[movieCode].chunks;
-                titleArray = urls[movieCode].titles;
-            })
-            .catch(error => console.error('Error loading JSON:', error));
+
 
         // Generate a random number between 1 and 20
         if (firstVisitToday() === true) {
@@ -208,8 +215,8 @@ async function updateVideo(first) {
 function sundayTest() {
     container.classList.remove('hidden');
     container.style.display = 'flex';
-    topBar.style.justifyContent  = 'center';
-    epTitle.style.fontSize  = '40px';
+    topBar.style.justifyContent = 'center';
+    epTitle.style.fontSize = '40px';
     hideElement(videoContainer); //flex
     hideElement(timerContainer);
     epTitle.innerText = `
@@ -221,7 +228,7 @@ function sundayTest() {
 function lockdown() {
     container.classList.remove('hidden');
     container.style.display = 'flex';
-    
+
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
     epTitle.innerText = `
@@ -402,9 +409,13 @@ async function diceVideo(number) {
         setTimeout(() => {
             playDiceSound();
         }, 1500);
-        d20RollerVideo.addEventListener('ended', function () {
+
+        d20RollerVideo.addEventListener('ended', afterDiceFunction);
+
+
+        function afterDiceFunction() {
             // play the specific audio clip
-            playRandomSound(number - 1);
+            playRandomSound(number);
 
             // Hide the video element
             setTimeout(() => {
@@ -414,10 +425,11 @@ async function diceVideo(number) {
                 d20RollerVideo.style.display = 'none';
                 d20RollerVideo.classList.remove('hidden');
             }, 4000);
+            d20RollerVideo.removeEventListener('ended', afterDiceFunction);
 
-            resolve()
-        });
+            resolve();
 
+        };
     });
 }
 
@@ -475,11 +487,11 @@ function playRandomSound(num) {
     // Array of the audio file names
     const sounds = urls.randomSounds;
     // Get the audio element
-    const audioElement = document.getElementById('diceAudio');
+    const audioElement = document.getElementById('randomAudio');
 
-    console.log(sounds[num]);
+    console.log(sounds[num-1]);
     // Set the source of the audio element to the selected sound
-    audioElement.src = sounds[num];
+    audioElement.src = sounds[num-1];
 
     // Play the audio
 
