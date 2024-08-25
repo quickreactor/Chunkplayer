@@ -63,7 +63,6 @@ let urls = {};
             titleArray = urls[movieCode].titles;
         })
         .catch(error => console.error('Error loading JSON:', error));
-})();
 
 // DO THE THING
 if (isTodaySunday()) {
@@ -107,6 +106,8 @@ if (isTodaySunday()) {
         }
     })();
 }
+})();
+
 
 function hideElement(el) {
     el.style.display = 'none';
