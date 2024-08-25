@@ -60,7 +60,7 @@ h1 {
     width: 70vw;
     background-color: #FBDD74;
     object-fit: cover;
-    clip-path: inset(0% 0% 0% 0% round 7px);
+    /* clip-path: inset(0% 0% 0% 0% round 7px); */
     /* border-radius: 7px; */
     /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
 
@@ -238,7 +238,7 @@ option {
 }
 
 #todays-poster {
-    border-radius: 12px;
+    /* border-radius: 12px; */
     width: 100%;
     height: auto;
     object-fit: contain;
