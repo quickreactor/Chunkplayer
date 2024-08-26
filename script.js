@@ -16,7 +16,9 @@ const rollButton = document.getElementById('roll-button');
 rollButton.addEventListener('click', rollForMovieChoice);
 const poster1 = document.getElementById('poster-image-1');
 const poster2 = document.getElementById('poster-image-2');
-const posterContainer = document.querySelector('.poster-container');
+const posterContainer2 = document.getElementById('poster-container-2');
+const posterContainer1 = document.getElementById('poster-container-1');
+const posterSection = document.querySelector('.poster-section');
 let container = document.querySelector(".container");
 let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
@@ -46,7 +48,7 @@ let now = new Date();
 // uncomment to geta round midnight detection
 // now = new Date('2024-08-24T11:24:00')
 // Uncomment below to test rolling
-// clearLastVisit();
+clearLastVisit();
 
 
 // Define a global variable to store the JSON data
@@ -76,7 +78,7 @@ if (isTodaySunday()) {
 
         // Generate a random number between 1 and 20
         if (firstVisitToday() === true) {
-            posterContainer.style.display = 'flex';
+            posterSection.style.display = 'flex';
             poster1.src = urls[movieCode].poster;
             poster2.src = urls.morb.poster;
             // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
@@ -532,17 +534,25 @@ async function rollForMovieChoice() {
 
 function movieWinnerLoser(winner, loser) {
     return new Promise(resolve => {
+        winner.classList.add('winner');
+        let posterComputed = getComputedStyle(winner);
+        let posterMargin = parseFloat(posterComputed.marginLeft);
+        const posterWidth = winner.getBoundingClientRect().width;
+        let rollButtonWidth = rollButton.getBoundingClientRect().width
+        let movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
+        console.log(winner === poster1);
         if (winner === poster1) {
-            winner.classList.add('winner1');
+            poster1.style.transform = `translate(${movementDistance}px, 0)`;
+            console.log('in');
         } else {
-            winner.classList.add('winner2');
+            
         }
         loser.classList.add('hidden', 'fade-out-fast');
         setTimeout(() => {
-            posterContainer.classList.add('hidden', 'fade-out-slow');
+            posterSection.classList.add('hidden', 'fade-out-slow');
         }, 2000);
         setTimeout(() => {
-            posterContainer.style.display = 'none';
+            posterSection.style.display = 'none';
             requestAnimationFrame(() => {
 
                 resolve(); // Resolve the promise after visual updates are done

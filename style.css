@@ -47,12 +47,6 @@ h1 {
     font-size: 16px;
 }
 
-#video-frame {
-
-    /* z-index: 1;
-    overflow: hidden;
-    border-radius: 7px; */
-}
 
 #videoPlayer {
     display: block;
@@ -171,7 +165,7 @@ option {
     pointer-events: auto;
 }
 
-.poster-container {
+.poster-section {
     position: absolute;
     display: none;
     align-items: center;
@@ -181,22 +175,21 @@ option {
     z-index: 200;
 }
 
+.poster-container {
+    position: relative;
+}
+
+
 .poster-image {
     max-height: 80vh;
     max-width: 40vw;
     margin: 3vw;
     object-fit: contain;
     position: relative;
+
 }
 
-.winner2 {
-    transform: translate(-50%, 0);
-    transition: all 1s ease-in-out;
-    z-index: 1000;
-}
-
-.winner1 {
-    transform: translate(20vw, 0);
+.winner {
     transition: all 1s ease-in-out;
     z-index: 1000;
 }
