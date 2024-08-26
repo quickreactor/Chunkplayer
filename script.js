@@ -4,6 +4,15 @@
 // use metadata eventlistener to set size of vidoe player
 // use canplay event to show the video player (fade in) when it's ready
 
+
+//IDEAS
+// travolta confused
+// Wowww guy
+// nice guy micheal rosen
+//blinking guy
+//
+
+
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
@@ -58,7 +67,7 @@ let now = new Date();
 // uncomment to geta round midnight detection
 // now = new Date('2024-08-24T11:24:00')
 // Uncomment below to test rolling
-clearLastVisit();
+// clearLastVisit();
 
 
 // Define a global variable to store the JSON data
