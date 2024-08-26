@@ -1,10 +1,8 @@
 // TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
 
 // redo a bunch of stuff with eventlisteners
-// sync playdiceaudio to when video plays with event
 // use metadata eventlistener to set size of vidoe player
 // use canplay event to show the video player (fade in) when it's ready
-// 1 - 20 all do different sounds
 
 const movieCode = 'pineapple';
 const startDate = new Date('2024-08-20T00:00:00+12:00');
@@ -34,7 +32,19 @@ let epTitle = document.querySelector(".ep-title");
 epTitle.addEventListener('click', function () {
     diceVideo(Math.floor(Math.random() * 20 + 1));
 });
+d20RollerVideo.addEventListener('playing', playDiceSound);
 let diceVideoEndListenerSet = false;
+
+// Add an event listener for the 'loadedmetadata' event
+videoPlayer.addEventListener('loadedmetadata', () => {
+    // Calculate the aspect ratio
+    const aspectRatio = videoPlayer.videoWidth / videoPlayer.videoHeight;
+
+    // Set the aspect ratio using CSS
+    videoPlayer.style.aspectRatio = aspectRatio;
+
+    console.log(`Aspect ratio set to ${aspectRatio}`);
+});
 
 const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
@@ -409,10 +419,6 @@ async function diceVideo(number) {
         // Reload the video
         d20RollerVideo.style.display = 'block';
         d20RollerVideo.load();
-        setTimeout(() => {
-            playDiceSound();
-        }, 1500);
-
         d20RollerVideo.addEventListener('ended', afterDiceFunction);
 
 
