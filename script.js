@@ -13,8 +13,8 @@
 //
 
 
-const movieCode = 'pineapple';
-const startDate = new Date('2024-08-20T00:00:00+12:00');
+const movieCode = 'bedtime';
+const startDate = new Date('2024-09-12T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -58,7 +58,7 @@ videoPlayer.addEventListener('loadedmetadata', () => {
 const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 3;
+let robMorbCount = 5;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
