@@ -13,8 +13,8 @@
 //
 
 
-const movieCode = 'bedtime';
-const startDate = new Date('2024-09-12T00:00:00+12:00');
+const movieCode = 'disguise';
+const startDate = new Date('2024-10-11T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')

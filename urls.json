@@ -144,6 +144,42 @@
         "poster": "images/bedtime.webp",
         "favicon": "images/favicons/bedtime.png"
     },
+    "disguise": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AF-D9JPYuINk5c-qmkDxFkQ/disguise01.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AC9gIavbjN2CICvbNanin5E/disguise02.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/ADXp_GY6swJQ-58yCSDu0FI/disguise03.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/ADMwnYGQBx7IhCOX1wdVLlc/disguise04.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AFoLinZa2s1ov3me73CvGVo/disguise05.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AJZPDcLL-aPEnqDiR5UD6U8/disguise06.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AMCT2IashSK5o0p09NdES0I/disguise07.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AOmu97fESYRhD_bWkDWnaKE/disguise08.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AA9Xn9J2VQI0cOV8Lze1Vec/disguise09.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AJUJLtggsdwqOhsxVtUjoAE/disguise10.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/ABClT9-fQYqdoSPNHdd81O4/disguise11.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/ABcMbKLUkGC4SrxELfm4V0s/disguise12.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AGPTg4Y7ghgZG35EmJNX9qw/disguise13.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1",
+            "https://www.dropbox.com/scl/fo/pjkmyhm8l2f79n78fq29h/AMLvRg4DcxAitoQyAa6zkjw/disguise14.mp4?rlkey=l6pre1pviqzjgwtu2kkbtmv8b&raw=1"
+        ],
+        "titles": [
+            "Master of ????",
+            "Trance Dance in Fantasyland",
+            "Crossbows and Laser Beams",
+            "Deth Defying Stunts",
+            "Swords, Sorcery, and Sci-Fi Shenanigans",
+            "Caliban's Crazy Castle",
+            "Trancer Takedown Tournament",
+            "Jack's Knightmare",
+            "Zappin' Through Time Again",
+            "No Rest for the Deth",
+            "Dungeon Detours",
+            "Banter with a Blaster",
+            "Portal Problems",
+            "Heroic Hair and High Stakes"
+        ],
+        "poster": "images/q.png",
+        "favicon": "images/favicons/q_fav.png"
+    },
     "placeholder": {
         "chunks": [],
         "titles": [],
