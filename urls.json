@@ -180,6 +180,42 @@
         "poster": "images/q.jpeg",
         "favicon": "images/favicons/q_fav.png"
     },
+    "chop": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/APj8qjSMCXXfa5aSeXk7j0w/chop01.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AGjkq3RzXpDkeTyvTr58R4I/chop02.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AK4OZ-ak4JFKlbemXGLIAUw/chop03.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AHwh_t1axuS-3nQn9-ny3-0/chop04.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AGiPzX4B88EyA_cpgM8ksys/chop05.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AFxRlHGWVWOoGrMvTdclerY/chop06.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AFuBw5hNRlIkuWq_Y2nVj08/chop07.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AIS25-yNuqmKoQ5RpO5SQtk/chop08.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/ALrZjJprKXzItj_7nIOndFc/chop09.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/ACb-w1Urd4CX0q9a_KMKP0c/chop10.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AET5YFMwyFWzfmN77IcTolE/chop11.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/ADqP2_gXdiWzMOayGesajYk/chop12.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/ANm_G-y6AnYEw8L07rQTAWg/chop13.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1",
+            "https://www.dropbox.com/scl/fo/2r168e5yzqrx4ol0x1m1h/AIe2oU5_uWhMMxkKQJB_AM4/chop14.mp4?rlkey=h7yds6eiei2wlnj7qdcbzobb7&raw=1"
+        ],
+        "titles": [
+            "????",
+            "Mall Madness Begins",
+            "Bot Patrol: Danger Lurks",
+            "Meet the Killbots!",
+            "Shopping Spree Gone Wrong",
+            "Teens vs. Terminators",
+            "Hardware Store Havoc",
+            "Bot-Busting Tactics",
+            "Escalator of Doom",
+            "Exploding Escapes",
+            "Mall MacGyvers",
+            "Mannequin Mayhem",
+            "Laser Light Showdown",
+            "Chop Til You Drop Finale"
+        ],
+        "poster": "images/chop-poster.jpg",
+        "favicon": "images/favicons/chop.png"
+    },
     "placeholder": {
         "chunks": [],
         "titles": [],
@@ -253,4 +289,3 @@
         "audio/diceFX/20 - gotta_go_fast.mp3"
     ]
 }
-

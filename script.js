@@ -13,8 +13,8 @@
 //
 
 
-const movieCode = 'disguise';
-const startDate = new Date('2024-10-11T00:00:00+12:00');
+const movieCode = 'chop';
+const startDate = new Date('2024-10-29T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -62,10 +62,10 @@ let robMorbCount = 7;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
-// today = new Date('2024-08-24');
+// today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2024-08-24T11:24:00')
+// now = new Date('2024-10-30T11:24:00')
 // Uncomment below to test rolling
 // clearLastVisit();
 
@@ -88,7 +88,7 @@ let urls = {};
 // DO THE THING
 if (isTodaySunday()) {
     sundayTest();
-} else if (isPastMidnight() === true || startDate > new Date()) {
+} else if (isPastMidnight() === true || startDate > now) {
     lockdown();
 } else {
 
@@ -97,8 +97,24 @@ if (isTodaySunday()) {
 
         // Generate a random number between 1 and 20
         if (firstVisitToday() === true) {
+            const defaultDate = startDate;
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
+        
+            let daysPassed = 0;
+            for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
+                if (d.getDay() !== 0) { // Skip Sundays (0 is Sunday in JavaScript)
+                    daysPassed++;
+                }
+            }
+            
+            const videoNumberText = daysPassed - morbCount;
+
             posterSection.style.display = 'flex';
-            poster1.src = urls[movieCode].poster;
+            if (videoNumberText == 1) {
+                poster1.src = "images/question.jpg";
+            } else {
+                poster1.src = urls[movieCode].poster;
+            }
             poster2.src = urls.morb.poster;
             // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
             // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
@@ -150,7 +166,8 @@ async function updateVideo(first) {
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
     const defaultDate = startDate;
-    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
+    //take out cause now is set at the beginning for ease
+    // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
     let daysPassed = 0;
     for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
@@ -170,7 +187,11 @@ async function updateVideo(first) {
     epTitle.innerText = `${titleArray[videoNumberIndex]}`;
     // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
 
-    todaysPoster.src = urls[movieCode].poster;
+    if (videoNumberText == 1) {
+        todaysPoster.src = "images/question.jpg";
+    } else {
+        todaysPoster.src = urls[movieCode].poster;
+    }
     changeFavicon(urls[movieCode].favicon);
     document.title = `${toSentenceCase(movieCode)} Chunk Player`
 
