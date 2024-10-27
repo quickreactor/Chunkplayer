@@ -14,7 +14,7 @@
 
 
 const movieCode = 'chop';
-const startDate = new Date('2024-10-29T00:00:00+12:00');
+const startDate = new Date('2024-10-28T00:00:00+12:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
