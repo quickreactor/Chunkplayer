@@ -538,6 +538,9 @@ function playRandomSound(num) {
     if (num === 20) {
         sonic.style.display = "block";
         sonic.classList.add('animate');
+        setTimeout(() => {
+            sonic.style.display = "none";
+        }, 3000)
     }
 
 }
