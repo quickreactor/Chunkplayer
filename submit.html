@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit a Sound</title>
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/franken-ui@1.1.0/dist/css/core.min.css"
+/>
+
+  <style>
+    /* Add custom styling for waveform canvas */
+    #waveform {
+      width: 100%;
+      height: 100px;
+      background: #f0f0f0;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center p-8 space-y-4">
+  <h1 class="text-3xl font-bold">Submit a Sound</h1>
+  
+  <!-- Upload Sound -->
+  <input type="file" id="fileInput" accept="audio/*" class="mb-4 file-input">
+  
+  <!-- Record Sound -->
+  <button id="recordBtn" class="btn btn-primary w-full">Record</button>
+  <button id="playbackBtn" disabled class="btn btn-secondary w-full mt-2">Listen Back</button>
+  
+  <!-- Waveform Canvas -->
+  <canvas id="waveform"></canvas>
+  
+  <!-- Choose or Randomize Number -->
+  <label for="numberPicker" class="mt-4">Choose a number:</label>
+  <input type="number" id="numberPicker" min="1" max="20" class="input w-full mb-2">
+  <button id="randomizeBtn" class="btn btn-outline w-full">Randomize</button>
+  
+  <!-- Submit Button -->
+  <button id="submitBtn" class="btn btn-success w-full">Submit</button>
+
+  <script src="submitscript.js"></script>
+</body>
+</html>
