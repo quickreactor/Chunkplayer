@@ -67,7 +67,7 @@ let now = new Date();
 // uncomment to geta round midnight detection
 // now = new Date('2024-10-30T11:24:00')
 // Uncomment below to test rolling
-clearLastVisit();
+// clearLastVisit();
 
 
 // Define a global variable to store the JSON data
