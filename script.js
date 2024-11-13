@@ -13,8 +13,10 @@
 //
 
 
-const movieCode = 'chop';
-const startDate = new Date('2024-10-28T00:00:00+12:00');
+const movieCode = 'mask';
+const dateString = '2024-11-14';
+const startDateMidnight = new Date(dateString);
+const startDate8AM = new Date(dateString + 'T08:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
@@ -88,7 +90,7 @@ let urls = {};
 // DO THE THING
 if (isTodaySunday()) {
     sundayTest();
-} else if (isPastMidnight() === true || startDate > now) {
+} else if (isPastMidnight() === true || startDateMidnight > now) { // lockdown if we are before the start date of new chunk movie
     lockdown();
 } else {
 
@@ -97,7 +99,7 @@ if (isTodaySunday()) {
 
         // Generate a random number between 1 and 20
         if (firstVisitToday() === true) {
-            const defaultDate = startDate;
+            const defaultDate = startDateMidnight;
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
         
             let daysPassed = 0;
@@ -165,7 +167,7 @@ async function updateVideo(first) {
     timerContainer.style.display = "none";
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
-    const defaultDate = startDate;
+    const defaultDate = startDateMidnight;
     //take out cause now is set at the beginning for ease
     // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
@@ -274,8 +276,10 @@ function lockdown() {
 
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
+    let movieSpoilerCode = movieCode;
+    if (startDate8AM > now) movieSpoilerCode = "???";
     epTitle.innerText = `
-            Today's ${movieCode}chunk is currently locked, it will unlock in
+            The next ${movieSpoilerCode}chunk is currently locked, it will unlock in
             `;
     updateCountdown();
 }
@@ -294,7 +298,7 @@ function updateCountdown() {
 
     const timeDifference = nextEightAM - now;
     // Unlock if it's 8AM or later
-    if (isPastMidnight() === false && startDate < new Date()) {
+    if (isPastMidnight() === false && startDateMidnight < new Date()) {
         updateVideo()
     } else {
         const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
