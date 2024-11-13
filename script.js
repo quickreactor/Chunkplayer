@@ -15,7 +15,7 @@
 
 const movieCode = 'mask';
 const dateString = '2024-11-14';
-const startDateMidnight = new Date(dateString);
+const startDateMidnight = new Date(dateString + 'T00:00');
 const startDate8AM = new Date(dateString + 'T08:00');
 const dateInput = document.getElementById('dateInput');
 const videoPlayer = document.getElementById('videoPlayer');
