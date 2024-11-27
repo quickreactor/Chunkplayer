@@ -544,7 +544,7 @@ function playRandomSound(num) {
         sonic.classList.add('animate');
         setTimeout(() => {
             sonic.style.display = "none";
-        }, 3000)
+        }, 6000)
     }
 
 }

@@ -314,7 +314,7 @@
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADtxY-FtGhgYNGe2zgV2bvE/d20_19-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AImV8Pss7iyIKrE76NwPCIc/d20_20-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
     ],
-    "randomSoundsOLD": [
+    "randomSounds1": [
         "audio/diceFX/01 - sokins.ogg",
         "audio/diceFX/02 - jesus youre a pain in the ass.ogg",
         "audio/diceFX/03 - 30_ZE.wav",
@@ -336,7 +336,7 @@
         "audio/diceFX/19 - wuss.ogg",
         "audio/diceFX/20 - gotta_go_fast.mp3"
     ],
-    "randomSounds": [
+    "randomSounds2": [
         "audio/diceFX/v02/nooo.mp3",
         "audio/diceFX/v02/big aaah.ogg",
         "audio/diceFX/v02/icanttakethis.ogg",
@@ -357,5 +357,27 @@
         "audio/diceFX/v02/now-this-is-pod-racing.mp3",
         "audio/diceFX/v02/mbison yes yes.mp3",
         "audio/diceFX/v02/congratulations-you-are-the-winner.mp3"
+    ],
+    "randomSounds": [
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_01.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_02.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_03.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_04.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_05.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_06.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_07.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_08.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_21.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_10.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_11.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_12.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_13.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_14.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_15.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_16.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_17.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_18.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_19.mp3",
+        "audio/diceFX/v04_evil_zone/Nested_Sequence_09.mp3"
     ]
 }
