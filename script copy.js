@@ -63,12 +63,12 @@ let robMorbCount = 8;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
-// today = new Date('2024-12-09');
+// today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2024-12-09T11:24:00')
+// now = new Date('2024-10-30T11:24:00')
 // Uncomment below to test rolling
-clearLastVisit();
+// clearLastVisit();
 
 
 // Define a global variable to store the JSON data
@@ -367,7 +367,6 @@ async function morb(first) {
 
     currentMorbCount += robMorbCount;
     videoPlayer.src = urls.morb.chunks[currentMorbCount - 1];
-    videoPlayer.addEventListener('ended', updateVideo);
     // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
     container.style.display = 'flex';
     // Trigger the transition after ensuring the container is in the DOM
@@ -379,7 +378,7 @@ async function morb(first) {
         container.classList.remove('hidden');
     }
     dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
-    epTitle.innerText = `A Very Special Interlude`
+    epTitle.innerText = `It's Morbin' Time`
     numberDisplay.textContent = currentMorbCount;
     todaysPoster.src = urls.morb.poster;
     selector.style.pointerEvents = 'none';
@@ -433,7 +432,7 @@ async function fetchRollToLocalStorage() {
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
-        // localStorage.setItem('dailyRoll', parseInt(data));
+        localStorage.setItem('dailyRoll', parseInt(data));
         console.log(`You rolled a: ${data}`);
         return parseInt(data, 10);
     } catch (error) {
@@ -551,10 +550,9 @@ function playRandomSound(num) {
 
 async function rollForMovieChoice() {
     rollButton.classList.add('rolled');
-    let remoteRandomNumber = await fetchRollToLocalStorage();
+    localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
     localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
-    // randomNumber = parseInt(localStorage.getItem('randomNumber'));
-    randomNumber = 1;
+    randomNumber = parseInt(localStorage.getItem('randomNumber'));
     console.log(`Daily roll is: ${randomNumber}`);
     morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
     await diceVideo(parseInt(randomNumber));
@@ -563,8 +561,8 @@ async function rollForMovieChoice() {
     localStorage.setItem('lastVisit', currentDate);
     if (randomNumber === 1) {
         movieWinnerLoser(poster2, poster1);
-        // const audio = document.getElementById('morbius-sound');
-        // audio.play();
+        const audio = document.getElementById('morbius-sound');
+        audio.play();
         // localStorage.setItem('dailyMorbCount', await incrementMorbCount());
         setTimeout(() => {
             morb(true);
