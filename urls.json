@@ -21,10 +21,8 @@
             "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/APiGfaQv0RR9G0UnGbJVqCo/morb18.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
             "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AB5C06Vmtaaqum8n065PLgo/morb19.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1"
         ],
-        "chunk12" : "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AEVUb8qIUXE4KKjnYiyJEcg/morb12.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
-        "titles": [
-            "It's Morbin' Time"
-        ],
+        "chunk12": "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/AEVUb8qIUXE4KKjnYiyJEcg/morb12.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1",
+        "titles": ["It's Morbin' Time"],
         "poster": "images/morbius-poster.jpg",
         "favicon": "images/favicons/morb.png"
     },
@@ -70,9 +68,57 @@
             "The Dorian Disaster",
             "Hero Without a Mask",
             "Sssssmokin' Finale!"
-          ],
+        ],
         "poster": "images/mask-poster.jpg",
         "favicon": "images/favicons/mask.png"
+    },
+    "shak": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AGzgBy25HPlQMMOJ6b6Yaqs/shakma01.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AHuYMAZGDw4Z8cy0eE4Exk8/shakma02.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/ABgNXOwAq44xcFQF4sqI_SA/shakma03.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AC1qHNamxdQ3Lk2RGE-4Fkw/shakma04.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AD2u1tsuc4W8hf4ErGUbcDc/shakma05.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AJuk-_WYqfmddGAjgZP5UZ8/shakma06.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AG_zg_QV4Hz7WbyHByQVkKM/shakma07.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/ABcCAfyU7PS2bSlWkT-ZHrI/shakma08.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AK4FYOXdDTKTmY40muZiyow/shakma09.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AFKFv4vZPolxdRo532TPc-Y/shakma10.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AM37t5rSR7OzARvgA1qPfiQ/shakma11.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AMdAtua4y6MQnjfL8O6vZF8/shakma12.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AFW6yKJxlkTa3OZDZ-UeK9w/shakma13.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AFefRA_5LfFMM5bDc3xdtts/shakma14.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/ABLozWoQ1UwXJsdA5-PV-dY/shakma15.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AFxByoPyHC8pWDc80oMuLUg/shakma16.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/ANiJY8-sdwyBuPV7CP1a1Jw/shakma17.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AKk1yJ6fDuooVEIBzQ2rG7c/shakma18.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AOPU7x5IIW5WAcs3zIReFg4/shakma19.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1",
+            "https://www.dropbox.com/scl/fo/y08n02hrrhy9m9th5w0lj/AEsrfP9n1S7bHvKSMHIl5Yg/shakma20.mp4?rlkey=507cuop5j62myglyv2kinqqub&raw=1"
+        ],
+        "titles": [
+            "Monkey See, Monkey Doom",
+            "Stairwell Screech Showdown",
+            "Furious Furry Frenzy",
+            "Banana-Fueled Bloodlust",
+            "Lab Rat, Meet Lab Baboon",
+            "Chimpocalypse Now",
+            "Paws, Claws, and Jaws",
+            "Primordial Panic Party",
+            "Ceiling Tile Terror",
+            "Knock, Knock—It’s Monkey Mayhem",
+            "When Chimps Attack (For Real!)",
+            "The Roar in the Rafters",
+            "Tail-Twitch Takedown",
+            "Peel and Squeal",
+            "Ape Escape Plan Fails",
+            "Bananas Over Bloodshed",
+            "Labyrinth of Looming Primates",
+            "No Time to Go Ape",
+            "Howling at the Lab Lights",
+            "Shakma’s Final Screech"
+          ],
+        "poster": "images/shakma-poster.jpg",
+        "favicon": "images/favicons/shakma.png"
     },
     "placeholder": {
         "chunks": [],

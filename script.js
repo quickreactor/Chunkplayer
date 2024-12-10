@@ -13,10 +13,10 @@
 //
 
 
-const movieCode = 'mask';
-const dateString = '2024-11-14';
-const startDateMidnight = new Date(dateString + 'T00:00');
-const startDate8AM = new Date(dateString + 'T08:00');
+const movieCode = 'shak';
+const startDateString = '2024-12-11';
+const startDateMidnight = new Date(startDateString + 'T00:00');
+const startDate8AM = new Date(startDateString + 'T08:00');
 const videoPlayer = document.getElementById('videoPlayer');
 const d20RollerVideo = document.getElementById('d20RollerVideo')
 const dayCountDisplay = document.getElementById('dayCount');
@@ -59,14 +59,14 @@ videoPlayer.addEventListener('loadedmetadata', () => {
 const selector = document.getElementById('chunkSelector');
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 8;
+let robMorbCount = 12;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2024-10-30T11:24:00')
+now = new Date('2024-12-11T11:24:00')
 // Uncomment below to test rolling
 // clearLastVisit();
 
@@ -561,8 +561,8 @@ async function rollForMovieChoice() {
     localStorage.setItem('lastVisit', currentDate);
     if (randomNumber === 1) {
         movieWinnerLoser(poster2, poster1);
-        const audio = document.getElementById('morbius-sound');
-        audio.play();
+        // const audio = document.getElementById('morbius-sound');
+        // audio.play();
         // localStorage.setItem('dailyMorbCount', await incrementMorbCount());
         setTimeout(() => {
             morb(true);
