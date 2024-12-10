@@ -66,7 +66,7 @@ let today = new Date();
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-now = new Date('2024-12-11T11:24:00')
+// now = new Date('2024-12-11T11:24:00')
 // Uncomment below to test rolling
 // clearLastVisit();
 
