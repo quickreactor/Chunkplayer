@@ -1,3 +1,7 @@
+:root {
+    --poster-color: #dc122f;
+}
+
 body,
 html {
     margin: 0;
@@ -28,6 +32,7 @@ h1 {
     transition: all 1s ease-in-out;
 }
 
+
 .emoji {
     font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
 }
@@ -52,7 +57,7 @@ h1 {
     display: block;
     max-width: 100%;
     width: 70vw;
-    background-color: #35E749;
+    background-color: var(--poster-color)
     object-fit: cover;
     /* clip-path: inset(0% 0% 0% 0% round 7px); */
     /* border-radius: 7px; */
