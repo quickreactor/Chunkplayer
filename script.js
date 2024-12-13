@@ -527,7 +527,7 @@ function playDiceSound() {
 
 function playRandomSound(num) {
     // Array of the audio file names
-    const sounds = urls.randomSounds;
+    const sounds = urls.randomSounds_v3;
     // Get the audio element
     const audioElement = document.getElementById('randomAudio');
 
@@ -610,4 +610,8 @@ function clearLastVisit() {
 
 function toSentenceCase(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function changeVideoPLayerBGColor(value) {
+    document.documentElement.style.setProperty('--poster-color:', value);
 }

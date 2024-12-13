@@ -57,7 +57,7 @@ h1 {
     display: block;
     max-width: 100%;
     width: 70vw;
-    background-color: var(--poster-color)
+    background-color: var(--poster-color);
     object-fit: cover;
     /* clip-path: inset(0% 0% 0% 0% round 7px); */
     /* border-radius: 7px; */
