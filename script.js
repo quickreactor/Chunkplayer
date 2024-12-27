@@ -65,7 +65,7 @@ let today = new Date();
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2024-12-11T11:24:00')
+// now = new Date('2024-12-28T11:24:00')
 // Uncomment below to test rolling
 // clearLastVisit();
 
@@ -81,9 +81,9 @@ let urls = {};
             urls = data;
             chunkArray = urls[movieCode].chunks;
             titleArray = urls[movieCode].titles;
-            if (isXmas(new Date())) {
-                sounds = urls.randomSounds_Xmas;
-                letItSnow();
+            if (isRobertBday(new Date())) {
+                sounds = urls.randomSounds_bday;
+                letItSnowSonic();
             } else {
                 sounds = urls.randomSounds_v3;
             }
@@ -287,6 +287,7 @@ function sundayTest() {
 function lockdown() {
     container.classList.remove("hidden");
     container.style.display = "flex";
+    document.getElementById('snow').style.display = 'none';
 
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
@@ -646,38 +647,115 @@ function isXmas(date) {
     return month === 11 && (day === 25);
 }
 
-function letItSnow () {
+function isRobertBday(date) {
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    return month === 11 && (day === 28);
+}
+
+// function letItSnow () {
+//     var script = document.createElement("script");
+//     script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
+//     script.onload = function () {
+//         particlesJS("snow", {
+//             particles: {
+//                 number: {
+//                     value: 200,
+//                     density: {
+//                         enable: true,
+//                         value_area: 800,
+//                     },
+//                 },
+//                 color: {
+//                     value: "#ffffff",
+//                 },
+//                 opacity: {
+//                     value: 0.7,
+//                     random: false,
+//                     anim: {
+//                         enable: false,
+//                     },
+//                 },
+//                 size: {
+//                     value: 5,
+//                     random: true,
+//                     anim: {
+//                         enable: false,
+//                     },
+//                 },
+//                 line_linked: {
+//                     enable: false,
+//                 },
+//                 move: {
+//                     enable: true,
+//                     speed: 5,
+//                     direction: "bottom",
+//                     random: true,
+//                     straight: false,
+//                     out_mode: "out",
+//                     bounce: false,
+//                     attract: {
+//                         enable: true,
+//                         rotateX: 300,
+//                         rotateY: 1200,
+//                     },
+//                 },
+//             },
+//             interactivity: {
+//                 events: {
+//                     onhover: {
+//                         enable: false,
+//                     },
+//                     onclick: {
+//                         enable: false,
+//                     },
+//                     resize: false,
+//                 },
+//             },
+//             retina_detect: true,
+//         });
+//     };
+//     document.head.append(script);
+// };
+
+function letItSnowSonic(imageUrl = './images/sonic-snow.gif') {
     var script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
     script.onload = function () {
         particlesJS("snow", {
             particles: {
                 number: {
-                    value: 200,
+                    value: 100,
                     density: {
                         enable: true,
-                        value_area: 800,
-                    },
+                        value_area: 800
+                    }
                 },
-                color: {
-                    value: "#ffffff",
+                shape: {
+                    type: "image",
+                    image: {
+                        src: imageUrl,
+                        width: 100,
+                        height: 100
+                    }
                 },
                 opacity: {
                     value: 0.7,
                     random: false,
                     anim: {
-                        enable: false,
-                    },
+                        enable: false
+                    }
                 },
                 size: {
-                    value: 5,
+                    value: 20,
                     random: true,
                     anim: {
-                        enable: false,
-                    },
+                        enable: false
+                    }
                 },
                 line_linked: {
-                    enable: false,
+                    enable: false
                 },
                 move: {
                     enable: true,
@@ -690,23 +768,23 @@ function letItSnow () {
                     attract: {
                         enable: true,
                         rotateX: 300,
-                        rotateY: 1200,
-                    },
-                },
+                        rotateY: 1200
+                    }
+                }
             },
             interactivity: {
                 events: {
                     onhover: {
-                        enable: false,
+                        enable: false
                     },
                     onclick: {
-                        enable: false,
+                        enable: false
                     },
-                    resize: false,
-                },
+                    resize: false
+                }
             },
-            retina_detect: true,
+            retina_detect: true
         });
     };
     document.head.append(script);
-};
+}
