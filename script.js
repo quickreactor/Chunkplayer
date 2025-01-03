@@ -87,9 +87,11 @@ let urls = {};
             if (isRobertBday(new Date())) {
                 sounds = urls.randomSounds_bday;
                 letItSnowSonic();
-            } else {
-                sounds = urls.randomSounds_v3;
-            }
+            } 
+            // else {
+
+            //     sounds = urls.randomSoundCollection[randomArrNumber];
+            // }
         })
         .catch((error) => console.error("Error loading JSON:", error));
 
@@ -557,6 +559,10 @@ function playRandomSound(num) {
     // Array of the audio file names
     // Get the audio element
     const audioElement = document.getElementById("randomAudio");
+
+    let randomArrNumber = Math.floor(Math.random() * urls.randomSoundsCollection.length);
+    sounds = urls.randomSoundsCollection[randomArrNumber];
+    console.log(randomArrNumber)
 
     console.log(sounds[num - 1]);
     // Set the source of the audio element to the selected sound
