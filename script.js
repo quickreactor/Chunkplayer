@@ -11,9 +11,10 @@
 //blinking guy
 //
 
-const movieCode = "shak";
+const oldmovieCode = "shak";
+const newMovieCode = "dead"
 let sounds = [];
-const startDateString = "2024-12-11";
+const startDateString = "2025-01-04";
 const startDateMidnight = new Date(startDateString + "T00:00");
 const startDate8AM = new Date(startDateString + "T08:00");
 const videoPlayer = document.getElementById("videoPlayer");
@@ -65,9 +66,11 @@ let today = new Date();
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2024-12-28T11:24:00')
+// now = new Date('2025-01-04T11:24:00')
 // Uncomment below to test rolling
 // clearLastVisit();
+
+movieCode = now > startDate8AM ? newMovieCode : oldmovieCode;
 
 // Define a global variable to store the JSON data
 let urls = {};
@@ -101,11 +104,11 @@ let urls = {};
             // Generate a random number between 1 and 20
             if (firstVisitToday() === true) {
                 const defaultDate = startDateMidnight;
-                const now = new Date(
-                    new Date().toLocaleString("en-US", {
-                        timeZone: "Pacific/Auckland",
-                    })
-                );
+                // const now = new Date(
+                //     new Date().toLocaleString("en-US", {
+                //         timeZone: "Pacific/Auckland",
+                //     })
+                // );
 
                 let daysPassed = 0;
                 for (
@@ -287,7 +290,7 @@ function sundayTest() {
 function lockdown() {
     container.classList.remove("hidden");
     container.style.display = "flex";
-    document.getElementById('snow').style.display = 'none';
+    document.getElementById("snow").style.display = "none";
 
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
@@ -644,14 +647,14 @@ function isXmas(date) {
     const month = date.getMonth();
     const day = date.getDate();
 
-    return month === 11 && (day === 25);
+    return month === 11 && day === 25;
 }
 
 function isRobertBday(date) {
     const month = date.getMonth();
     const day = date.getDate();
 
-    return month === 11 && (day === 28);
+    return month === 11 && day === 28;
 }
 
 // function letItSnow () {
@@ -719,7 +722,7 @@ function isRobertBday(date) {
 //     document.head.append(script);
 // };
 
-function letItSnowSonic(imageUrl = './images/sonic-snow.gif') {
+function letItSnowSonic(imageUrl = "./images/sonic-snow.gif") {
     var script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
     script.onload = function () {
@@ -729,33 +732,33 @@ function letItSnowSonic(imageUrl = './images/sonic-snow.gif') {
                     value: 100,
                     density: {
                         enable: true,
-                        value_area: 800
-                    }
+                        value_area: 800,
+                    },
                 },
                 shape: {
                     type: "image",
                     image: {
                         src: imageUrl,
                         width: 100,
-                        height: 100
-                    }
+                        height: 100,
+                    },
                 },
                 opacity: {
                     value: 0.7,
                     random: false,
                     anim: {
-                        enable: false
-                    }
+                        enable: false,
+                    },
                 },
                 size: {
                     value: 20,
                     random: true,
                     anim: {
-                        enable: false
-                    }
+                        enable: false,
+                    },
                 },
                 line_linked: {
-                    enable: false
+                    enable: false,
                 },
                 move: {
                     enable: true,
@@ -768,22 +771,22 @@ function letItSnowSonic(imageUrl = './images/sonic-snow.gif') {
                     attract: {
                         enable: true,
                         rotateX: 300,
-                        rotateY: 1200
-                    }
-                }
+                        rotateY: 1200,
+                    },
+                },
             },
             interactivity: {
                 events: {
                     onhover: {
-                        enable: false
+                        enable: false,
                     },
                     onclick: {
-                        enable: false
+                        enable: false,
                     },
-                    resize: false
-                }
+                    resize: false,
+                },
             },
-            retina_detect: true
+            retina_detect: true,
         });
     };
     document.head.append(script);
