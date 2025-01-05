@@ -59,7 +59,7 @@ videoPlayer.addEventListener("loadedmetadata", () => {
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 12;
+let robMorbCount = 13;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
