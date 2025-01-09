@@ -68,7 +68,6 @@ let now = new Date();
 // uncomment to geta round midnight detection
 // now = new Date('2025-01-04T11:24:00')
 // Uncomment below to test rolling
-clearLastVisit();
 
 movieCode = now > startDate8AM ? newMovieCode : oldmovieCode;
 
