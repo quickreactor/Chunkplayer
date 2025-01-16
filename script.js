@@ -15,6 +15,9 @@ const oldmovieCode = "shak";
 const newMovieCode = "dead"
 let sounds = [];
 const startDateString = "2025-01-04";
+let calculatedChunkNumber = 0; // Change this to restart
+let pause = true;
+
 const startDateMidnight = new Date(startDateString + "T00:00");
 const startDate8AM = new Date(startDateString + "T08:00");
 const videoPlayer = document.getElementById("videoPlayer");
@@ -98,11 +101,12 @@ let urls = {};
     // DO THE THING
     if (isTodaySunday()) {
         sundayTest();
-    } else if (isPastMidnight() === true || startDateMidnight > now) {
+    } else if (isPastMidnight() === true || startDateMidnight > now || pause === true) {
         // lockdown if we are before the start date of new chunk movie
         lockdown();
     } else {
         (async () => {
+            console.log("main");
             // Generate a random number between 1 and 20
             if (firstVisitToday() === true) {
                 const defaultDate = startDateMidnight;
@@ -112,7 +116,7 @@ let urls = {};
                 //     })
                 // );
 
-                let daysPassed = 0;
+
                 for (
                     let d = new Date(defaultDate);
                     d <= now;
@@ -120,11 +124,11 @@ let urls = {};
                 ) {
                     if (d.getDay() !== 0) {
                         // Skip Sundays (0 is Sunday in JavaScript)
-                        daysPassed++;
+                        calculatedChunkNumber++;
                     }
                 }
 
-                const videoNumberText = daysPassed - morbCount;
+                const videoNumberText = calculatedChunkNumber - morbCount;
 
                 posterSection.style.display = "flex";
                 if (videoNumberText == 1) {
@@ -178,6 +182,7 @@ function isPastMidnight() {
 }
 
 async function updateVideo(first) {
+    console.log("updtae videoo");
     timerContainer.style.display = "none";
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
@@ -185,15 +190,15 @@ async function updateVideo(first) {
     //take out cause now is set at the beginning for ease
     // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
-    let daysPassed = 0;
+    let calculatedChunkNumber = 0;
     for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
         if (d.getDay() !== 0) {
             // Skip Sundays (0 is Sunday in JavaScript)
-            daysPassed++;
+            calculatedChunkNumber++;
         }
     }
 
-    const videoNumberText = daysPassed - morbCount;
+    const videoNumberText = calculatedChunkNumber - morbCount;
     const videoNumberIndex = videoNumberText - 1;
     morbCount = await fetchMorbCountToLocalStorage();
     videoPlayer.src = chunkArray[videoNumberIndex];
@@ -202,7 +207,7 @@ async function updateVideo(first) {
     // videoContainer.style.display = "flex";
     dayCountDisplay.textContent = `/ ${chunkArray.length}`;
     epTitle.innerText = `${titleArray[videoNumberIndex]}`;
-    // dayCountDisplay.textContent = `${daysPassed}/${chunkArray.length}`;
+    // dayCountDisplay.textContent = `${calculatedChunkNumber}/${chunkArray.length}`;
 
     if (videoNumberText == 1) {
         todaysPoster.src = "images/question.jpg";
@@ -215,7 +220,7 @@ async function updateVideo(first) {
     // SELECTOR STUFF -----------------------
     // Populate the dropdown
 
-    for (let i = 0; i < daysPassed - morbCount; i++) {
+    for (let i = 0; i < calculatedChunkNumber - morbCount; i++) {
         const option = document.createElement("option");
         option.value = i + 1;
         option.dataset.display = i + 1;
@@ -255,11 +260,11 @@ async function updateVideo(first) {
     });
 
     // set starting value to
-    selector.value = daysPassed - morbCount;
-    numberDisplay.textContent = daysPassed - morbCount;
+    selector.value = calculatedChunkNumber - morbCount;
+    numberDisplay.textContent = calculatedChunkNumber - morbCount;
     console.log(
-        `Days passed: ${daysPassed} - Morb count ${morbCount} = ${
-            daysPassed - morbCount
+        `Days passed: ${calculatedChunkNumber} - Morb count ${morbCount} = ${
+            calculatedChunkNumber - morbCount
         }`
     );
 
@@ -290,6 +295,7 @@ function sundayTest() {
 }
 
 function lockdown() {
+    console.log("lockdown");
     container.classList.remove("hidden");
     container.style.display = "flex";
     document.getElementById("snow").style.display = "none";
@@ -317,7 +323,7 @@ function updateCountdown() {
 
     const timeDifference = nextEightAM - now;
     // Unlock if it's 8AM or later
-    if (isPastMidnight() === false && startDateMidnight < new Date()) {
+    if (isPastMidnight() === false && startDateMidnight < new Date() && pause !== true) {
         updateVideo();
     } else {
         const hours = Math.floor(
