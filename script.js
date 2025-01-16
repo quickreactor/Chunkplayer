@@ -62,7 +62,7 @@ videoPlayer.addEventListener("loadedmetadata", () => {
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 12;
+let robMorbCount = 13;
 let randomNumber = 0;
 let today = new Date();
 // uncomment to get around sunday detection
@@ -71,7 +71,6 @@ let now = new Date();
 // uncomment to geta round midnight detection
 // now = new Date('2025-01-04T11:24:00')
 // Uncomment below to test rolling
-// clearLastVisit();
 
 movieCode = now > startDate8AM ? newMovieCode : oldmovieCode;
 
