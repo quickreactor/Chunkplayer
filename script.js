@@ -19,7 +19,7 @@ let calculatedChunkNumber = 0; // Change this to restart
 let pause = true;
 
 const startDateMidnight = new Date(startDateString + "T00:00");
-const startDate8AM = new Date(startDateString + "T08:00");
+const startDate7AM = new Date(startDateString + "T07:00");
 const videoPlayer = document.getElementById("videoPlayer");
 const d20RollerVideo = document.getElementById("d20RollerVideo");
 const dayCountDisplay = document.getElementById("dayCount");
@@ -177,7 +177,7 @@ function isPastMidnight() {
     const currentHour = now.getHours();
 
     // Check if the current hour is between 0 (midnight) and 8 (8 AM)
-    return currentHour >= 0 && currentHour < 8;
+    return currentHour >= 0 && currentHour < 7;
 }
 
 async function updateVideo(first) {
@@ -302,7 +302,7 @@ function lockdown() {
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
     let movieSpoilerCode = movieCode;
-    if (startDate8AM > now) movieSpoilerCode = "???";
+    if (startDate7AM > now) movieSpoilerCode = "???";
     epTitle.innerText = `
             The next ${movieSpoilerCode}chunk is currently locked, it will unlock in
             `;
