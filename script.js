@@ -14,12 +14,12 @@
 const oldmovieCode = "shak";
 const newMovieCode = "dead"
 let sounds = [];
-const startDateString = "2025-01-04";
-let calculatedChunkNumber = 0; // Change this to restart
-let pause = true;
+const startDateString = "2025-01-20";
+let initialChunkNumber = 10; // Change this to restart
+let pause = false;
 
 const startDateMidnight = new Date(startDateString + "T00:00");
-const startDate8AM = new Date(startDateString + "T08:00");
+const startDate7AM = new Date(startDateString + "T07:00");
 const videoPlayer = document.getElementById("videoPlayer");
 const d20RollerVideo = document.getElementById("d20RollerVideo");
 const dayCountDisplay = document.getElementById("dayCount");
@@ -64,15 +64,14 @@ const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
 let robMorbCount = 13;
 let randomNumber = 0;
-let today = new Date();
 // uncomment to get around sunday detection
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2025-01-04T11:24:00')
+// now = new Date('2025-01-20T11:24:00')
 // Uncomment below to test rolling
 
-movieCode = now > startDate8AM ? newMovieCode : oldmovieCode;
+movieCode = now > startDate7AM ? newMovieCode : oldmovieCode;
 
 // Define a global variable to store the JSON data
 let urls = {};
@@ -115,7 +114,7 @@ let urls = {};
                 //     })
                 // );
 
-
+                let calculatedChunkNumber = initialChunkNumber;
                 for (
                     let d = new Date(defaultDate);
                     d <= now;
@@ -128,7 +127,6 @@ let urls = {};
                 }
 
                 const videoNumberText = calculatedChunkNumber - morbCount;
-
                 posterSection.style.display = "flex";
                 if (videoNumberText == 1) {
                     poster1.src = "images/question.jpg";
@@ -170,18 +168,18 @@ function hideElement(el) {
 }
 
 function isTodaySunday() {
-    return today.getDay() === 0;
+    return now.getDay() === 0;
 }
 
 function isPastMidnight() {
     const currentHour = now.getHours();
 
     // Check if the current hour is between 0 (midnight) and 8 (8 AM)
-    return currentHour >= 0 && currentHour < 8;
+    return currentHour >= 0 && currentHour < 7;
 }
 
 async function updateVideo(first) {
-    console.log("updtae videoo");
+    console.log("update video");
     timerContainer.style.display = "none";
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
@@ -189,7 +187,7 @@ async function updateVideo(first) {
     //take out cause now is set at the beginning for ease
     // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
-    let calculatedChunkNumber = 0;
+    let calculatedChunkNumber = initialChunkNumber
     for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
         if (d.getDay() !== 0) {
             // Skip Sundays (0 is Sunday in JavaScript)
@@ -302,7 +300,7 @@ function lockdown() {
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
     let movieSpoilerCode = movieCode;
-    if (startDate8AM > now) movieSpoilerCode = "???";
+    if (startDate7AM > now) movieSpoilerCode = "???";
     epTitle.innerText = `
             The next ${movieSpoilerCode}chunk is currently locked, it will unlock in
             `;
@@ -451,7 +449,6 @@ async function fetchMorbCountToLocalStorage() {
         const data = await response.text(); // Handling plain text response
         localStorage.setItem("dailyMorbCount", parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
-        console.log(data);
         return parseInt(data);
     } catch (error) {
         console.error("Error:", error);
@@ -567,9 +564,7 @@ function playRandomSound(num) {
 
     let randomArrNumber = Math.floor(Math.random() * urls.randomSoundsCollection.length);
     sounds = urls.randomSoundsCollection[randomArrNumber];
-    console.log(randomArrNumber)
-
-    console.log(sounds[num - 1]);
+    console.log("Random sound -" , randomArrNumber, sounds[num - 1]);
     // Set the source of the audio element to the selected sound
     audioElement.src = sounds[num - 1];
 
