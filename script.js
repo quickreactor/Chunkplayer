@@ -11,11 +11,11 @@
 //blinking guy
 //
 
-const oldmovieCode = "shak";
-const newMovieCode = "dead"
+const oldmovieCode = "dead";
+const newMovieCode = "dream"
 let sounds = [];
-const startDateString = "2025-01-20";
-let initialChunkNumber = 10; // Change this to restart
+const startDateString = "2025-01-31";
+let initialChunkNumber = 1; // Change this to restart
 let pause = false;
 
 const startDateMidnight = new Date(startDateString + "T00:00");
@@ -62,13 +62,13 @@ videoPlayer.addEventListener("loadedmetadata", () => {
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 14;
+let robMorbCount = 15;
 let randomNumber = 0;
 // uncomment to get around sunday detection
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2025-01-20T11:24:00')
+// now = new Date('2025-02-01T11:24:00')
 // Uncomment below to test rolling
 
 movieCode = now > startDate7AM ? newMovieCode : oldmovieCode;
@@ -114,7 +114,7 @@ let urls = {};
                 //     })
                 // );
 
-                let calculatedChunkNumber = initialChunkNumber;
+                let calculatedChunkNumber = initialChunkNumber - 1;
                 for (
                     let d = new Date(defaultDate);
                     d <= now;
@@ -187,7 +187,7 @@ async function updateVideo(first) {
     //take out cause now is set at the beginning for ease
     // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
 
-    let calculatedChunkNumber = initialChunkNumber
+    let calculatedChunkNumber = initialChunkNumber - 1;
     for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
         if (d.getDay() !== 0) {
             // Skip Sundays (0 is Sunday in JavaScript)
