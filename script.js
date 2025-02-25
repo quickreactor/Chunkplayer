@@ -395,7 +395,7 @@ document.body.addEventListener("click", () => {
 });
 
 async function morb(first) {
-    document.title = "Morbius Chunk Player";
+    document.title = "Clifford Chunk Player";
     changeFavicon(urls.morb.favicon);
     // alert('You typed "morbius"!');
     // changeFavicon('favicon2.png');
