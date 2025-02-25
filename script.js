@@ -11,10 +11,10 @@
 //blinking guy
 //
 
-const oldmovieCode = "dead";
-const newMovieCode = "dream"
+const oldmovieCode = "dream";
+const newMovieCode = "???";
 let sounds = [];
-const startDateString = "2025-01-31";
+const startDateString = "2025-02-26";
 let initialChunkNumber = 1; // Change this to restart
 let pause = false;
 
@@ -35,6 +35,7 @@ let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
 let todaysPoster = document.querySelector("#todays-poster");
 let topBar = document.querySelector("#top-bar");
+let decision = "default";
 
 let sonic = document.querySelector("#sonic");
 
@@ -62,13 +63,13 @@ videoPlayer.addEventListener("loadedmetadata", () => {
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 16;
+let robMorbCount = 0;
 let randomNumber = 0;
 // uncomment to get around sunday detection
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2025-02-01T11:24:00')
+// now = new Date('2025-02-25T11:24:00')
 // Uncomment below to test rolling
 
 movieCode = now > startDate7AM ? newMovieCode : oldmovieCode;
@@ -80,8 +81,14 @@ let urls = {};
     // Fetch the JSON data
     await fetch("urls.json")
         .then((response) => response.json())
-        .then((data) => {
+        .then(async (data) => {
             // Store the data in the global variable
+            decision = await fetchDecisionToLocalStorage();
+            if (decision ==="stunt") {
+                movieCode = "stunt";
+            } else {
+                movieCode = "murder";
+            }
             urls = data;
             chunkArray = urls[movieCode].chunks;
             titleArray = urls[movieCode].titles;
@@ -198,6 +205,7 @@ async function updateVideo(first) {
     const videoNumberText = calculatedChunkNumber - morbCount;
     const videoNumberIndex = videoNumberText - 1;
     morbCount = await fetchMorbCountToLocalStorage();
+    decision = await fetchDecisionToLocalStorage();
     videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
     container.style.display = "flex";
@@ -394,7 +402,7 @@ async function morb(first) {
     // Additional actions can be added here
     let currentMorbCount = parseInt(localStorage.getItem("dailyMorbCount"));
 
-    currentMorbCount += robMorbCount;
+    currentMorbCount += robMorbCount + 1;
     videoPlayer.src = urls.morb.chunks[currentMorbCount - 1];
     // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
     container.style.display = "flex";
@@ -407,7 +415,7 @@ async function morb(first) {
         container.classList.remove("hidden");
     }
     dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
-    epTitle.innerText = `It's Morbin' Time`;
+    epTitle.innerText = `It's Cliffordin' Time`;
     numberDisplay.textContent = currentMorbCount;
     todaysPoster.src = urls.morb.poster;
     selector.style.pointerEvents = "none";
@@ -442,6 +450,19 @@ async function setMorbCount(value) {
     }
 }
 
+async function resetDecision() {
+    const url = "https://morbcount-worker.quickreactor.workers.dev/resetdecision";
+    try {
+        const response = await fetch(url);
+        const data = await response.text(); // Handling plain text response
+        localStorage.setItem("decision", data);
+        console.log(`decision is ${data}, and is in localStorage`);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
 async function fetchMorbCountToLocalStorage() {
     const url = "https://morbcount-worker.quickreactor.workers.dev/check";
     try {
@@ -450,6 +471,19 @@ async function fetchMorbCountToLocalStorage() {
         localStorage.setItem("dailyMorbCount", parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
         return parseInt(data);
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+async function fetchDecisionToLocalStorage() {
+    const url = "https://morbcount-worker.quickreactor.workers.dev/decisionroll";
+    try {
+        const response = await fetch(url);
+        const data = await response.text(); // Handling plain text response
+        localStorage.setItem("decision", data);
+        console.log(`decision is ${data}, and is in localStorage`);
+        return data;
     } catch (error) {
         console.error("Error:", error);
     }
