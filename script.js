@@ -12,7 +12,7 @@
 //
 
 const oldmovieCode = "dream";
-const newMovieCode = "???";
+const newMovieCode = "stunt";
 let sounds = [];
 const startDateString = "2025-02-26";
 let initialChunkNumber = 1; // Change this to restart
@@ -35,7 +35,6 @@ let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
 let todaysPoster = document.querySelector("#todays-poster");
 let topBar = document.querySelector("#top-bar");
-let decision = "default";
 
 let sonic = document.querySelector("#sonic");
 
@@ -46,7 +45,6 @@ let epTitle = document.querySelector(".ep-title");
 epTitle.addEventListener("click", function () {
     diceVideo(Math.floor(Math.random() * 20 + 1));
 });
-d20RollerVideo.addEventListener("playing", playDiceSound);
 let diceVideoEndListenerSet = false;
 
 // Add an event listener for the 'loadedmetadata' event
@@ -83,12 +81,6 @@ let urls = {};
         .then((response) => response.json())
         .then(async (data) => {
             // Store the data in the global variable
-            decision = await fetchDecisionToLocalStorage();
-            if (decision ==="stunt") {
-                movieCode = "stunt";
-            } else {
-                movieCode = "murder";
-            }
             urls = data;
             chunkArray = urls[movieCode].chunks;
             titleArray = urls[movieCode].titles;
@@ -205,7 +197,6 @@ async function updateVideo(first) {
     const videoNumberText = calculatedChunkNumber - morbCount;
     const videoNumberIndex = videoNumberText - 1;
     morbCount = await fetchMorbCountToLocalStorage();
-    decision = await fetchDecisionToLocalStorage();
     videoPlayer.src = chunkArray[videoNumberIndex];
     // Trigger the transition after ensuring the container is in the DOM
     container.style.display = "flex";
@@ -589,6 +580,7 @@ function playDiceSound() {
     // Play the audio
 
     audioElement.play();
+    console.log(`playing dice roll sound ${randomIndex + 1}`)
 }
 
 function playRandomSound(num) {
@@ -615,6 +607,7 @@ function playRandomSound(num) {
 }
 
 async function rollForMovieChoice() {
+    d20RollerVideo.addEventListener("playing", playDiceSound);
     rollButton.classList.add("rolled");
     localStorage.setItem("randomNumber", await fetchRollToLocalStorage());
     localStorage.setItem(
