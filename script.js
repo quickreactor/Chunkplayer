@@ -393,7 +393,10 @@ async function morb(first) {
     // Additional actions can be added here
     let currentMorbCount = parseInt(localStorage.getItem("dailyMorbCount"));
 
-    currentMorbCount += robMorbCount + 1;
+    currentMorbCount += robMorbCount; // 1
+    if (currentMorbCount === 0) {
+        currentMorbCount = 1;
+    }
     videoPlayer.src = urls.morb.chunks[currentMorbCount - 1];
     // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
     container.style.display = "flex";
