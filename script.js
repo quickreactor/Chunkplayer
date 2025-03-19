@@ -245,7 +245,7 @@ async function updateVideo(first) {
     }
     function blur() {
         [].forEach.call(this.options, function (o) {
-            console.log(o);
+            // console.log(o);
             o.textContent = o.getAttribute("value");
         });
     }
