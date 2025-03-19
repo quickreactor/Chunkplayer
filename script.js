@@ -464,6 +464,7 @@ async function fetchMorbCountToLocalStorage() {
         const data = await response.text(); // Handling plain text response
         localStorage.setItem("dailyMorbCount", parseInt(data));
         console.log(`Morb Count is currently: ${data}, and is in localStorage`);
+        console.log(`robMorbCount is ${robMorbCount}`);
         return parseInt(data);
     } catch (error) {
         console.error("Error:", error);
