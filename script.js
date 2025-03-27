@@ -11,10 +11,10 @@
 //blinking guy
 //
 
-const oldmovieCode = "dream";
-const newMovieCode = "stunt";
+const oldmovieCode = "stunt";
+const newMovieCode = "life";
 let sounds = [];
-const startDateString = "2025-02-26";
+const startDateString = "2025-03-29";
 let initialChunkNumber = 1; // Change this to restart
 let pause = false;
 
@@ -61,13 +61,13 @@ videoPlayer.addEventListener("loadedmetadata", () => {
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 2;
+let robMorbCount = 3;
 let randomNumber = 0;
 // uncomment to get around sunday detection
 // today = new Date('2024-10-30');
 let now = new Date();
 // uncomment to geta round midnight detection
-// now = new Date('2025-02-25T11:24:00')
+// now = new Date('2025-03-29T11:24:00')
 // Uncomment below to test rolling
 
 movieCode = now > startDate7AM ? newMovieCode : oldmovieCode;
