@@ -1,5 +1,8 @@
 :root {
     --poster-color: #BC1A26;
+    --plyr-video-background: #BC1A26;
+    --plyr-color-main: rgba(0,0,0,0.5);
+
 }
 
 body,

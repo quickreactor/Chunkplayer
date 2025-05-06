@@ -11,6 +11,8 @@
 //blinking guy
 //
 
+const player = new Plyr('#videoPlayer');
+
 const oldmovieCode = "life";
 const newMovieCode = "lethal";
 let sounds = [];

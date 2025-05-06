@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <link rel="stylesheet" href="style.css">
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <script src="script.js" defer></script>
     <title>Movie Chunk Player</title>
 </head>
@@ -40,7 +41,7 @@
         </div>
         <div class="videoContainer">
             <div id="video-frame">
-                <video id="videoPlayer" controls playsinline>
+                <video id="videoPlayer" controls playsinline data-poster="/images/chunkplayerlogo.png">
                     <source src="" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -54,6 +55,7 @@
             <div id="countdown-timer">00:00:00</div>
         </div>
     </div>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 </body>
 
 </html>
