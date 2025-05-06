@@ -11,7 +11,17 @@
 //blinking guy
 //
 
-const player = new Plyr('#videoPlayer');
+const player = new Plyr('#videoPlayer', {
+    controls: [
+      'play-large', // big play button in the center
+      'play',       // play button
+      'progress',   // progress bar
+      'current-time', // current time
+      'duration',     // duration
+      // 'volume',    // 🔥 NOT INCLUDING 'volume' disables it
+      'fullscreen'
+    ]
+  });
 
 const oldmovieCode = "life";
 const newMovieCode = "lethal";
@@ -50,7 +60,7 @@ epTitle.addEventListener("click", function () {
 let diceVideoEndListenerSet = false;
 
 // Add an event listener for the 'loadedmetadata' event
-videoPlayer.addEventListener("loadedmetadata", () => {
+/* videoPlayer.addEventListener("loadedmetadata", () => {
     // Calculate the aspect ratio
     const aspectRatio = videoPlayer.videoWidth / videoPlayer.videoHeight;
 
@@ -58,7 +68,7 @@ videoPlayer.addEventListener("loadedmetadata", () => {
     videoPlayer.style.aspectRatio = aspectRatio;
 
     console.log(`Aspect ratio set to ${aspectRatio}`);
-});
+}); */
 
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");

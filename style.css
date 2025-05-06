@@ -61,6 +61,7 @@ h1 {
 
 #video-frame {
     z-index: 1001;
+    width: 70vw;
 }
 
 h1 {
@@ -74,7 +75,7 @@ h1 {
 #videoPlayer {
     display: block;
     max-width: 100%;
-    width: 70vw;
+
     background-color: var(--poster-color);
     object-fit: cover;
     /* clip-path: inset(0% 0% 0% 0% round 7px); */
@@ -305,3 +306,4 @@ option {
         left: -130%;
     }
 }
+
