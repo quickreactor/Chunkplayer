@@ -19,6 +19,7 @@ const player = new Plyr('#videoPlayer', {
       'current-time', // current time
       'duration',     // duration
       // 'volume',    // 🔥 NOT INCLUDING 'volume' disables it
+      'pip',
       'fullscreen'
     ]
   });
