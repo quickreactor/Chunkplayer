@@ -609,9 +609,9 @@ function playRandomSound(num) {
     // Get the audio element
     const audioElement = document.getElementById("randomAudio");
 
-    let randomArrNumber = Math.floor(Math.random() * urls.randomSoundsCollection.length);
+    let randomArrNumber = getDateBasedRandomIndex(urls.randomSoundsCollection.length);
     sounds = urls.randomSoundsCollection[randomArrNumber];
-    console.log("Random sound -" , randomArrNumber, sounds[num - 1]);
+    console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
     // Set the source of the audio element to the selected sound
     audioElement.src = sounds[num - 1];
 
@@ -845,3 +845,11 @@ function letItSnowSonic(imageUrl = "./images/sonic-snow.gif") {
     };
     document.head.append(script);
 }
+
+function getDateBasedRandomIndex(length) {
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate(); // YYYYMMDD
+    const random = Math.sin(seed) * 10000;
+    const index = Math.floor(Math.abs(random) % length);
+    return index;
+  }
