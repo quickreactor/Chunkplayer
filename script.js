@@ -11,18 +11,23 @@
 //blinking guy
 //
 
-const player = new Plyr('#videoPlayer', {
+const player = new Plyr("#videoPlayer", {
+    fullscreen: {
+        enabled: true,
+        fallback: true, // fallback to CSS pseudo-fullscreen if needed
+        iosNative: true, // use iOS native fullscreen when possible
+    },
     controls: [
-      'play-large', // big play button in the center
-      'play',       // play button
-      'progress',   // progress bar
-      'current-time', // current time
-      'duration',     // duration
-      // 'volume',    // 🔥 NOT INCLUDING 'volume' disables it
-      'pip',
-      'fullscreen'
-    ]
-  });
+        "play-large", // big play button in the center
+        "play", // play button
+        "progress", // progress bar
+        "current-time", // current time
+        "duration", // duration
+        // 'volume',    // 🔥 NOT INCLUDING 'volume' disables it
+        "pip",
+        "fullscreen",
+    ],
+});
 
 const oldmovieCode = "life";
 const newMovieCode = "lethal";
@@ -104,7 +109,7 @@ let urls = {};
             if (isRobertBday(new Date())) {
                 sounds = urls.randomSounds_bday;
                 letItSnowSonic();
-            } 
+            }
             // else {
 
             //     sounds = urls.randomSoundCollection[randomArrNumber];
@@ -115,7 +120,11 @@ let urls = {};
     // DO THE THING
     if (isTodaySunday()) {
         sundayTest();
-    } else if (isPastMidnight() === true || startDateMidnight > now || pause === true) {
+    } else if (
+        isPastMidnight() === true ||
+        startDateMidnight > now ||
+        pause === true
+    ) {
         // lockdown if we are before the start date of new chunk movie
         lockdown();
     } else {
@@ -336,7 +345,11 @@ function updateCountdown() {
 
     const timeDifference = nextEightAM - now;
     // Unlock if it's 8AM or later
-    if (isPastMidnight() === false && startDateMidnight < new Date() && pause !== true) {
+    if (
+        isPastMidnight() === false &&
+        startDateMidnight < new Date() &&
+        pause !== true
+    ) {
         updateVideo();
     } else {
         const hours = Math.floor(
@@ -462,7 +475,8 @@ async function setMorbCount(value) {
 }
 
 async function resetDecision() {
-    const url = "https://morbcount-worker.quickreactor.workers.dev/resetdecision";
+    const url =
+        "https://morbcount-worker.quickreactor.workers.dev/resetdecision";
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
@@ -489,7 +503,8 @@ async function fetchMorbCountToLocalStorage() {
 }
 
 async function fetchDecisionToLocalStorage() {
-    const url = "https://morbcount-worker.quickreactor.workers.dev/decisionroll";
+    const url =
+        "https://morbcount-worker.quickreactor.workers.dev/decisionroll";
     try {
         const response = await fetch(url);
         const data = await response.text(); // Handling plain text response
@@ -601,7 +616,7 @@ function playDiceSound() {
     // Play the audio
 
     audioElement.play();
-    console.log(`playing dice roll sound ${randomIndex + 1}`)
+    console.log(`playing dice roll sound ${randomIndex + 1}`);
 }
 
 function playRandomSound(num) {
@@ -609,9 +624,15 @@ function playRandomSound(num) {
     // Get the audio element
     const audioElement = document.getElementById("randomAudio");
 
-    let randomArrNumber = getDateBasedRandomIndex(urls.randomSoundsCollection.length);
+    let randomArrNumber = getDateBasedRandomIndex(
+        urls.randomSoundsCollection.length
+    );
     sounds = urls.randomSoundsCollection[randomArrNumber];
-    console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
+    console.log(
+        `Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${
+            sounds[num - 1]
+        }`
+    );
     // Set the source of the audio element to the selected sound
     audioElement.src = sounds[num - 1];
 
@@ -848,8 +869,11 @@ function letItSnowSonic(imageUrl = "./images/sonic-snow.gif") {
 
 function getDateBasedRandomIndex(length) {
     const today = new Date();
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate(); // YYYYMMDD
+    const seed =
+        today.getFullYear() * 10000 +
+        (today.getMonth() + 1) * 100 +
+        today.getDate(); // YYYYMMDD
     const random = Math.sin(seed) * 10000;
     const index = Math.floor(Math.abs(random) % length);
     return index;
-  }
+}
