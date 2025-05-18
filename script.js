@@ -29,15 +29,41 @@ const player = new Plyr("#videoPlayer", {
     ],
 });
 
-const oldmovieCode = "life";
-const newMovieCode = "lethal";
+const oldMovie = {
+    code: "lethal",
+    startDateString: "2025-04-26",
+    bgColor: "#BC1A26"
+}
+const newMovie = {
+    code: "com",
+    startDateString: "2025-05-21",
+    bgColor: "#b4c6f0"
+}
+
+// --------- DATE STUFF
+
+let now = new Date();
+// uncomment to get around midnight detection
+// now = new Date('2025-03-29T11:24:00')
+
+// uncomment to test what will happen on movie start date
+// now = new Date(`${newMovie.startDateString}T11:24:00`);
+
+// uncomment to test what will happen on movie start date at custom time
+// now = new Date(`${newMovie.startDateString}T01:24:00`);
+
+// Uncomment below to test rolling
+// clearLastVisit();
+
+currentMovie = now > new Date(newMovie.startDateString + "T00:00") ? newMovie : oldMovie;
+const startDateMidnight = new Date(currentMovie.startDateString + "T00:00");
+const startDate7AM = new Date(currentMovie.startDateString + "T07:00");
+
+// --------- END DATE STUFF
 let sounds = [];
-const startDateString = "2025-04-26";
 let initialChunkNumber = 1; // Change this to restart
 let pause = false;
 
-const startDateMidnight = new Date(startDateString + "T00:00");
-const startDate7AM = new Date(startDateString + "T07:00");
 const videoPlayer = document.getElementById("videoPlayer");
 const d20RollerVideo = document.getElementById("d20RollerVideo");
 const dayCountDisplay = document.getElementById("dayCount");
@@ -53,6 +79,8 @@ let videoContainer = document.querySelector(".videoContainer");
 let timerContainer = document.querySelector(".timer-container");
 let todaysPoster = document.querySelector("#todays-poster");
 let topBar = document.querySelector("#top-bar");
+
+document.documentElement.style.setProperty('--plyr-video-background', currentMovie.bgColor);
 
 let sonic = document.querySelector("#sonic");
 
@@ -82,17 +110,7 @@ let morbCount = 0;
 let robMorbCount = 4;
 let randomNumber = 0;
 
-let now = new Date();
-// uncomment to geta round midnight detection
-// now = new Date('2025-03-29T11:24:00')
 
-// uncomment to test what will happen on movie start date
-// now = new Date(`${startDateString}T11:24:00`);
-
-// Uncomment below to test rolling
-// clearLastVisit();
-
-movieCode = now > startDate7AM ? newMovieCode : oldmovieCode;
 
 // Define a global variable to store the JSON data
 let urls = {};
@@ -104,8 +122,8 @@ let urls = {};
         .then(async (data) => {
             // Store the data in the global variable
             urls = data;
-            chunkArray = urls[movieCode].chunks;
-            titleArray = urls[movieCode].titles;
+            chunkArray = urls[currentMovie.code].chunks;
+            titleArray = urls[currentMovie.code].titles;
             if (isRobertBday(new Date())) {
                 sounds = urls.randomSounds_bday;
                 letItSnowSonic();
@@ -234,10 +252,10 @@ async function updateVideo(first) {
     if (videoNumberText == 1) {
         todaysPoster.src = "images/question.jpg";
     } else {
-        todaysPoster.src = urls[movieCode].poster;
+        todaysPoster.src = urls[currentMovie.code].poster;
     }
-    changeFavicon(urls[movieCode].favicon);
-    document.title = `${toSentenceCase(movieCode)} Chunk Player`;
+    changeFavicon(urls[currentMovie.code].favicon);
+    document.title = `${toSentenceCase(currentMovie.code)} Chunk Player`;
 
     // SELECTOR STUFF -----------------------
     // Populate the dropdown
@@ -324,7 +342,7 @@ function lockdown() {
 
     hideElement(videoContainer); //flex
     timerContainer.style.display = "block";
-    let movieSpoilerCode = movieCode;
+    let movieSpoilerCode = currentMovie.code;
     if (startDate7AM > now) movieSpoilerCode = "???";
     epTitle.innerText = `
             The next ${movieSpoilerCode}chunk is currently locked, it will unlock in
