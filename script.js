@@ -174,7 +174,7 @@ let urls = {};
                 if (videoNumberText == 1) {
                     poster1.src = "images/question.jpg";
                 } else {
-                    poster1.src = urls[movieCode].poster;
+                    poster1.src = urls[currentMovie.code].poster;
                 }
                 poster2.src = urls.morb.poster;
                 // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
