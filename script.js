@@ -81,6 +81,7 @@ let todaysPoster = document.querySelector("#todays-poster");
 let topBar = document.querySelector("#top-bar");
 
 document.documentElement.style.setProperty('--plyr-video-background', currentMovie.bgColor);
+document.documentElement.style.setProperty('--poster-color', currentMovie.bgColor);
 
 let sonic = document.querySelector("#sonic");
 
