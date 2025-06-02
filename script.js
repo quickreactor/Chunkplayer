@@ -10,6 +10,7 @@
 // nice guy micheal rosen
 //blinking guy
 //
+//
 
 const player = new Plyr("#videoPlayer", {
     fullscreen: {
