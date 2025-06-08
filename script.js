@@ -89,6 +89,11 @@ let sonic = document.querySelector("#sonic");
 let chunkArray = [];
 let titleArray = [];
 
+
+let sundayDiv = document.querySelector(".sunday-div");
+let archiveButton = document.querySelector(".archive-button");
+archiveButton.addEventListener("click", updateVideo)
+
 let epTitle = document.querySelector(".ep-title");
 epTitle.addEventListener("click", function () {
     diceVideo(Math.floor(Math.random() * 20 + 1));
@@ -225,7 +230,9 @@ function isPastMidnight() {
 
 async function updateVideo(first) {
     console.log("update video");
+    videoContainer.style.display ="flex";
     timerContainer.style.display = "none";
+    sundayDiv.style.display = "none";
     epTitle.innerText = ``;
     // Set the default date to July 22, 2024 in NZ timezone
     const defaultDate = startDateMidnight;
@@ -327,13 +334,10 @@ async function updateVideo(first) {
 function sundayTest() {
     container.classList.remove("hidden");
     container.style.display = "flex";
-    topBar.style.justifyContent = "center";
-    epTitle.style.fontSize = "40px";
+    sundayDiv.style.justifyContent = "center";
+    sundayDiv.style.display = "block";
     hideElement(videoContainer); //flex
     hideElement(timerContainer);
-    epTitle.innerText = `
-            Today is Sunday, the day of rest, no chunk today!
-            `;
 }
 
 function lockdown() {

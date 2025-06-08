@@ -15,6 +15,14 @@ html {
     color: #7f7f7f;
 }
 
+.sunday-title {
+    font-size: 40px;
+}
+
+.sunday-div {
+    display: none;
+}
+
 h1 {
     user-select: none;
     /* Prevent text selection */
