@@ -19,7 +19,9 @@
             "https://www.dropbox.com/scl/fo/ctq9cr4yq21zwu36jafmy/AOUJjOzMoQXLstx4ZKgss2s/cliff16.mp4?rlkey=drx5uidvud4c3ff402426qsls&raw=1",
             "https://www.dropbox.com/scl/fo/ctq9cr4yq21zwu36jafmy/AFVkMxut4eDYB6uGF5VucsM/cliff17.mp4?rlkey=drx5uidvud4c3ff402426qsls&raw=1"
         ],
-        "titles": ["It's Cliffordin' Time"],
+        "titles": [
+            "It's Cliffordin' Time"
+        ],
         "poster": "images/clifford.jpg",
         "favicon": "images/favicons/morb.png"
     },
@@ -419,6 +421,48 @@
         ],
         "poster": "images/lethal.jpg",
         "favicon": "images/favicons/lethal.png"
+    },
+    "cat": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AKVJFmMonjOTAzyKF0lwlEY/cat01.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/ALVRngi3Jdb3NsGYeHDUXg0/cat02.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AFzoouxR71dG-SW2lL7Id5c/cat03.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AKx0eNm-ieA-YrYyc33V75s/cat04.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AHavowwlBNlWKxGaFl1XvAc/cat05.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AA_WAa8OuuPQRLZGBiXYNAA/cat06.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AEvM6GDwZsJvY3qu0ZmuVlQ/cat07.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/ACV2ufx0KdRqwCH4LlC8oRg/cat08.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AFuY107DR2hM9xtoiZaH8FI/cat09.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AOvnw-magdWSYtDydeL58R4/cat10.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AM4Y2YF-mYtx8cdo0krhQMM/cat11.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/ADq2_C8WLU_QswwyDh5L7N8/cat12.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AJhzXeOprAoHddmViUe3ZJo/cat13.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AIE247573-Fedpd9YBdlcpk/cat14.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AJ3sfyG02y1JRGFpv4Jx9IE/cat15.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AHAsHwEfn4xma7foXZkqYso/cat16.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1",
+            "https://www.dropbox.com/scl/fo/x1zylxbvg0mapavjsx88v/AP_zg2BauHF0wYa-uOPBT0E/cat17.mp4?rlkey=bwaep77yxo07bixepstqt0u5d&raw=1"
+        ],
+        "titles": [
+            "Fur Will Fly",
+            "Correlation and Claws-ality",
+            "The Purrge",
+            "Sea Cat, See Death",
+            "Paws and Reflect",
+            "Many ways to be skinned by a cat",
+            "Meowdy Pardner!",
+            "Murderfloof on Deck",
+            "Dockside Cat-astrophe",
+            "Whiskers of Death",
+            "Terror in a Tiny Box",
+            "Tuna? I Hardly Killed Her!",
+            "Don’t Pet the Demon",
+            "Hairballs of the Damned",
+            "Claws for Alarm",
+            "Nine Lives, No Survivors",
+            "Credits Roll, Fur Still Flying"
+        ],
+        "poster": "images/cat-poster.jpg",
+        "favicon": "images/favicons/cat.png"
     },
     "placeholder": {
         "chunks": [],
