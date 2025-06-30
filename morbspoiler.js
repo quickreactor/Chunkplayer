@@ -1,5 +1,5 @@
 function morbSpoiler(string) {
-    const word = 'morb';
+    const word = 'cliff';
     const targetLetters = word.split('');
     const targetLettersOG = word.split('');
     const charArray = string.split("");
@@ -13,14 +13,16 @@ function morbSpoiler(string) {
     for (let i = 0; i < charArray.length; i++) {
         console.log(charArray[i]);
         if (charArray[i].toLowerCase() == targetLetters[0]) {         // MATCH
-            i !== 0 ? (result += "||") : "";
+            i !== 0 ? (result += "||") : ""; // if not first char, add closing spoiler before it
             while (charArray[i].toLowerCase() == targetLetters[0]) {
                 result += charArray[i];
                 targetLetters.shift();
                 i++;
             }
-            i !== charArray.length - 1 ? (result += "||") : "";
-            result += charArray[i];
+            if (i !== charArray.length - 1) { // if not last char
+                (result += "||");
+                result += charArray[i];
+            }
         } else { // NO MATCH
             result += charArray[i];
             // if last letter is not a chosen, add spoiler
@@ -33,17 +35,17 @@ function morbSpoiler(string) {
     console.log(result);
 }
 
+// morbSpoiler(
+//     "mayb"
+// );
+// morbSpoiler(
+//     "More I muttered oh my god at the end of this one for real. he;s back. o no."
+// );
+// morbSpoiler(
+//     "he simply cannot take the precious goggles off b."
+// );
 morbSpoiler(
-    "mayb"
-);
-morbSpoiler(
-    "More I muttered oh my god at the end of this one for real. he;s back. o no."
-);
-morbSpoiler(
-    "he simply cannot take the precious goggles off b."
-);
-morbSpoiler(
-    "misty using the tpe from her mouth to stop the bleeding lolol"
+    "thw sound mixing is atrocious!"
 );
 
 //base case is, it's just one letter in a row

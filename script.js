@@ -31,21 +31,21 @@ const player = new Plyr("#videoPlayer", {
 });
 
 const oldMovie = {
-    code: "com",
-    startDateString: "2025-05-21",
-    bgColor: "#b4c6f0"
-}
-const newMovie = {
     code: "cat",
     startDateString: "2025-06-12",
     bgColor: "#ffec00"
+}
+const newMovie = {
+    code: "ballz",
+    startDateString: "2025-07-02",
+    bgColor: "#F04A22"
 }
 
 // --------- DATE STUFF
 
 let now = new Date();
 // uncomment to test date
-// now = new Date('2025-06-15T11:24:00')
+// now = new Date('2025-07-02T11:24:00')
 
 // uncomment to test what will happen on movie start date
 // now = new Date(`${newMovie.startDateString}T11:24:00`);

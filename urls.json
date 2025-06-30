@@ -464,6 +464,44 @@
         "poster": "images/cat-poster.jpg",
         "favicon": "images/favicons/cat.png"
     },
+    "ballz": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AFOhJOW7vtpMLLfHntVrAdk/ballz01.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/ABgpvDuBiLm94DZBvLM7sgs/ballz02.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AJqWnngN6MeXea22lFysgmg/ballz03.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AJ_EenZXdUeE3rH3pkSKbeM/ballz04.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AIE6X0vs5bdwKXZQsDpMkH8/ballz05.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AJspUK7n4YapsOJ0Rya8QIo/ballz06.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AOwN7vAytQ1wjA-ddc5TW1k/ballz07.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AB1NsIYm7hC1771JXcYMnP0/ballz08.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/ALqjOi1bnNNyM52ItQcw5p0/ballz09.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AIS9mpDnk_tW8y5T5jN7PM4/ballz10.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AGp1YF7gi9e1ooIvljx_j38/ballz11.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AEXaZ7GxOHdvNnIj06So8gg/ballz12.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AONbT42l0nOXJN5unmymdoM/ballz13.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/AK1h9KjeVeCJVEY5FOmU7Vw/ballz14.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1",
+            "https://www.dropbox.com/scl/fo/j2hyrs9rn23t3r5itu63i/APzDEgmAhzZkaZXVfzEmvMc/ballz15.mp4?rlkey=44x3qbdp8tfxhat64d0o976hq&raw=1"
+        ],
+        "titles": [
+            "Kamehamehuh?",
+            "Popo’s Unlicensed Driving School",
+            "Gohan’s Leftover Takeout Box",
+            "Chiaotzu’s Tax Evasion Arc",
+            "Chi Chi, By Proxy",
+            "Grandpa's Corpse: The Musical",
+            "Two Shenrons, No Balls",
+            "Piccolo’s Piccolo Recital",
+            "Yamcha's Off-Brand Crypto Scam",
+            "Heart Disease, the Anime",
+            "Popo’s Moisture Farming Tips",
+            "Goku Fails Algebra Again",
+            "Kame House of Broken Dreams",
+            "Bulma's One Blue Hair",
+            "Written by a Lizard"
+        ],
+        "poster": "images/ballz.webp",
+        "favicon": "images/favicons/ballz.ico"
+    },
     "placeholder": {
         "chunks": [],
         "titles": [],
