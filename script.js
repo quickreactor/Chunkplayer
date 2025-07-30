@@ -473,6 +473,7 @@ async function morb(first) {
 }
 
 async function incrementMorbCount() {
+    console.log("incremented morb count");
     const url = "https://morbcount-worker.quickreactor.workers.dev/increment";
     try {
         const response = await fetch(url);
@@ -486,6 +487,7 @@ async function incrementMorbCount() {
 }
 
 async function setMorbCount(value) {
+    console.log(`setting morbCount to ${value}`);
     const url = `https://morbcount-worker.quickreactor.workers.dev/set?newValue=${value}`;
     try {
         const response = await fetch(url);
