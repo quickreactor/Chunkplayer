@@ -114,7 +114,7 @@ let diceVideoEndListenerSet = false;
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 6;
+let robMorbCount = 7;
 let randomNumber = 0;
 
 
