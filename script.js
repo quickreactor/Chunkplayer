@@ -31,14 +31,14 @@ const player = new Plyr("#videoPlayer", {
 });
 
 const oldMovie = {
-    code: "ballz",
-    startDateString: "2025-07-02",
-    bgColor: "#F04A22"
-}
-const newMovie = {
     code: "fury",
     startDateString: "2025-07-19",
     bgColor: "#299C78"
+}
+const newMovie = {
+    code: "champagne",
+    startDateString: "2025-08-16",
+    bgColor: "#8D181C"
 }
 
 // --------- DATE STUFF
@@ -114,7 +114,7 @@ let diceVideoEndListenerSet = false;
 const selector = document.getElementById("chunkSelector");
 const numberDisplay = document.querySelector(".numberDisplay");
 let morbCount = 0;
-let robMorbCount = 7;
+let robMorbCount = 8;
 let randomNumber = 0;
 
 
