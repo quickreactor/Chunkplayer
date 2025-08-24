@@ -51,7 +51,7 @@ let now = new Date();
 // now = new Date(`${newMovie.startDateString}T11:24:00`);
 
 // uncomment to test what will happen on movie start date at custom time
-// now = new Date(`${newMovie.startDateString}T01:24:00`);
+now = new Date(`${newMovie.startDateString}T11:24:00`);
 
 // Uncomment below to test rolling
 // clearLastVisit();
@@ -329,6 +329,8 @@ async function updateVideo(first) {
     } else {
         container.classList.remove("hidden");
     }
+
+    soundBoardInit();
 }
 
 function sundayTest() {
@@ -756,6 +758,48 @@ function isRobertBday(date) {
     const day = date.getDate();
 
     return month === 11 && day === 28;
+}
+
+function soundBoardInit() {
+    let soundSets = urls.randomSoundsCollection;
+
+    const grid = document.querySelector('.grid');
+    const tabsContainer = document.querySelector('.tabs');
+    let currentTab = 0;
+
+    function renderTabs() {
+      tabsContainer.innerHTML = '';
+      soundSets.forEach((_, index) => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (index === 0 ? ' active' : '');
+        tab.dataset.tab = index;
+        tab.textContent = `Set ${index + 1}`;
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentTab = index;
+          renderGrid();
+        });
+        tabsContainer.appendChild(tab);
+      });
+    }
+
+    function renderGrid() {
+      grid.innerHTML = '';
+      const set = soundSets[currentTab];
+      set.forEach((sound, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.addEventListener('click', () => {
+          const audio = new Audio(sound);
+          audio.play();
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    renderTabs();
+    renderGrid();
 }
 
 // function letItSnow () {

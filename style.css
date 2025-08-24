@@ -167,7 +167,8 @@ option {
     position: absolute;
     top: -20px;
     width: 100%;
-    max-width: 100%; /* added */
+    max-width: 100%;
+    /* added */
     height: 80vw;
     max-height: 80%;
     width: 60vw;
@@ -272,11 +273,64 @@ option {
     width: 100%;
 }
 
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #444;
+    margin-bottom: 15px;
+}
+
+.tab {
+    padding: 8px 16px;
+    background: #333;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+    border: 1px solid #444;
+    border-bottom: none;
+}
+
+.tab.active {
+    background: #0078ff;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 45px);
+    gap: 8px;
+}
+
+.grid button {
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 6px;
+    background: #555;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.grid button:hover {
+    background: #777;
+}
+
+#soundboard {
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
 @media screen and (max-width: 768px) {
     #d20RollerVideo {
         width: 150vw;
         left: -35vw;
-        max-width: 300vw; /* added */
+        max-width: 300vw;
+        /* added */
         height: 80vw;
         max-height: 300vw;
         height: auto;
@@ -306,6 +360,7 @@ option {
     from {
         left: 100%;
     }
+
     to {
         left: -130%;
     }

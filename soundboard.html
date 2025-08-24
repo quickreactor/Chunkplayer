@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e1e;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #444;
+      margin-bottom: 15px;
+    }
+    .tab {
+      padding: 8px 16px;
+      background: #333;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+      border: 1px solid #444;
+      border-bottom: none;
+    }
+    .tab.active {
+      background: #0078ff;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 45px);
+      gap: 8px;
+    }
+    .grid button {
+      width: 45px;
+      height: 45px;
+      border: none;
+      border-radius: 6px;
+      background: #555;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .grid button:hover {
+      background: #777;
+    }
+  </style>
+</head>
+<body>
+  <h1>Soundboard</h1>
+  <div class="tabs"></div>
+  <div class="grid"></div>
+
+  <script>
+
+
+    const grid = document.querySelector('.grid');
+    const tabsContainer = document.querySelector('.tabs');
+    let currentTab = 0;
+
+    function renderTabs() {
+      tabsContainer.innerHTML = '';
+      soundSets.forEach((_, index) => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (index === 0 ? ' active' : '');
+        tab.dataset.tab = index;
+        tab.textContent = `Set ${index + 1}`;
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentTab = index;
+          renderGrid();
+        });
+        tabsContainer.appendChild(tab);
+      });
+    }
+
+    function renderGrid() {
+      grid.innerHTML = '';
+      const set = soundSets[currentTab];
+      set.forEach((sound, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.addEventListener('click', () => {
+          const audio = new Audio(sound);
+          audio.play();
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    renderTabs();
+    renderGrid();
+  </script>
+</body>
+</html>
