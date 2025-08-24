@@ -51,7 +51,7 @@ let now = new Date();
 // now = new Date(`${newMovie.startDateString}T11:24:00`);
 
 // uncomment to test what will happen on movie start date at custom time
-now = new Date(`${newMovie.startDateString}T11:24:00`);
+// now = new Date(`${newMovie.startDateString}T11:24:00`);
 
 // Uncomment below to test rolling
 // clearLastVisit();
