@@ -295,18 +295,18 @@ option {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(5, 45px);
-    gap: 8px;
+    grid-template-columns: repeat(5, 80px);
+    gap: 2px;
 }
 
 .grid button {
-    width: 45px;
+    width: 80px;
     height: 45px;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     background: #555;
     color: white;
-    font-size: 14px;
+    font-size: 10px;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -317,12 +317,13 @@ option {
 
 #soundboard {
     font-family: Arial, sans-serif;
+    width: 100vw;
     background: #1e1e1e;
     color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
+    /* padding: 20px; */
 }
 
 @media screen and (max-width: 768px) {

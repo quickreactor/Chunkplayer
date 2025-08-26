@@ -789,7 +789,7 @@ function soundBoardInit() {
       const set = soundSets[currentTab];
       set.forEach((sound, i) => {
         const btn = document.createElement('button');
-        btn.textContent = i + 1;
+        btn.innerHTML = `${i + 1}<br>${sound.split("/").pop().split(".")[0].replace(/^\d+\s*-\s*/, "")}`;
         btn.addEventListener('click', () => {
           const audio = new Audio(sound);
           audio.play();
