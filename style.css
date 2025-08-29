@@ -295,13 +295,13 @@ option {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(5, 80px);
+    grid-template-columns: repeat(5, 70px);
     gap: 2px;
 }
 
 .grid button {
-    width: 80px;
-    height: 45px;
+    width: 70px;
+    height: 40px;
     border: none;
     border-radius: 10px;
     background: #555;
