@@ -602,6 +602,48 @@
         "poster": "images/champagne.jpg",
         "favicon": "images/favicons/champagne.png"
     },
+    "rex": {
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AGVLkeCha1YNtujEutstxTs/rex01.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/ANvE7K0GJ66z6KyELyI8FCk/rex02.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AEBJ2WUF9DSstpuyif3h42w/rex03.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AHiWCxCpSPtllgCGJBork6M/rex04.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AP7PQIKQ7J4aFK9a4Mg5tq8/rex05.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/ABl0pL6tc1zZHqQVtYB0sgM/rex06.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AA5xNrri0sI1ks1RYxCaw0U/rex07.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AFl6kvBXqU1mNuL9xiiwDOc/rex08.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AHwDqrHzLTuQr91IeB3x7mQ/rex09.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AN1NsSjIIkJlopsC4_MVS_g/rex10.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/ABaJwPtbF2Pcnxkaz4FzGhA/rex11.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AGydzHdHS_JtiGvsMnp7Bls/rex12.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AJ-hEG3fmvVl2B1SAjT4mGc/rex13.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AC1yoNgQQORIQcVAQqA0rFs/rex14.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AP_KYCQTuUSS6hPiUxB8bpE/rex15.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/ANPEmMruNKQrucRygf0TpdI/rex16.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1",
+            "https://www.dropbox.com/scl/fo/bzoz6ldutvdd7713dhqc6/AELwYutmVHV3p7RGKYui8ek/rex17.mp4?rlkey=og748mrg0m8eirhfj7kdl7pvb&raw=1"
+        ],
+        "titles": [
+            "Dino-Mite Boyfriend",
+            "Jurassic Love Triangle",
+            "Brain Swap Shenanigans",
+            "Rawr Means I Love You",
+            "Prom Night, Wrong Bite",
+            "Skull Drill Thriller",
+            "Love in the Time of Raptors",
+            "Dino vs. Jock",
+            "Claw and Order",
+            "Neck Snaps and Love Taps",
+            "Veloci-Cuddles",
+            "Dino Tears, Human Fears",
+            "Reptile Dysfunction",
+            "Extinction-Level Breakup",
+            "Romancing the Fossil",
+            "T-Rex Makeout Session",
+            "Till Death Do Us Roar"
+        ],
+        "poster": "images/rex.jpg",
+        "favicon": "images/favicons/rex.png"
+    },
     "placeholder": {
         "chunks": [],
         "titles": [],
