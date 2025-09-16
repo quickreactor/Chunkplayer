@@ -231,6 +231,7 @@ function isPastMidnight() {
 
 async function updateVideo(first) {
     console.log("update video");
+    console.log(`User is on ${navigator.userAgent} browser`);
     videoContainer.style.display ="flex";
     timerContainer.style.display = "none";
     sundayDiv.style.display = "none";
