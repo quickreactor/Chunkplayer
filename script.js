@@ -39,7 +39,7 @@ const oldMovie = {
 const newMovie = {
     code: "rex",
     startDateString: "2025-09-08",
-    bgColor: "#b2cb4b"
+    bgColor: "#FAE401"
 }
 
 // --------- DATE STUFF

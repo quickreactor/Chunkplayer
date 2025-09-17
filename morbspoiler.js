@@ -1,5 +1,5 @@
 function morbSpoiler(string) {
-    const word = 'morbballs';
+    const word = 'morbius';
     const targetLetters = word.split('');
     const targetLettersOG = word.split('');
     const charArray = string.split("");
