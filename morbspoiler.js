@@ -1,5 +1,5 @@
 function morbSpoiler(string) {
-    const word = 'morbius';
+    const word = 'nerd';
     const targetLetters = word.split('');
     const targetLettersOG = word.split('');
     const charArray = string.split("");
@@ -45,7 +45,7 @@ function morbSpoiler(string) {
 //     "he simply cannot take the precious goggles off b."
 // );
 morbSpoiler(
-    "I must say there is something pretty hilarious about seeing geeko get bullied by a full grown man at Unitech High School"
+    "Sideckick got disemboweled by dino feet lol, then Billy got interrupted mid-bang!"
 );
 
 //base case is, it's just one letter in a row
