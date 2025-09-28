@@ -11,944 +11,962 @@
 //blinking guy
 //
 //
+// ====================
+// CONFIG & CONSTANTS
+// ====================
 
-const player = new Plyr("#videoPlayer", {
-    fullscreen: {
-        enabled: true,
-        fallback: true, // fallback to CSS pseudo-fullscreen if needed
-        iosNative: true, // use iOS native fullscreen when possible
+const CONFIG = {
+    movies: {
+        old: {
+            code: "rex",
+            startDateString: "2025-09-08",
+            bgColor: "#FAE401"
+        },
+        new: {
+            code: "inner", 
+            startDateString: "2025-09-29",
+            bgColor: "#FA682F"
+        }
     },
-    controls: [
-        "play-large", // big play button in the center
-        "play", // play button
-        "progress", // progress bar
-        "current-time", // current time
-        "duration", // duration
-        // 'volume',    // 🔥 NOT INCLUDING 'volume' disables it
-        "pip",
-        "fullscreen",
-    ],
-});
+    api: {
+        baseUrl: "https://morbcount-worker.quickreactor.workers.dev"
+    },
+    debug: {
+        testDate: null, // Set to date string to test specific dates
+        forceRoll: null, // Set to number 1-20 to force specific roll
+        clearLastVisit: false
+    },
+    initialChunkNumber: 1,
+    robMorbCount: 10
+};
 
+// ====================
+// UTILITY FUNCTIONS
+// ====================
 
-const oldMovie = {
-    code: "rex",
-    startDateString: "2025-09-08",
-    bgColor: "#FAE401"
-}
-const newMovie = {
-    code: "inner",
-    startDateString: "2025-09-29",
-    bgColor: "#FA682F"
-}
+const Utils = {
+    getNZFormattedDate() {
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}${month}${day}`;
+    },
 
-// --------- DATE STUFF
+    toSentenceCase(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    },
 
-let now = new Date();
-// uncomment to test date
-// now = new Date('2025-07-02T11:24:00')
+    isDateSpecialDay(date, month, day) {
+        return date.getMonth() === month && date.getDate() === day;
+    },
 
-// uncomment to test what will happen on movie start date
-now = new Date(`${newMovie.startDateString}T11:24:00`);
+    getDateBasedRandomIndex(length) {
+        const today = new Date();
+        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        const random = Math.sin(seed) * 10000;
+        return Math.floor(Math.abs(random) % length);
+    },
 
-// uncomment to test what will happen on movie start date at custom time
-// now = new Date(`${newMovie.startDateString}T11:24:00`);
+    async delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+};
 
-// Uncomment below to test rolling
-// clearLastVisit();
+// ====================
+// DATE & TIME MANAGER
+// ====================
 
-currentMovie = now > new Date(newMovie.startDateString + "T00:00") ? newMovie : oldMovie;
-const startDateMidnight = new Date(currentMovie.startDateString + "T00:00");
-const startDate7AM = new Date(currentMovie.startDateString + "T07:00");
+class DateManager {
+    constructor() {
+        this.now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
+        this.currentMovie = this.getCurrentMovie();
+        this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
+        this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
+    }
 
-// --------- END DATE STUFF
-let sounds = [];
-let initialChunkNumber = 1; // Change this to restart
-let pause = false;
+    getCurrentMovie() {
+        return this.now > new Date(CONFIG.movies.new.startDateString + "T00:00") 
+            ? CONFIG.movies.new 
+            : CONFIG.movies.old;
+    }
 
-const videoPlayer = document.getElementById("videoPlayer");
-const d20RollerVideo = document.getElementById("d20RollerVideo");
-const dayCountDisplay = document.getElementById("dayCount");
-const rollButton = document.getElementById("roll-button");
-rollButton.addEventListener("click", rollForMovieChoice);
-const poster1 = document.getElementById("poster-image-1");
-const poster2 = document.getElementById("poster-image-2");
-const posterContainer2 = document.getElementById("poster-container-2");
-const posterContainer1 = document.getElementById("poster-container-1");
-const posterSection = document.querySelector(".poster-section");
-let container = document.querySelector(".container");
-let videoContainer = document.querySelector(".videoContainer");
-let timerContainer = document.querySelector(".timer-container");
-let todaysPoster = document.querySelector("#todays-poster");
-let topBar = document.querySelector("#top-bar");
+    isTodaySunday() {
+        return this.now.getDay() === 0;
+    }
 
-document.documentElement.style.setProperty('--plyr-video-background', currentMovie.bgColor);
-document.documentElement.style.setProperty('--poster-color', currentMovie.bgColor);
+    isPastMidnight() {
+        const currentHour = this.now.getHours();
+        return currentHour >= 0 && currentHour < 7;
+    }
 
-let sonic = document.querySelector("#sonic");
+    isRobertBday() {
+        return Utils.isDateSpecialDay(this.now, 11, 28);
+    }
 
-let chunkArray = [];
-let titleArray = [];
-
-
-let sundayDiv = document.querySelector(".sunday-div");
-let archiveButton = document.querySelector(".archive-button");
-archiveButton.addEventListener("click", updateVideo)
-
-let epTitle = document.querySelector(".ep-title");
-epTitle.addEventListener("click", function () {
-    diceVideo(Math.floor(Math.random() * 20 + 1));
-});
-let diceVideoEndListenerSet = false;
-
-// Add an event listener for the 'loadedmetadata' event
-/* videoPlayer.addEventListener("loadedmetadata", () => {
-    // Calculate the aspect ratio
-    const aspectRatio = videoPlayer.videoWidth / videoPlayer.videoHeight;
-
-    // Set the aspect ratio using CSS
-    videoPlayer.style.aspectRatio = aspectRatio;
-
-    console.log(`Aspect ratio set to ${aspectRatio}`);
-}); */
-
-const selector = document.getElementById("chunkSelector");
-const numberDisplay = document.querySelector(".numberDisplay");
-let morbCount = 0;
-let robMorbCount = 10;
-let randomNumber = 0;
-
-
-
-// Define a global variable to store the JSON data
-let urls = {};
-
-async function initialSetup() {
-    // Fetch the JSON data
-    await fetch("urls.json")
-        .then((response) => response.json())
-        .then(async (data) => {
-            // Store the data in the global variable
-            urls = data;
-            chunkArray = urls[currentMovie.code].chunks;
-            titleArray = urls[currentMovie.code].titles;
-            if (isRobertBday(new Date())) {
-                sounds = urls.randomSounds_bday;
-                letItSnowSonic();
+    calculateChunkNumber() {
+        let calculatedChunkNumber = CONFIG.initialChunkNumber - 1;
+        for (let d = new Date(this.startDateMidnight); d <= this.now; d.setDate(d.getDate() + 1)) {
+            if (d.getDay() !== 0) { // Skip Sundays
+                calculatedChunkNumber++;
             }
-            // else {
-
-            //     sounds = urls.randomSoundCollection[randomArrNumber];
-            // }
-        })
-        .catch((error) => console.error("Error loading JSON:", error));
-
-    // DO THE THING
-    if (isTodaySunday()) {
-        sundayTest();
-    } else if (
-        isPastMidnight() === true ||
-        startDateMidnight > now ||
-        pause === true
-    ) {
-        // lockdown if we are before the start date of new chunk movie
-        lockdown();
-    } else {
-        (async () => {
-            console.log("main");
-            // Generate a random number between 1 and 20
-            if (firstVisitToday() === true) {
-                const defaultDate = startDateMidnight;
-                // const now = new Date(
-                //     new Date().toLocaleString("en-US", {
-                //         timeZone: "Pacific/Auckland",
-                //     })
-                // );
-
-                let calculatedChunkNumber = initialChunkNumber - 1;
-                for (
-                    let d = new Date(defaultDate);
-                    d <= now;
-                    d.setDate(d.getDate() + 1)
-                ) {
-                    if (d.getDay() !== 0) {
-                        // Skip Sundays (0 is Sunday in JavaScript)
-                        calculatedChunkNumber++;
-                    }
-                }
-
-                const videoNumberText = calculatedChunkNumber - morbCount;
-                posterSection.style.display = "flex";
-                if (videoNumberText == 1) {
-                    poster1.src = "images/question.jpg";
-                } else {
-                    poster1.src = urls[currentMovie.code].poster;
-                }
-                poster2.src = urls.morb.poster;
-                // localStorage.setItem('dailyMorbCount', await fetchMorbCountToLocalStorage());
-                // localStorage.setItem('randomNumber', await fetchRollToLocalStorage());
-                // randomNumber = parseInt(localStorage.getItem('randomNumber'));
-                // console.log(`Daily roll is: ${randomNumber}`);
-                // morbCount = parseInt(localStorage.getItem('dailyMorbCount'));
-                // diceVideo(parseInt(randomNumber));
-                // if (randomNumber === 1) {
-                //     localStorage.setItem('dailyMorbCount', await incrementMorbCount());
-                //     morb();
-                // }
-            } else {
-                // 2nd visit onwards
-                randomNumber = parseInt(localStorage.getItem("randomNumber"));
-                morbCount = parseInt(localStorage.getItem("dailyMorbCount"));
-
-                // Uncomment to force non-morb
-                // randomNumber = 20;
-                // Uncomment to force morb
-                // randomNumber = 1;
-                if (randomNumber === 1) {
-                    morb();
-                } else {
-                    updateVideo();
-                }
-            }
-        })();
+        }
+        return calculatedChunkNumber;
     }
 }
 
-initialSetup();
+// ====================
+// API SERVICE
+// ====================
 
-function hideElement(el) {
-    el.style.display = "none";
-}
+class ApiService {
+    constructor(baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
-function isTodaySunday() {
-    return now.getDay() === 0;
-}
-
-function isPastMidnight() {
-    const currentHour = now.getHours();
-
-    // Check if the current hour is between 0 (midnight) and 8 (8 AM)
-    return currentHour >= 0 && currentHour < 7;
-}
-
-async function updateVideo(first) {
-    console.log("update video");
-    console.log(`User is on ${navigator.userAgent} browser`);
-    videoContainer.style.display = "flex";
-    timerContainer.style.display = "none";
-    sundayDiv.style.display = "none";
-    epTitle.innerText = ``;
-    // Set the default date to July 22, 2024 in NZ timezone
-    const defaultDate = startDateMidnight;
-    //take out cause now is set at the beginning for ease
-    // const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Pacific/Auckland" }));
-
-    let calculatedChunkNumber = initialChunkNumber - 1;
-    for (let d = new Date(defaultDate); d <= now; d.setDate(d.getDate() + 1)) {
-        if (d.getDay() !== 0) {
-            // Skip Sundays (0 is Sunday in JavaScript)
-            calculatedChunkNumber++;
+    async fetchText(endpoint) {
+        try {
+            const response = await fetch(`${this.baseUrl}/${endpoint}`);
+            return await response.text();
+        } catch (error) {
+            console.error(`API Error (${endpoint}):`, error);
+            throw error;
         }
     }
 
-    const videoNumberText = calculatedChunkNumber - morbCount;
-    const videoNumberIndex = videoNumberText - 1;
-    morbCount = await fetchMorbCountToLocalStorage();
-    videoPlayer.src = chunkArray[videoNumberIndex];
-    // Trigger the transition after ensuring the container is in the DOM
-    container.style.display = "flex";
-    // videoContainer.style.display = "flex";
-    dayCountDisplay.textContent = `/ ${chunkArray.length}`;
-    epTitle.innerText = `${titleArray[videoNumberIndex]}`;
-    // dayCountDisplay.textContent = `${calculatedChunkNumber}/${chunkArray.length}`;
-
-    if (videoNumberText == 1) {
-        todaysPoster.src = "images/question.jpg";
-    } else {
-        todaysPoster.src = urls[currentMovie.code].poster;
-    }
-    changeFavicon(urls[currentMovie.code].favicon);
-    document.title = `${toSentenceCase(currentMovie.code)} Chunk Player`;
-
-    // SELECTOR STUFF -----------------------
-    // Populate the dropdown
-
-    for (let i = 0; i < calculatedChunkNumber - morbCount; i++) {
-        const option = document.createElement("option");
-        option.value = i + 1;
-        option.dataset.display = i + 1;
-        option.dataset.descr = titleArray[i];
-        option.textContent = i + 1;
-        selector.prepend(option);
+    async getMorbCount() {
+        const count = await this.fetchText('check');
+        return parseInt(count);
     }
 
-    // Event listener for dropdown changes
-    selector.addEventListener("change", function () {
-        const selectedValue = parseInt(this.value);
-        const selectedIndex = selectedValue - 1;
-        console.log(selectedValue);
-        videoPlayer.src = chunkArray[selectedIndex];
-        epTitle.innerText = `${titleArray[selectedIndex]}`;
-        numberDisplay.textContent = selectedValue;
-        this.blur();
-    });
+    async incrementMorbCount() {
+        const count = await this.fetchText('increment');
+        return parseInt(count);
+    }
 
-    function focus() {
-        [].forEach.call(this.options, function (o) {
-            o.textContent = `${o.getAttribute("value")}: ${o.getAttribute(
-                "data-descr"
-            )}`;
+    async setMorbCount(value) {
+        const count = await this.fetchText(`set?newValue=${value}`);
+        return parseInt(count);
+    }
+
+    async getRoll() {
+        const roll = await this.fetchText('roll');
+        return parseInt(roll);
+    }
+
+    async resetDecision() {
+        return await this.fetchText('resetdecision');
+    }
+
+    async getDecision() {
+        return await this.fetchText('decisionroll');
+    }
+}
+
+// ====================
+// STORAGE MANAGER
+// ====================
+
+class StorageManager {
+    static get(key) {
+        return localStorage.getItem(key);
+    }
+
+    static set(key, value) {
+        localStorage.setItem(key, value);
+    }
+
+    static getInt(key) {
+        return parseInt(this.get(key)) || 0;
+    }
+
+    static setInt(key, value) {
+        this.set(key, parseInt(value));
+    }
+
+    static isFirstVisitToday() {
+        const currentDate = Utils.getNZFormattedDate();
+        const lastVisit = this.get("lastVisit");
+        return !lastVisit || lastVisit !== currentDate;
+    }
+
+    static registerVisit() {
+        this.set("lastVisit", Utils.getNZFormattedDate());
+    }
+
+    static clearLastVisit() {
+        this.set("lastVisit", "");
+    }
+}
+
+// ====================
+// DOM MANAGER
+// ====================
+
+class DOMManager {
+    constructor() {
+        this.elements = this.getElements();
+        this.setupPlayer();
+    }
+
+    getElements() {
+        return {
+            // Video elements
+            videoPlayer: document.getElementById("videoPlayer"),
+            d20RollerVideo: document.getElementById("d20RollerVideo"),
+            
+            // UI containers
+            container: document.querySelector(".container"),
+            videoContainer: document.querySelector(".videoContainer"),
+            timerContainer: document.querySelector(".timer-container"),
+            posterSection: document.querySelector(".poster-section"),
+            sundayDiv: document.querySelector(".sunday-div"),
+            
+            // Posters
+            poster1: document.getElementById("poster-image-1"),
+            poster2: document.getElementById("poster-image-2"),
+            todaysPoster: document.querySelector("#todays-poster"),
+            
+            // Controls
+            rollButton: document.getElementById("roll-button"),
+            chunkSelector: document.getElementById("chunkSelector"),
+            archiveButton: document.querySelector(".archive-button"),
+            
+            // Displays
+            dayCountDisplay: document.getElementById("dayCount"),
+            numberDisplay: document.querySelector(".numberDisplay"),
+            epTitle: document.querySelector(".ep-title"),
+            countdownTimer: document.getElementById("countdown-timer"),
+            
+            // Audio
+            randomAudio: document.getElementById("randomAudio"),
+            diceAudio: document.getElementById("diceAudio"),
+            morbiusSound: document.getElementById("morbius-sound"),
+            
+            // Special
+            sonic: document.querySelector("#sonic")
+        };
+    }
+
+    setupPlayer() {
+        this.player = new Plyr("#videoPlayer", {
+            fullscreen: {
+                enabled: true,
+                fallback: true,
+                iosNative: true,
+            },
+            controls: [
+                "play-large", "play", "progress", "current-time", 
+                "duration", "pip", "fullscreen",
+            ],
         });
     }
-    function blur() {
-        [].forEach.call(this.options, function (o) {
-            // console.log(o);
-            o.textContent = o.getAttribute("value");
-        });
-    }
-    [].forEach.call(document.querySelectorAll("#chunkSelector"), function (s) {
-        s.addEventListener("focus", focus);
-        s.addEventListener("blur", blur);
-        blur.call(s);
-    });
 
-    // set starting value to
-    selector.value = calculatedChunkNumber - morbCount;
-    numberDisplay.textContent = calculatedChunkNumber - morbCount;
-    console.log(
-        `Days passed: ${calculatedChunkNumber} - Morb count ${morbCount} = ${calculatedChunkNumber - morbCount
-        }`
-    );
-
-    // END SELECTOR STUFF -------------------
-
-    if (first) {
-        requestAnimationFrame(() => {
-            // Force a reflow before changing opacity
-            void container.offsetWidth;
-            // container.style.opacity = 1;
-            container.classList.remove("hidden");
-        });
-    } else {
-        container.classList.remove("hidden");
-    }
-
-    soundBoardInit();
-}
-
-function sundayTest() {
-    container.classList.remove("hidden");
-    container.style.display = "flex";
-    sundayDiv.style.justifyContent = "center";
-    sundayDiv.style.display = "block";
-    hideElement(videoContainer); //flex
-    hideElement(timerContainer);
-}
-
-function lockdown() {
-    console.log("lockdown");
-    container.classList.remove("hidden");
-    container.style.display = "flex";
-    document.getElementById("snow").style.display = "none";
-
-    hideElement(videoContainer); //flex
-    timerContainer.style.display = "block";
-    let movieSpoilerCode = currentMovie.code;
-    if (startDate7AM > now) movieSpoilerCode = "???";
-    epTitle.innerText = `
-            The next ${movieSpoilerCode}chunk is currently locked, it will unlock in
-            `;
-    updateCountdown();
-}
-
-// TIMER STUFF
-
-function updateCountdown() {
-    const now = new Date();
-    const nextEightAM = new Date(now);
-    nextEightAM.setHours(8, 0, 0, 0);
-
-    if (now.getHours() >= 8) {
-        nextEightAM.setDate(now.getDate() + 1);
-    }
-
-    const timeDifference = nextEightAM - now;
-    // Unlock if it's 8AM or later
-    if (
-        isPastMidnight() === false &&
-        startDateMidnight < new Date() &&
-        pause !== true
-    ) {
-        updateVideo();
-    } else {
-        const hours = Math.floor(
-            (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor(
-            (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-        const formattedHours = String(hours).padStart(2, "0");
-        const formattedMinutes = String(minutes).padStart(2, "0");
-        const formattedSeconds = String(seconds).padStart(2, "0");
-
-        document.getElementById(
-            "countdown-timer"
-        ).textContent = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-        setTimeout(updateCountdown, 1000);
-    }
-}
-
-// MORB UNLOCK ----------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", (event) => {
-    let buffer = "";
-
-    document.addEventListener("keydown", (event) => {
-        buffer += event.key;
-
-        // Maintain the buffer length to match the length of "morbius"
-        if (buffer.length > 7) {
-            buffer = buffer.slice(-7);
+    show(element) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
         }
+        element.style.display = "flex";
+    }
 
-        // Check if the buffer matches "morbius"
-        if (buffer.toLowerCase() === "morbius") {
-            morb();
+    hide(element) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
         }
-    });
-});
-
-function changeFavicon(src) {
-    const link = document.getElementById("dynamic-favicon");
-    link.href = src;
-}
-
-let tapCount = 0;
-let firstTapTime = 0;
-document.body.addEventListener("click", () => {
-    const currentTime = new Date().getTime();
-
-    if (tapCount === 0) {
-        firstTapTime = currentTime;
+        element.style.display = "none";
     }
 
-    tapCount++;
-
-    if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
-        morb();
-        tapCount = 0; // Reset the tap count
-    } else if (currentTime - firstTapTime > 3000) {
-        tapCount = 1; // Reset the tap count and start over
-        firstTapTime = currentTime;
-    }
-});
-
-async function morb(first) {
-    document.title = "Clifford Chunk Player";
-    changeFavicon(urls.morb.favicon);
-    // alert('You typed "morbius"!');
-    // changeFavicon('favicon2.png');
-    // Additional actions can be added here
-    let currentMorbCount = parseInt(localStorage.getItem("dailyMorbCount"));
-
-    currentMorbCount += robMorbCount; // 1
-    if (currentMorbCount === 0) {
-        currentMorbCount = 1;
-    }
-    videoPlayer.src = urls.morb.chunks[currentMorbCount - 1];
-    // videoPlayer.src = "https://www.dropbox.com/scl/fo/33lhzjjw8bqgklfbjoryl/ANqLB1QxH8stiTQQFo7wIlU/morb04.mp4?rlkey=rsz99lc4trjj2esu1hv93t2xp&raw=1";
-    container.style.display = "flex";
-    // Trigger the transition after ensuring the container is in the DOM
-    if (first) {
-        requestAnimationFrame(() => {
-            container.classList.add("unhidden");
-        });
-    } else {
-        container.classList.remove("hidden");
-    }
-    dayCountDisplay.textContent = `/ ${urls.morb.chunks.length}`;
-    epTitle.innerText = `It's Cliffordin' Time`;
-    numberDisplay.textContent = currentMorbCount;
-    todaysPoster.src = urls.morb.poster;
-    selector.style.pointerEvents = "none";
-    dayCountDisplay.textContent = `${urls.morb.chunks.length}`;
-    const audio = document.getElementById("morbius-sound");
-    audio.play();
-}
-
-async function incrementMorbCount() {
-    console.log("incremented morb count");
-    const url = "https://morbcount-worker.quickreactor.workers.dev/increment";
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("dailyMorbCount", parseInt(data));
-        console.log(`Morb Count incremented to ${data}`);
-        return parseInt(data, 10);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function setMorbCount(value) {
-    console.log(`setting morbCount to ${value}`);
-    const url = `https://morbcount-worker.quickreactor.workers.dev/set?newValue=${value}`;
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("dailyMorbCount", parseInt(data));
-        console.log(`Morb Count set to ${data}`);
-        return parseInt(data, 10);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function resetDecision() {
-    const url =
-        "https://morbcount-worker.quickreactor.workers.dev/resetdecision";
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("decision", data);
-        console.log(`decision is ${data}, and is in localStorage`);
-        return data;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function fetchMorbCountToLocalStorage() {
-    const url = "https://morbcount-worker.quickreactor.workers.dev/check";
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("dailyMorbCount", parseInt(data));
-        console.log(`Morb Count is currently: ${data}, and is in localStorage`);
-        console.log(`robMorbCount is ${robMorbCount}`);
-        return parseInt(data);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function fetchDecisionToLocalStorage() {
-    const url =
-        "https://morbcount-worker.quickreactor.workers.dev/decisionroll";
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("decision", data);
-        console.log(`decision is ${data}, and is in localStorage`);
-        return data;
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-async function fetchRollToLocalStorage() {
-    const url = "https://morbcount-worker.quickreactor.workers.dev/roll";
-    try {
-        const response = await fetch(url);
-        const data = await response.text(); // Handling plain text response
-        localStorage.setItem("dailyRoll", parseInt(data));
-        console.log(`You rolled a: ${data}`);
-        return parseInt(data, 10);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-// MORB ----------------------------------------------------------------------
-
-async function diceVideo(number) {
-    // Update sources by ID
-    document.getElementById("diceSource1").src = `${urls.d20HEVCArray[number - 1]
-        }`;
-    document.getElementById("diceSource2").src = `${urls.d20webmArray[number - 1]
-        }`;
-
-    return new Promise((resolve) => {
-        // Reload the video
-        d20RollerVideo.style.display = "block";
-        d20RollerVideo.load();
-        d20RollerVideo.addEventListener("ended", afterDiceFunction);
-
-        function afterDiceFunction() {
-            // play the specific audio clip
-            playRandomSound(number);
-
-            // Hide the video element
-            setTimeout(() => {
-                d20RollerVideo.classList.add("hidden");
-            }, 2000);
-            setTimeout(() => {
-                d20RollerVideo.style.display = "none";
-                d20RollerVideo.classList.remove("hidden");
-            }, 4000);
-            d20RollerVideo.removeEventListener("ended", afterDiceFunction);
-
-            resolve();
+    addClass(element, className) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
         }
-    });
-}
+        element.classList.add(className);
+    }
 
-function firstVisitToday() {
-    let currentDate = getNZFormattedDate();
-    let lastVisit = localStorage.getItem("lastVisit");
-
-    if (lastVisit) {
-        if (lastVisit === currentDate) {
-            return false;
-        } else {
-            return true;
+    removeClass(element, className) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
         }
-    } else {
-        return true;
+        element.classList.remove(className);
+    }
+
+    setText(element, text) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
+        }
+        element.textContent = text;
+    }
+
+    setHTML(element, html) {
+        if (typeof element === 'string') {
+            element = this.elements[element];
+        }
+        element.innerHTML = html;
+    }
+
+    changeFavicon(src) {
+        const link = document.getElementById("dynamic-favicon");
+        link.href = src;
+    }
+
+    updateTheme(bgColor) {
+        document.documentElement.style.setProperty('--plyr-video-background', bgColor);
+        document.documentElement.style.setProperty('--poster-color', bgColor);
     }
 }
 
-function getNZFormattedDate() {
-    // Create a new Date object and set the time zone to New Zealand
-    const date = new Date();
+// ====================
+// AUDIO MANAGER
+// ====================
 
-    // Extract year, month, and day
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-    const day = String(date.getDate()).padStart(2, "0");
+class AudioManager {
+    constructor(urls = {}) {
+        this.urls = urls;
+        this.sounds = [];
+    }
 
-    // Return formatted date
-    return `${year}${month}${day}`;
-}
+    setUrls(urls) {
+        this.urls = urls;
+    }
 
-function playDiceSound() {
-    // Array of the audio file names
-    const sounds = [
-        "audio/dice-roll01.mp3",
-        "audio/dice-roll02.mp3",
-        "audio/dice-roll03.mp3",
-    ];
+    setSounds(sounds) {
+        this.sounds = sounds;
+    }
 
-    // Get a random index between 0 and 2
-    const randomIndex = Math.floor(Math.random() * sounds.length);
+    playDiceSound() {
+        const diceSounds = [
+            "audio/dice-roll01.mp3",
+            "audio/dice-roll02.mp3", 
+            "audio/dice-roll03.mp3"
+        ];
+        const randomIndex = Math.floor(Math.random() * diceSounds.length);
+        const audio = document.getElementById("diceAudio");
+        audio.src = diceSounds[randomIndex];
+        audio.play();
+        console.log(`Playing dice roll sound ${randomIndex + 1}`);
+    }
 
-    // Get the selected audio file
-    const selectedSound = sounds[randomIndex];
+    playRandomSound(num) {
+        const audioElement = document.getElementById("randomAudio");
+        const randomArrNumber = Utils.getDateBasedRandomIndex(this.urls.randomSoundsCollection.length);
+        const sounds = this.urls.randomSoundsCollection[randomArrNumber];
+        
+        console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
+        audioElement.src = sounds[num - 1];
+        audioElement.play();
 
-    // Get the audio element
-    const audioElement = document.getElementById("diceAudio");
+        if (num === 20) {
+            this.showSonic();
+        }
+    }
 
-    // Set the source of the audio element to the selected sound
-    audioElement.src = selectedSound;
-
-    // Play the audio
-
-    audioElement.play();
-    console.log(`playing dice roll sound ${randomIndex + 1}`);
-}
-
-function playRandomSound(num) {
-    // Array of the audio file names
-    // Get the audio element
-    const audioElement = document.getElementById("randomAudio");
-
-    let randomArrNumber = getDateBasedRandomIndex(
-        urls.randomSoundsCollection.length
-    );
-    sounds = urls.randomSoundsCollection[randomArrNumber];
-    console.log(
-        `Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]
-        }`
-    );
-    // Set the source of the audio element to the selected sound
-    audioElement.src = sounds[num - 1];
-
-    // Play the audio
-
-    audioElement.play();
-    if (num === 20) {
+    showSonic() {
+        const sonic = document.querySelector("#sonic");
         sonic.style.display = "block";
         sonic.classList.add("animate");
         setTimeout(() => {
             sonic.style.display = "none";
         }, 6000);
     }
-}
 
-async function rollForMovieChoice() {
-    d20RollerVideo.addEventListener("playing", playDiceSound);
-    rollButton.classList.add("rolled");
-    localStorage.setItem("randomNumber", await fetchRollToLocalStorage());
-    localStorage.setItem(
-        "dailyMorbCount",
-        await fetchMorbCountToLocalStorage()
-    );
-    randomNumber = parseInt(localStorage.getItem("randomNumber"));
-    console.log(`Daily roll is: ${randomNumber}`);
-    morbCount = parseInt(localStorage.getItem("dailyMorbCount"));
-    await diceVideo(parseInt(randomNumber));
-    // register visit
-    let currentDate = getNZFormattedDate();
-    localStorage.setItem("lastVisit", currentDate);
-    if (randomNumber === 1) {
-        movieWinnerLoser(poster2, poster1);
-        // const audio = document.getElementById('morbius-sound');
-        // audio.play();
-        // localStorage.setItem('dailyMorbCount', await incrementMorbCount());
-        setTimeout(() => {
-            morb(true);
-        }, 4000);
-    } else {
-        await movieWinnerLoser(poster1, poster2);
-        updateVideo(true);
+    playMorbiusSound() {
+        const audio = document.getElementById("morbius-sound");
+        audio.play();
     }
 }
 
-function movieWinnerLoser(winner, loser) {
-    return new Promise((resolve) => {
-        winner.classList.add("winner");
-        let posterComputed = getComputedStyle(winner);
-        let posterMargin = parseFloat(posterComputed.marginLeft);
-        const posterWidth = winner.getBoundingClientRect().width;
-        let rollButtonWidth = rollButton.getBoundingClientRect().width;
-        let movementDistance =
-            posterWidth / 2 + posterMargin + rollButtonWidth / 2;
-        console.log(winner === poster1);
-        if (winner === poster1) {
-            poster1.style.transform = `translate(${movementDistance}px, 0)`;
-            console.log("in");
-        } else {
+// ====================
+// VIDEO MANAGER
+// ====================
+
+class VideoManager {
+    constructor(domManager, audioManager) {
+        this.dom = domManager;
+        this.audio = audioManager;
+        this.urls = {};
+    }
+
+    setUrls(urls) {
+        this.urls = urls;
+    }
+
+    async playDiceVideo(number) {
+        return new Promise((resolve) => {
+            // Update video sources
+            document.getElementById("diceSource1").src = this.urls.d20HEVCArray[number - 1];
+            document.getElementById("diceSource2").src = this.urls.d20webmArray[number - 1];
+
+            const video = this.dom.elements.d20RollerVideo;
+            video.style.display = "block";
+            video.load();
+
+            const handleEnd = () => {
+                this.audio.playRandomSound(number);
+                
+                setTimeout(() => video.classList.add("hidden"), 2000);
+                setTimeout(() => {
+                    video.style.display = "none";
+                    video.classList.remove("hidden");
+                }, 4000);
+                
+                video.removeEventListener("ended", handleEnd);
+                resolve();
+            };
+
+            video.addEventListener("ended", handleEnd);
+        });
+    }
+
+    setupChunkSelector(calculatedChunkNumber, morbCount, chunkArray, titleArray) {
+        const selector = this.dom.elements.chunkSelector;
+        const maxChunk = calculatedChunkNumber - morbCount;
+
+        // Clear existing options
+        selector.innerHTML = '';
+
+        // Add options
+        for (let i = 0; i < maxChunk; i++) {
+            const option = document.createElement("option");
+            option.value = i + 1;
+            option.dataset.display = i + 1;
+            option.dataset.descr = titleArray[i];
+            option.textContent = i + 1;
+            selector.prepend(option);
         }
-        loser.classList.add("hidden", "fade-out-fast");
-        setTimeout(() => {
-            posterSection.classList.add("hidden", "fade-out-slow");
-        }, 2000);
-        setTimeout(() => {
-            posterSection.style.display = "none";
+
+        // Set current value
+        selector.value = maxChunk;
+        this.dom.setText('numberDisplay', maxChunk);
+
+        // Setup event listeners
+        this.setupSelectorEvents(selector, chunkArray, titleArray);
+    }
+
+    setupSelectorEvents(selector, chunkArray, titleArray) {
+        selector.addEventListener("change", (e) => {
+            const selectedValue = parseInt(e.target.value);
+            const selectedIndex = selectedValue - 1;
+            
+            this.dom.elements.videoPlayer.src = chunkArray[selectedIndex];
+            this.dom.setText('epTitle', titleArray[selectedIndex]);
+            this.dom.setText('numberDisplay', selectedValue);
+            e.target.blur();
+        });
+
+        const focusHandler = function() {
+            Array.from(this.options).forEach(o => {
+                o.textContent = `${o.getAttribute("value")}: ${o.getAttribute("data-descr")}`;
+            });
+        };
+
+        const blurHandler = function() {
+            Array.from(this.options).forEach(o => {
+                o.textContent = o.getAttribute("value");
+            });
+        };
+
+        selector.addEventListener("focus", focusHandler);
+        selector.addEventListener("blur", blurHandler);
+        blurHandler.call(selector);
+    }
+}
+
+// ====================
+// EFFECT MANAGER
+// ====================
+
+class EffectManager {
+    constructor() {}
+
+    async movieWinnerLoser(winner, loser, rollButton) {
+        return new Promise((resolve) => {
+            winner.classList.add("winner");
+            const posterComputed = getComputedStyle(winner);
+            const posterMargin = parseFloat(posterComputed.marginLeft);
+            const posterWidth = winner.getBoundingClientRect().width;
+            const rollButtonWidth = rollButton.getBoundingClientRect().width;
+            const movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
+            
+            if (winner.id === "poster-image-1") {
+                winner.style.transform = `translate(${movementDistance}px, 0)`;
+            }
+            
+            loser.classList.add("hidden", "fade-out-fast");
+            
+            setTimeout(() => {
+                document.querySelector(".poster-section").classList.add("hidden", "fade-out-slow");
+            }, 2000);
+            
+            setTimeout(() => {
+                document.querySelector(".poster-section").style.display = "none";
+                requestAnimationFrame(() => resolve());
+            }, 4000);
+        });
+    }
+
+    letItSnowSonic(imageUrl = "./images/sonic-snow.gif") {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
+        script.onload = () => {
+            particlesJS("snow", {
+                particles: {
+                    number: { value: 100, density: { enable: true, value_area: 800 } },
+                    shape: { type: "image", image: { src: imageUrl, width: 100, height: 100 } },
+                    opacity: { value: 0.7, random: false, anim: { enable: false } },
+                    size: { value: 20, random: true, anim: { enable: false } },
+                    line_linked: { enable: false },
+                    move: {
+                        enable: true, speed: 5, direction: "bottom", random: true,
+                        straight: false, out_mode: "out", bounce: false,
+                        attract: { enable: true, rotateX: 300, rotateY: 1200 }
+                    }
+                },
+                interactivity: {
+                    events: { onhover: { enable: false }, onclick: { enable: false }, resize: false }
+                },
+                retina_detect: true
+            });
+        };
+        document.head.append(script);
+    }
+}
+
+// ====================
+// SOUND BOARD MANAGER
+// ====================
+
+class SoundBoardManager {
+    constructor(urls) {
+        this.urls = urls;
+    }
+
+    init() {
+        const soundSets = this.urls.randomSoundsCollection;
+        const grid = document.querySelector('.grid');
+        const tabsContainer = document.querySelector('.tabs');
+        let currentTab = 0;
+
+        const renderTabs = () => {
+            tabsContainer.innerHTML = '';
+            soundSets.forEach((_, index) => {
+                const tab = document.createElement('div');
+                tab.className = 'tab' + (index === 0 ? ' active' : '');
+                tab.dataset.tab = index;
+                tab.textContent = `Set ${index + 1}`;
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTab = index;
+                    renderGrid();
+                });
+                tabsContainer.appendChild(tab);
+            });
+        };
+
+        const renderGrid = () => {
+            grid.innerHTML = '';
+            const set = soundSets[currentTab];
+            set.forEach((sound, i) => {
+                const btn = document.createElement('button');
+                btn.innerHTML = `${i + 1}<br>${sound.split("/").pop().split(".")[0].replace(/^\d+\s*-\s*/, "")}`;
+                btn.addEventListener('click', () => {
+                    const audio = new Audio(sound);
+                    audio.play();
+                });
+                grid.appendChild(btn);
+            });
+        };
+
+        renderTabs();
+        renderGrid();
+    }
+}
+
+// ====================
+// MAIN APPLICATION
+// ====================
+
+class ChunkPlayerApp {
+    constructor() {
+        this.dateManager = new DateManager();
+        this.apiService = new ApiService(CONFIG.api.baseUrl);
+        this.domManager = new DOMManager();
+        this.audioManager = new AudioManager(); // Remove the empty object
+        this.videoManager = new VideoManager(this.domManager, this.audioManager);
+        this.effectManager = new EffectManager();
+        this.soundBoardManager = null;
+        
+        this.urls = {};
+        this.chunkArray = [];
+        this.titleArray = [];
+        this.morbCount = 0;
+        this.randomNumber = 0;
+        
+        this.init();
+    }
+
+    async init() {
+        try {
+            await this.loadUrls();
+            this.setupEventListeners();
+            this.setupDebugMode();
+            await this.runMainLogic();
+        } catch (error) {
+            console.error("Application initialization failed:", error);
+        }
+    }
+
+    async loadUrls() {
+        const response = await fetch("urls.json");
+        this.urls = await response.json();
+        
+        this.chunkArray = this.urls[this.dateManager.currentMovie.code].chunks;
+        this.titleArray = this.urls[this.dateManager.currentMovie.code].titles;
+        
+        this.audioManager.setUrls(this.urls);
+        this.videoManager.setUrls(this.urls);
+        this.soundBoardManager = new SoundBoardManager(this.urls);
+        
+        // Setup special day sounds
+        if (this.dateManager.isRobertBday()) {
+            this.audioManager.setSounds(this.urls.randomSounds_bday);
+            this.effectManager.letItSnowSonic();
+        }
+        
+        // Update theme
+        this.domManager.updateTheme(this.dateManager.currentMovie.bgColor);
+    }
+
+    setupEventListeners() {
+        // Roll button
+        this.domManager.elements.rollButton.addEventListener("click", () => this.rollForMovieChoice());
+        
+        // Archive button
+        this.domManager.elements.archiveButton.addEventListener("click", () => this.updateVideo());
+        
+        // Episode title click (debug dice)
+        this.domManager.elements.epTitle.addEventListener("click", () => {
+            this.videoManager.playDiceVideo(Math.floor(Math.random() * 20 + 1));
+        });
+        
+        // Morb unlock mechanisms
+        this.setupMorbUnlocks();
+    }
+
+    setupMorbUnlocks() {
+        // Keyboard unlock
+        let buffer = "";
+        document.addEventListener("keydown", (event) => {
+            buffer += event.key;
+            if (buffer.length > 7) {
+                buffer = buffer.slice(-7);
+            }
+            if (buffer.toLowerCase() === "morbius") {
+                this.morb();
+            }
+        });
+
+        // Tap unlock
+        let tapCount = 0;
+        let firstTapTime = 0;
+        document.body.addEventListener("click", () => {
+            const currentTime = new Date().getTime();
+            
+            if (tapCount === 0) {
+                firstTapTime = currentTime;
+            }
+            
+            tapCount++;
+            
+            if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
+                this.morb();
+                tapCount = 0;
+            } else if (currentTime - firstTapTime > 3000) {
+                tapCount = 1;
+                firstTapTime = currentTime;
+            }
+        });
+    }
+
+    setupDebugMode() {
+        if (CONFIG.debug.clearLastVisit) {
+            StorageManager.clearLastVisit();
+        }
+    }
+
+    async runMainLogic() {
+        if (this.dateManager.isTodaySunday()) {
+            this.showSundayScreen();
+        } else if (this.shouldLockdown()) {
+            this.lockdown();
+        } else {
+            await this.handleMainFlow();
+        }
+    }
+
+    shouldLockdown() {
+        return this.dateManager.isPastMidnight() || 
+               this.dateManager.startDateMidnight > this.dateManager.now;
+    }
+
+    async handleMainFlow() {
+        if (StorageManager.isFirstVisitToday()) {
+            await this.handleFirstVisit();
+        } else {
+            await this.handleReturnVisit();
+        }
+    }
+
+    async handleFirstVisit() {
+        const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
+        const videoNumberText = calculatedChunkNumber - this.morbCount;
+        
+        // Setup posters
+        this.domManager.show('posterSection');
+        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
+        this.domManager.elements.poster2.src = this.urls.morb.poster;
+    }
+
+    async handleReturnVisit() {
+        this.randomNumber = StorageManager.getInt("randomNumber");
+        this.morbCount = StorageManager.getInt("dailyMorbCount");
+        
+        // Apply debug overrides
+        if (CONFIG.debug.forceRoll) {
+            this.randomNumber = CONFIG.debug.forceRoll;
+        }
+        
+        if (this.randomNumber === 1) {
+            await this.morb();
+        } else {
+            await this.updateVideo();
+        }
+    }
+
+    showSundayScreen() {
+        this.domManager.removeClass('container', 'hidden');
+        this.domManager.show('container');
+        this.domManager.elements.sundayDiv.style.justifyContent = "center";
+        this.domManager.show('sundayDiv');
+        this.domManager.hide('videoContainer');
+        this.domManager.hide('timerContainer');
+    }
+
+    lockdown() {
+        console.log("lockdown");
+        this.domManager.removeClass('container', 'hidden');
+        this.domManager.show('container');
+        document.getElementById("snow").style.display = "none";
+        
+        this.domManager.hide('videoContainer');
+        this.domManager.show('timerContainer');
+        
+        let movieSpoilerCode = this.dateManager.currentMovie.code;
+        if (this.dateManager.startDate7AM > this.dateManager.now) {
+            movieSpoilerCode = "???";
+        }
+        
+        this.domManager.setText('epTitle', `The next ${movieSpoilerCode}chunk is currently locked, it will unlock in`);
+        this.updateCountdown();
+    }
+
+    updateCountdown() {
+        const now = new Date();
+        const nextEightAM = new Date(now);
+        nextEightAM.setHours(8, 0, 0, 0);
+
+        if (now.getHours() >= 8) {
+            nextEightAM.setDate(now.getDate() + 1);
+        }
+
+        const timeDifference = nextEightAM - now;
+        
+        if (!this.dateManager.isPastMidnight() && 
+            this.dateManager.startDateMidnight < new Date()) {
+            this.updateVideo();
+        } else {
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            const formatted = [hours, minutes, seconds]
+                .map(n => String(n).padStart(2, "0"))
+                .join(":");
+
+            this.domManager.setText('countdownTimer', formatted);
+            setTimeout(() => this.updateCountdown(), 1000);
+        }
+    }
+
+    async updateVideo(isFirst = false) {
+        console.log("update video");
+        
+        this.domManager.show('videoContainer');
+        this.domManager.hide('timerContainer');
+        this.domManager.hide('sundayDiv');
+        
+        const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
+        this.morbCount = await this.apiService.getMorbCount();
+        
+        const videoNumberText = calculatedChunkNumber - this.morbCount;
+        const videoNumberIndex = videoNumberText - 1;
+        
+        // Update video
+        this.domManager.elements.videoPlayer.src = this.chunkArray[videoNumberIndex];
+        this.domManager.show('container');
+        
+        // Update displays
+        this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
+        this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
+        
+        // Update poster and favicon
+        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
+        this.domManager.elements.todaysPoster.src = posterSrc;
+        this.domManager.changeFavicon(this.urls[this.dateManager.currentMovie.code].favicon);
+        document.title = `${Utils.toSentenceCase(this.dateManager.currentMovie.code)} Chunk Player`;
+        
+        // Setup selector
+        this.videoManager.setupChunkSelector(calculatedChunkNumber, this.morbCount, this.chunkArray, this.titleArray);
+        
+        console.log(`Days passed: ${calculatedChunkNumber} - Morb count ${this.morbCount} = ${videoNumberText}`);
+        
+        if (isFirst) {
             requestAnimationFrame(() => {
-                resolve(); // Resolve the promise after visual updates are done
+                void this.domManager.elements.container.offsetWidth;
+                this.domManager.removeClass('container', 'hidden');
             });
-        }, 4000);
+        } else {
+            this.domManager.removeClass('container', 'hidden');
+        }
+        
+        this.soundBoardManager.init();
+    }
+
+    async morb(isFirst = false) {
+        document.title = "Clifford Chunk Player";
+        this.domManager.changeFavicon(this.urls.morb.favicon);
+        
+        let currentMorbCount = StorageManager.getInt("dailyMorbCount");
+        currentMorbCount += CONFIG.robMorbCount;
+        if (currentMorbCount === 0) currentMorbCount = 1;
+        
+        this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
+        this.domManager.show('container');
+        
+        if (isFirst) {
+            requestAnimationFrame(() => {
+                this.domManager.addClass('container', 'unhidden');
+            });
+        } else {
+            this.domManager.removeClass('container', 'hidden');
+        }
+        
+        this.domManager.setText('dayCountDisplay', `/ ${this.urls.morb.chunks.length}`);
+        this.domManager.setText('epTitle', "It's Cliffordin' Time");
+        this.domManager.setText('numberDisplay', currentMorbCount);
+        this.domManager.elements.todaysPoster.src = this.urls.morb.poster;
+        this.domManager.elements.chunkSelector.style.pointerEvents = "none";
+        this.domManager.setText('dayCountDisplay', `${this.urls.morb.chunks.length}`);
+        
+        this.audioManager.playMorbiusSound();
+    }
+
+    async rollForMovieChoice() {
+        // Setup dice video event
+        this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
+            this.audioManager.playDiceSound();
+        });
+        
+        this.domManager.addClass('rollButton', 'rolled');
+        
+        // Get roll from API or use debug override
+        const roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
+        const morbCount = await this.apiService.getMorbCount();
+        
+        StorageManager.setInt("randomNumber", roll);
+        StorageManager.setInt("dailyMorbCount", morbCount);
+        
+        this.randomNumber = roll;
+        this.morbCount = morbCount;
+        
+        console.log(`Daily roll is: ${roll}`);
+        
+        await this.videoManager.playDiceVideo(roll);
+        
+        // Register visit
+        StorageManager.registerVisit();
+        
+        if (roll === 1) {
+            await this.effectManager.movieWinnerLoser(
+                this.domManager.elements.poster2, 
+                this.domManager.elements.poster1,
+                this.domManager.elements.rollButton
+            );
+            setTimeout(() => this.morb(true), 4000);
+        } else {
+            await this.effectManager.movieWinnerLoser(
+                this.domManager.elements.poster1, 
+                this.domManager.elements.poster2,
+                this.domManager.elements.rollButton
+            );
+            this.updateVideo(true);
+        }
+    }
+}
+
+// ====================
+// INITIALIZE APPLICATION
+// ====================
+
+// Initialize the application when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.chunkPlayerApp = new ChunkPlayerApp();
     });
+} else {
+    window.chunkPlayerApp = new ChunkPlayerApp();
 }
 
-function clearLastVisit() {
-    localStorage.setItem("lastVisit", "");
-    return "Last visit cleared, roll on!";
-}
+// ====================
+// DEBUG UTILITIES
+// ====================
 
-function toSentenceCase(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function changeVideoPLayerBGColor(value) {
-    document.documentElement.style.setProperty("--poster-color:", value);
-}
-
-function isXmas(date) {
-    const month = date.getMonth();
-    const day = date.getDate();
-
-    return month === 11 && day === 25;
-}
-
-function isRobertBday(date) {
-    const month = date.getMonth();
-    const day = date.getDate();
-
-    return month === 11 && day === 28;
-}
-
-function soundBoardInit() {
-    let soundSets = urls.randomSoundsCollection;
-
-    const grid = document.querySelector('.grid');
-    const tabsContainer = document.querySelector('.tabs');
-    let currentTab = 0;
-
-    function renderTabs() {
-        tabsContainer.innerHTML = '';
-        soundSets.forEach((_, index) => {
-            const tab = document.createElement('div');
-            tab.className = 'tab' + (index === 0 ? ' active' : '');
-            tab.dataset.tab = index;
-            tab.textContent = `Set ${index + 1}`;
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentTab = index;
-                renderGrid();
-            });
-            tabsContainer.appendChild(tab);
-        });
+// Add some helpful debug functions to window for console use
+window.ChunkPlayerDebug = {
+    clearLastVisit() {
+        StorageManager.clearLastVisit();
+        console.log("Last visit cleared, roll on!");
+    },
+    
+    setTestDate(dateString) {
+        CONFIG.debug.testDate = dateString;
+        console.log(`Test date set to: ${dateString}`);
+    },
+    
+    forceRoll(number) {
+        CONFIG.debug.forceRoll = number;
+        console.log(`Next roll forced to: ${number}`);
+    },
+    
+    fakeTomorrow() {
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        CONFIG.debug.testDate = tomorrow.toISOString();
+        window.chunkPlayerApp.dateManager.now = tomorrow;
+        window.chunkPlayerApp = new ChunkPlayerApp();
+        console.log(`Faked tomorrow: ${tomorrow}`);
+    },
+    
+    showConfig() {
+        console.log("Current CONFIG:", CONFIG);
+    },
+    
+    showStorageData() {
+        const data = {
+            lastVisit: StorageManager.get("lastVisit"),
+            randomNumber: StorageManager.getInt("randomNumber"),
+            dailyMorbCount: StorageManager.getInt("dailyMorbCount"),
+            decision: StorageManager.get("decision")
+        };
+        console.log("Storage data:", data);
     }
-
-    function renderGrid() {
-        grid.innerHTML = '';
-        const set = soundSets[currentTab];
-        set.forEach((sound, i) => {
-            const btn = document.createElement('button');
-            btn.innerHTML = `${i + 1}<br>${sound.split("/").pop().split(".")[0].replace(/^\d+\s*-\s*/, "")}`;
-            btn.addEventListener('click', () => {
-                const audio = new Audio(sound);
-                audio.play();
-            });
-            grid.appendChild(btn);
-        });
-    }
-
-    renderTabs();
-    renderGrid();
-}
-
-// function letItSnow () {
-//     var script = document.createElement("script");
-//     script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-//     script.onload = function () {
-//         particlesJS("snow", {
-//             particles: {
-//                 number: {
-//                     value: 200,
-//                     density: {
-//                         enable: true,
-//                         value_area: 800,
-//                     },
-//                 },
-//                 color: {
-//                     value: "#ffffff",
-//                 },
-//                 opacity: {
-//                     value: 0.7,
-//                     random: false,
-//                     anim: {
-//                         enable: false,
-//                     },
-//                 },
-//                 size: {
-//                     value: 5,
-//                     random: true,
-//                     anim: {
-//                         enable: false,
-//                     },
-//                 },
-//                 line_linked: {
-//                     enable: false,
-//                 },
-//                 move: {
-//                     enable: true,
-//                     speed: 5,
-//                     direction: "bottom",
-//                     random: true,
-//                     straight: false,
-//                     out_mode: "out",
-//                     bounce: false,
-//                     attract: {
-//                         enable: true,
-//                         rotateX: 300,
-//                         rotateY: 1200,
-//                     },
-//                 },
-//             },
-//             interactivity: {
-//                 events: {
-//                     onhover: {
-//                         enable: false,
-//                     },
-//                     onclick: {
-//                         enable: false,
-//                     },
-//                     resize: false,
-//                 },
-//             },
-//             retina_detect: true,
-//         });
-//     };
-//     document.head.append(script);
-// };
-
-function letItSnowSonic(imageUrl = "./images/sonic-snow.gif") {
-    var script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-    script.onload = function () {
-        particlesJS("snow", {
-            particles: {
-                number: {
-                    value: 100,
-                    density: {
-                        enable: true,
-                        value_area: 800,
-                    },
-                },
-                shape: {
-                    type: "image",
-                    image: {
-                        src: imageUrl,
-                        width: 100,
-                        height: 100,
-                    },
-                },
-                opacity: {
-                    value: 0.7,
-                    random: false,
-                    anim: {
-                        enable: false,
-                    },
-                },
-                size: {
-                    value: 20,
-                    random: true,
-                    anim: {
-                        enable: false,
-                    },
-                },
-                line_linked: {
-                    enable: false,
-                },
-                move: {
-                    enable: true,
-                    speed: 5,
-                    direction: "bottom",
-                    random: true,
-                    straight: false,
-                    out_mode: "out",
-                    bounce: false,
-                    attract: {
-                        enable: true,
-                        rotateX: 300,
-                        rotateY: 1200,
-                    },
-                },
-            },
-            interactivity: {
-                events: {
-                    onhover: {
-                        enable: false,
-                    },
-                    onclick: {
-                        enable: false,
-                    },
-                    resize: false,
-                },
-            },
-            retina_detect: true,
-        });
-    };
-    document.head.append(script);
-}
-
-function getDateBasedRandomIndex(length) {
-    const today = new Date();
-    const seed =
-        today.getFullYear() * 10000 +
-        (today.getMonth() + 1) * 100 +
-        today.getDate(); // YYYYMMDD
-    const random = Math.sin(seed) * 10000;
-    const index = Math.floor(Math.abs(random) % length);
-    return index;
-}
-
-function fakeTomorrow() {
-    now = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    updateVideo();
-}
+};
