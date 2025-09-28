@@ -32,14 +32,14 @@ const player = new Plyr("#videoPlayer", {
 
 
 const oldMovie = {
-    code: "champagne",
-    startDateString: "2025-08-16",
-    bgColor: "#8D181C"
-}
-const newMovie = {
     code: "rex",
     startDateString: "2025-09-08",
     bgColor: "#FAE401"
+}
+const newMovie = {
+    code: "inner",
+    startDateString: "2025-09-29",
+    bgColor: "#FA682F"
 }
 
 // --------- DATE STUFF
