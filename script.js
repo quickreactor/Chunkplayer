@@ -123,7 +123,7 @@ let randomNumber = 0;
 // Define a global variable to store the JSON data
 let urls = {};
 
-(async () => {
+async function initialSetup() {
     // Fetch the JSON data
     await fetch("urls.json")
         .then((response) => response.json())
@@ -212,7 +212,9 @@ let urls = {};
             }
         })();
     }
-})();
+}
+
+initialSetup();
 
 function hideElement(el) {
     el.style.display = "none";
@@ -232,7 +234,7 @@ function isPastMidnight() {
 async function updateVideo(first) {
     console.log("update video");
     console.log(`User is on ${navigator.userAgent} browser`);
-    videoContainer.style.display ="flex";
+    videoContainer.style.display = "flex";
     timerContainer.style.display = "none";
     sundayDiv.style.display = "none";
     epTitle.innerText = ``;
@@ -314,8 +316,7 @@ async function updateVideo(first) {
     selector.value = calculatedChunkNumber - morbCount;
     numberDisplay.textContent = calculatedChunkNumber - morbCount;
     console.log(
-        `Days passed: ${calculatedChunkNumber} - Morb count ${morbCount} = ${
-            calculatedChunkNumber - morbCount
+        `Days passed: ${calculatedChunkNumber} - Morb count ${morbCount} = ${calculatedChunkNumber - morbCount
         }`
     );
 
@@ -563,12 +564,10 @@ async function fetchRollToLocalStorage() {
 
 async function diceVideo(number) {
     // Update sources by ID
-    document.getElementById("diceSource1").src = `${
-        urls.d20HEVCArray[number - 1]
-    }`;
-    document.getElementById("diceSource2").src = `${
-        urls.d20webmArray[number - 1]
-    }`;
+    document.getElementById("diceSource1").src = `${urls.d20HEVCArray[number - 1]
+        }`;
+    document.getElementById("diceSource2").src = `${urls.d20webmArray[number - 1]
+        }`;
 
     return new Promise((resolve) => {
         // Reload the video
@@ -659,8 +658,7 @@ function playRandomSound(num) {
     );
     sounds = urls.randomSoundsCollection[randomArrNumber];
     console.log(
-        `Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${
-            sounds[num - 1]
+        `Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]
         }`
     );
     // Set the source of the audio element to the selected sound
@@ -770,34 +768,34 @@ function soundBoardInit() {
     let currentTab = 0;
 
     function renderTabs() {
-      tabsContainer.innerHTML = '';
-      soundSets.forEach((_, index) => {
-        const tab = document.createElement('div');
-        tab.className = 'tab' + (index === 0 ? ' active' : '');
-        tab.dataset.tab = index;
-        tab.textContent = `Set ${index + 1}`;
-        tab.addEventListener('click', () => {
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          currentTab = index;
-          renderGrid();
+        tabsContainer.innerHTML = '';
+        soundSets.forEach((_, index) => {
+            const tab = document.createElement('div');
+            tab.className = 'tab' + (index === 0 ? ' active' : '');
+            tab.dataset.tab = index;
+            tab.textContent = `Set ${index + 1}`;
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = index;
+                renderGrid();
+            });
+            tabsContainer.appendChild(tab);
         });
-        tabsContainer.appendChild(tab);
-      });
     }
 
     function renderGrid() {
-      grid.innerHTML = '';
-      const set = soundSets[currentTab];
-      set.forEach((sound, i) => {
-        const btn = document.createElement('button');
-        btn.innerHTML = `${i + 1}<br>${sound.split("/").pop().split(".")[0].replace(/^\d+\s*-\s*/, "")}`;
-        btn.addEventListener('click', () => {
-          const audio = new Audio(sound);
-          audio.play();
+        grid.innerHTML = '';
+        const set = soundSets[currentTab];
+        set.forEach((sound, i) => {
+            const btn = document.createElement('button');
+            btn.innerHTML = `${i + 1}<br>${sound.split("/").pop().split(".")[0].replace(/^\d+\s*-\s*/, "")}`;
+            btn.addEventListener('click', () => {
+                const audio = new Audio(sound);
+                audio.play();
+            });
+            grid.appendChild(btn);
         });
-        grid.appendChild(btn);
-      });
     }
 
     renderTabs();
@@ -948,4 +946,9 @@ function getDateBasedRandomIndex(length) {
     const random = Math.sin(seed) * 10000;
     const index = Math.floor(Math.abs(random) % length);
     return index;
+}
+
+function fakeTomorrow() {
+    now = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    updateVideo();
 }
