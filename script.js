@@ -37,7 +37,7 @@ const CONFIG = {
         clearLastVisit: false
     },
     initialChunkNumber: 1,
-    robMorbCount: 11
+    robMorbCount: 12
 };
 
 // ====================
