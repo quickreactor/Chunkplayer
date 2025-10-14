@@ -678,7 +678,7 @@ class ChunkPlayerApp {
             
             tapCount++;
             
-            if (tapCount === 5 && currentTime - firstTapTime <= 3000) {
+            if (tapCount === 10 && currentTime - firstTapTime <= 3000) {
                 this.morb();
                 tapCount = 0;
             } else if (currentTime - firstTapTime > 3000) {
