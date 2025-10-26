@@ -18,15 +18,15 @@
 const CONFIG = {
     movies: {
         old: {
-            code: "rex",
-            startDateString: "2025-09-08",
-            bgColor: "#FAE401"
-        },
-        new: {
-            code: "inner", 
+            code: "inner",
             startDateString: "2025-09-29",
             bgColor: "#FA682F"
-        }
+        },
+        new: {
+            code: "maximum",
+            startDateString: "2025-10-28",
+            bgColor: "#ADAE6C"
+        },
     },
     api: {
         baseUrl: "https://morbcount-worker.quickreactor.workers.dev"
@@ -34,11 +34,19 @@ const CONFIG = {
     debug: {
         testDate: null, // Set to date string to test specific dates
         forceRoll: null, // Set to number 1-20 to force specific roll
-        clearLastVisit: false
+        clearLastVisit: false,
+        getTestDate: function (ddmm) {
+            const [day, month] = ddmm.split("/").map(Number);
+            const year = new Date().getFullYear();
+            return new Date(year, month - 1, day, 8, 0, 0, 0);
+        }
     },
     initialChunkNumber: 1,
-    robMorbCount: 12
+    robMorbCount: 13,
 };
+
+// UNcommnet fdor testing specific dates
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("28/10");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -86,8 +94,8 @@ class DateManager {
     }
 
     getCurrentMovie() {
-        return this.now > new Date(CONFIG.movies.new.startDateString + "T00:00") 
-            ? CONFIG.movies.new 
+        return this.now > new Date(CONFIG.movies.new.startDateString + "T00:00")
+            ? CONFIG.movies.new
             : CONFIG.movies.old;
     }
 
@@ -214,35 +222,35 @@ class DOMManager {
             // Video elements
             videoPlayer: document.getElementById("videoPlayer"),
             d20RollerVideo: document.getElementById("d20RollerVideo"),
-            
+
             // UI containers
             container: document.querySelector(".container"),
             videoContainer: document.querySelector(".videoContainer"),
             timerContainer: document.querySelector(".timer-container"),
             posterSection: document.querySelector(".poster-section"),
             sundayDiv: document.querySelector(".sunday-div"),
-            
+
             // Posters
             poster1: document.getElementById("poster-image-1"),
             poster2: document.getElementById("poster-image-2"),
             todaysPoster: document.querySelector("#todays-poster"),
-            
+
             // Controls
             rollButton: document.getElementById("roll-button"),
             chunkSelector: document.getElementById("chunkSelector"),
             archiveButton: document.querySelector(".archive-button"),
-            
+
             // Displays
             dayCountDisplay: document.getElementById("dayCount"),
             numberDisplay: document.querySelector(".numberDisplay"),
             epTitle: document.querySelector(".ep-title"),
             countdownTimer: document.getElementById("countdown-timer"),
-            
+
             // Audio
             randomAudio: document.getElementById("randomAudio"),
             diceAudio: document.getElementById("diceAudio"),
             morbiusSound: document.getElementById("morbius-sound"),
-            
+
             // Special
             sonic: document.querySelector("#sonic")
         };
@@ -256,7 +264,7 @@ class DOMManager {
                 iosNative: true,
             },
             controls: [
-                "play-large", "play", "progress", "current-time", 
+                "play-large", "play", "progress", "current-time",
                 "duration", "pip", "fullscreen",
             ],
         });
@@ -336,7 +344,7 @@ class AudioManager {
     playDiceSound() {
         const diceSounds = [
             "audio/dice-roll01.mp3",
-            "audio/dice-roll02.mp3", 
+            "audio/dice-roll02.mp3",
             "audio/dice-roll03.mp3"
         ];
         const randomIndex = Math.floor(Math.random() * diceSounds.length);
@@ -350,7 +358,7 @@ class AudioManager {
         const audioElement = document.getElementById("randomAudio");
         const randomArrNumber = Utils.getDateBasedRandomIndex(this.urls.randomSoundsCollection.length);
         const sounds = this.urls.randomSoundsCollection[randomArrNumber];
-        
+
         console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
         audioElement.src = sounds[num - 1];
         audioElement.play();
@@ -402,13 +410,13 @@ class VideoManager {
 
             const handleEnd = () => {
                 this.audio.playRandomSound(number);
-                
+
                 setTimeout(() => video.classList.add("hidden"), 2000);
                 setTimeout(() => {
                     video.style.display = "none";
                     video.classList.remove("hidden");
                 }, 4000);
-                
+
                 video.removeEventListener("ended", handleEnd);
                 resolve();
             };
@@ -446,20 +454,20 @@ class VideoManager {
         selector.addEventListener("change", (e) => {
             const selectedValue = parseInt(e.target.value);
             const selectedIndex = selectedValue - 1;
-            
+
             this.dom.elements.videoPlayer.src = chunkArray[selectedIndex];
             this.dom.setText('epTitle', titleArray[selectedIndex]);
             this.dom.setText('numberDisplay', selectedValue);
             e.target.blur();
         });
 
-        const focusHandler = function() {
+        const focusHandler = function () {
             Array.from(this.options).forEach(o => {
                 o.textContent = `${o.getAttribute("value")}: ${o.getAttribute("data-descr")}`;
             });
         };
 
-        const blurHandler = function() {
+        const blurHandler = function () {
             Array.from(this.options).forEach(o => {
                 o.textContent = o.getAttribute("value");
             });
@@ -476,7 +484,7 @@ class VideoManager {
 // ====================
 
 class EffectManager {
-    constructor() {}
+    constructor() { }
 
     async movieWinnerLoser(winner, loser, rollButton) {
         return new Promise((resolve) => {
@@ -486,17 +494,17 @@ class EffectManager {
             const posterWidth = winner.getBoundingClientRect().width;
             const rollButtonWidth = rollButton.getBoundingClientRect().width;
             const movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
-            
+
             if (winner.id === "poster-image-1") {
                 winner.style.transform = `translate(${movementDistance}px, 0)`;
             }
-            
+
             loser.classList.add("hidden", "fade-out-fast");
-            
+
             setTimeout(() => {
                 document.querySelector(".poster-section").classList.add("hidden", "fade-out-slow");
             }, 2000);
-            
+
             setTimeout(() => {
                 document.querySelector(".poster-section").style.display = "none";
                 requestAnimationFrame(() => resolve());
@@ -595,13 +603,13 @@ class ChunkPlayerApp {
         this.videoManager = new VideoManager(this.domManager, this.audioManager);
         this.effectManager = new EffectManager();
         this.soundBoardManager = null;
-        
+
         this.urls = {};
         this.chunkArray = [];
         this.titleArray = [];
         this.morbCount = 0;
         this.randomNumber = 0;
-        
+
         this.init();
     }
 
@@ -619,20 +627,20 @@ class ChunkPlayerApp {
     async loadUrls() {
         const response = await fetch("urls.json");
         this.urls = await response.json();
-        
+
         this.chunkArray = this.urls[this.dateManager.currentMovie.code].chunks;
         this.titleArray = this.urls[this.dateManager.currentMovie.code].titles;
-        
+
         this.audioManager.setUrls(this.urls);
         this.videoManager.setUrls(this.urls);
         this.soundBoardManager = new SoundBoardManager(this.urls);
-        
+
         // Setup special day sounds
         if (this.dateManager.isRobertBday()) {
             this.audioManager.setSounds(this.urls.randomSounds_bday);
             this.effectManager.letItSnowSonic();
         }
-        
+
         // Update theme
         this.domManager.updateTheme(this.dateManager.currentMovie.bgColor);
     }
@@ -640,15 +648,15 @@ class ChunkPlayerApp {
     setupEventListeners() {
         // Roll button
         this.domManager.elements.rollButton.addEventListener("click", () => this.rollForMovieChoice());
-        
+
         // Archive button
         this.domManager.elements.archiveButton.addEventListener("click", () => this.updateVideo());
-        
+
         // Episode title click (debug dice)
         this.domManager.elements.epTitle.addEventListener("click", () => {
             this.videoManager.playDiceVideo(Math.floor(Math.random() * 20 + 1));
         });
-        
+
         // Morb unlock mechanisms
         this.setupMorbUnlocks();
     }
@@ -671,13 +679,13 @@ class ChunkPlayerApp {
         let firstTapTime = 0;
         document.body.addEventListener("click", () => {
             const currentTime = new Date().getTime();
-            
+
             if (tapCount === 0) {
                 firstTapTime = currentTime;
             }
-            
+
             tapCount++;
-            
+
             if (tapCount === 10 && currentTime - firstTapTime <= 3000) {
                 this.morb();
                 tapCount = 0;
@@ -705,8 +713,8 @@ class ChunkPlayerApp {
     }
 
     shouldLockdown() {
-        return this.dateManager.isPastMidnight() || 
-               this.dateManager.startDateMidnight > this.dateManager.now;
+        return this.dateManager.isPastMidnight() ||
+            this.dateManager.startDateMidnight > this.dateManager.now;
     }
 
     async handleMainFlow() {
@@ -720,7 +728,7 @@ class ChunkPlayerApp {
     async handleFirstVisit() {
         const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
         const videoNumberText = calculatedChunkNumber - this.morbCount;
-        
+
         // Setup posters
         this.domManager.show('posterSection');
         this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
@@ -730,12 +738,12 @@ class ChunkPlayerApp {
     async handleReturnVisit() {
         this.randomNumber = StorageManager.getInt("randomNumber");
         this.morbCount = StorageManager.getInt("dailyMorbCount");
-        
+
         // Apply debug overrides
         if (CONFIG.debug.forceRoll) {
             this.randomNumber = CONFIG.debug.forceRoll;
         }
-        
+
         if (this.randomNumber === 1) {
             await this.morb();
         } else {
@@ -757,15 +765,15 @@ class ChunkPlayerApp {
         this.domManager.removeClass('container', 'hidden');
         this.domManager.show('container');
         document.getElementById("snow").style.display = "none";
-        
+
         this.domManager.hide('videoContainer');
         this.domManager.show('timerContainer');
-        
+
         let movieSpoilerCode = this.dateManager.currentMovie.code;
         if (this.dateManager.startDate7AM > this.dateManager.now) {
             movieSpoilerCode = "???";
         }
-        
+
         this.domManager.setText('epTitle', `The next ${movieSpoilerCode}chunk is currently locked, it will unlock in`);
         this.updateCountdown();
     }
@@ -780,8 +788,8 @@ class ChunkPlayerApp {
         }
 
         const timeDifference = nextEightAM - now;
-        
-        if (!this.dateManager.isPastMidnight() && 
+
+        if (!this.dateManager.isPastMidnight() &&
             this.dateManager.startDateMidnight < new Date()) {
             this.updateVideo();
         } else {
@@ -800,36 +808,36 @@ class ChunkPlayerApp {
 
     async updateVideo(isFirst = false) {
         console.log("update video");
-        
+
         this.domManager.show('videoContainer');
         this.domManager.hide('timerContainer');
         this.domManager.hide('sundayDiv');
-        
+
         const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
         this.morbCount = await this.apiService.getMorbCount();
-        
+
         const videoNumberText = calculatedChunkNumber - this.morbCount;
         const videoNumberIndex = videoNumberText - 1;
-        
+
         // Update video
         this.domManager.elements.videoPlayer.src = this.chunkArray[videoNumberIndex];
         this.domManager.show('container');
-        
+
         // Update displays
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
-        
+
         // Update poster and favicon
         const posterSrc = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
         this.domManager.elements.todaysPoster.src = posterSrc;
         this.domManager.changeFavicon(this.urls[this.dateManager.currentMovie.code].favicon);
         document.title = `${Utils.toSentenceCase(this.dateManager.currentMovie.code)} Chunk Player`;
-        
+
         // Setup selector
         this.videoManager.setupChunkSelector(calculatedChunkNumber, this.morbCount, this.chunkArray, this.titleArray);
-        
+
         console.log(`Days passed: ${calculatedChunkNumber} - Morb count ${this.morbCount} = ${videoNumberText}`);
-        
+
         if (isFirst) {
             requestAnimationFrame(() => {
                 void this.domManager.elements.container.offsetWidth;
@@ -838,21 +846,21 @@ class ChunkPlayerApp {
         } else {
             this.domManager.removeClass('container', 'hidden');
         }
-        
+
         this.soundBoardManager.init();
     }
 
     async morb(isFirst = false) {
         document.title = "Clifford Chunk Player";
         this.domManager.changeFavicon(this.urls.morb.favicon);
-        
+
         let currentMorbCount = StorageManager.getInt("dailyMorbCount");
         currentMorbCount += CONFIG.robMorbCount;
         if (currentMorbCount === 0) currentMorbCount = 1;
-        
+
         this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
         this.domManager.show('container');
-        
+
         if (isFirst) {
             requestAnimationFrame(() => {
                 this.domManager.addClass('container', 'unhidden');
@@ -860,14 +868,14 @@ class ChunkPlayerApp {
         } else {
             this.domManager.removeClass('container', 'hidden');
         }
-        
+
         this.domManager.setText('dayCountDisplay', `/ ${this.urls.morb.chunks.length}`);
         this.domManager.setText('epTitle', "It's Cliffordin' Time");
         this.domManager.setText('numberDisplay', currentMorbCount);
         this.domManager.elements.todaysPoster.src = this.urls.morb.poster;
         this.domManager.elements.chunkSelector.style.pointerEvents = "none";
         this.domManager.setText('dayCountDisplay', `${this.urls.morb.chunks.length}`);
-        
+
         this.audioManager.playMorbiusSound();
     }
 
@@ -876,36 +884,36 @@ class ChunkPlayerApp {
         this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
             this.audioManager.playDiceSound();
         });
-        
+
         this.domManager.addClass('rollButton', 'rolled');
-        
+
         // Get roll from API or use debug override
         const roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
         const morbCount = await this.apiService.getMorbCount();
-        
+
         StorageManager.setInt("randomNumber", roll);
         StorageManager.setInt("dailyMorbCount", morbCount);
-        
+
         this.randomNumber = roll;
         this.morbCount = morbCount;
-        
+
         console.log(`Daily roll is: ${roll}`);
-        
+
         await this.videoManager.playDiceVideo(roll);
-        
+
         // Register visit
         StorageManager.registerVisit();
-        
+
         if (roll === 1) {
             await this.effectManager.movieWinnerLoser(
-                this.domManager.elements.poster2, 
+                this.domManager.elements.poster2,
                 this.domManager.elements.poster1,
                 this.domManager.elements.rollButton
             );
             setTimeout(() => this.morb(true), 4000);
         } else {
             await this.effectManager.movieWinnerLoser(
-                this.domManager.elements.poster1, 
+                this.domManager.elements.poster1,
                 this.domManager.elements.poster2,
                 this.domManager.elements.rollButton
             );
@@ -937,17 +945,17 @@ window.ChunkPlayerDebug = {
         StorageManager.clearLastVisit();
         console.log("Last visit cleared, roll on!");
     },
-    
+
     setTestDate(dateString) {
         CONFIG.debug.testDate = dateString;
         console.log(`Test date set to: ${dateString}`);
     },
-    
+
     forceRoll(number) {
         CONFIG.debug.forceRoll = number;
         console.log(`Next roll forced to: ${number}`);
     },
-    
+
     fakeTomorrow() {
         const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
         CONFIG.debug.testDate = tomorrow.toISOString();
@@ -955,11 +963,11 @@ window.ChunkPlayerDebug = {
         window.chunkPlayerApp = new ChunkPlayerApp();
         console.log(`Faked tomorrow: ${tomorrow}`);
     },
-    
+
     showConfig() {
         console.log("Current CONFIG:", CONFIG);
     },
-    
+
     showStorageData() {
         const data = {
             lastVisit: StorageManager.get("lastVisit"),
