@@ -24,7 +24,7 @@ const CONFIG = {
         },
         new: {
             code: "maximum",
-            startDateString: "2025-10-28",
+            startDateString: "2025-10-27",
             bgColor: "#ADAE6C"
         },
     },
