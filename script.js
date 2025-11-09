@@ -42,7 +42,7 @@ const CONFIG = {
         }
     },
     initialChunkNumber: 1,
-    robMorbCount: 14,
+    robMorbCount: 1,
 };
 
 // UNcommnet fdor testing specific dates
