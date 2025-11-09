@@ -654,6 +654,8 @@
         "favicon": "images/favicons/rex.png"
     },
     "inner": {
+        "startDateString": "2025-09-29",
+        "bgColor": "#FA682F",
         "chunks": [
             "https://www.dropbox.com/scl/fo/3n7o30jydi2dqqz1zvfir/APPBfH46dwyADYj1NSMb7Ec/inner01.mp4?rlkey=9onzi473axfxd09dvd3rrztls&raw=1",
             "https://www.dropbox.com/scl/fo/3n7o30jydi2dqqz1zvfir/AHivwPmq_G_CJaKKVvjzpu8/inner02.mp4?rlkey=9onzi473axfxd09dvd3rrztls&raw=1",
@@ -708,6 +710,8 @@
         "favicon": "images/favicons/inner.png"
     },
     "maximum": {
+        "startDateString": "2025-10-30",
+        "bgColor": "#ADAE6C",
         "chunks": [
             "https://www.dropbox.com/scl/fo/3c6oq7uv3f0b8uh6vltvx/AKQ-yKEA5EdgpGWr2V55fPc/maximum01.mp4?rlkey=o4pg785hxh9rg83wzgkykae4r&raw=1",
             "https://www.dropbox.com/scl/fo/3c6oq7uv3f0b8uh6vltvx/AOnxcrw3MvmtldcpEqAEASQ/maximum02.mp4?rlkey=o4pg785hxh9rg83wzgkykae4r&raw=1",
@@ -754,6 +758,8 @@
         "favicon": "images/favicons/maximum.png"
     },
     "placeholder": {
+        "startDateString": "2025-09-29",
+        "bgColor": "#FA682F",
         "chunks": [],
         "titles": [],
         "poster": "",

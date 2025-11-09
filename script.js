@@ -1,39 +1,16 @@
-// TODO make the call to CF workers just one per day that will return the movieCode, roll and morbcount
-
-// redo a bunch of stuff with eventlisteners
-// use metadata eventlistener to set size of vidoe player
-// use canplay event to show the video player (fade in) when it's ready
-
-//IDEAS
-// travolta confused
-// Wowww guy
-// nice guy micheal rosen
-//blinking guy
-//
-//
 // ====================
 // CONFIG & CONSTANTS
 // ====================
+let oldMovieCode = "inner";
+let newMovieCode = "maximum";
 
-const CONFIG = {
-    movies: {
-        old: {
-            code: "inner",
-            startDateString: "2025-09-29",
-            bgColor: "#FA682F"
-        },
-        new: {
-            code: "maximum",
-            startDateString: "2025-10-30",
-            bgColor: "#ADAE6C"
-        },
-    },
+let CONFIG = {
     api: {
         baseUrl: "https://morbcount-worker.quickreactor.workers.dev"
     },
     debug: {
-        testDate: null, // Set to date string to test specific dates
-        forceRoll: null, // Set to number 1-20 to force specific roll
+        testDate: null,
+        forceRoll: null,
         clearLastVisit: false,
         getTestDate: function (ddmm) {
             const [day, month] = ddmm.split("/").map(Number);
@@ -43,10 +20,11 @@ const CONFIG = {
     },
     initialChunkNumber: 1,
     robMorbCount: 1,
+    movies: null // Will be set after loading urls.json
 };
 
-// UNcommnet fdor testing specific dates
-CONFIG.debug.testDate = CONFIG.debug.getTestDate("10/11");
+// Uncomment for testing specific dates
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("10/11");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -86,17 +64,30 @@ const Utils = {
 // ====================
 
 class DateManager {
-    constructor() {
+    constructor(movies = null) {
         this.now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
-        this.currentMovie = this.getCurrentMovie();
-        this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
-        this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
+        this.movies = movies; // Store movies reference
+        
+        if (this.movies) {
+            this.currentMovie = this.getCurrentMovie();
+            this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
+            this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
+        }
     }
 
     getCurrentMovie() {
-        return this.now > new Date(CONFIG.movies.new.startDateString + "T00:00")
-            ? CONFIG.movies.new
-            : CONFIG.movies.old;
+        if (!this.movies) return null;
+        return this.now > new Date(this.movies.new.startDateString + "T00:00")
+            ? this.movies.new
+            : this.movies.old;
+    }
+
+    // Update movies and recalculate dependent properties
+    setMovies(movies) {
+        this.movies = movies;
+        this.currentMovie = this.getCurrentMovie();
+        this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
+        this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
     }
 
     isTodaySunday() {
@@ -115,7 +106,7 @@ class DateManager {
     calculateChunkNumber() {
         let calculatedChunkNumber = CONFIG.initialChunkNumber - 1;
         for (let d = new Date(this.startDateMidnight); d <= this.now; d.setDate(d.getDate() + 1)) {
-            if (d.getDay() !== 0) { // Skip Sundays
+            if (d.getDay() !== 0) {
                 calculatedChunkNumber++;
             }
         }
@@ -222,39 +213,26 @@ class DOMManager {
 
     getElements() {
         return {
-            // Video elements
             videoPlayer: document.getElementById("videoPlayer"),
             d20RollerVideo: document.getElementById("d20RollerVideo"),
-
-            // UI containers
             container: document.querySelector(".container"),
             videoContainer: document.querySelector(".videoContainer"),
             timerContainer: document.querySelector(".timer-container"),
             posterSection: document.querySelector(".poster-section"),
             sundayDiv: document.querySelector(".sunday-div"),
-
-            // Posters
             poster1: document.getElementById("poster-image-1"),
             poster2: document.getElementById("poster-image-2"),
             todaysPoster: document.querySelector("#todays-poster"),
-
-            // Controls
             rollButton: document.getElementById("roll-button"),
             chunkSelector: document.getElementById("chunkSelector"),
             archiveButton: document.querySelector(".archive-button"),
-
-            // Displays
             dayCountDisplay: document.getElementById("dayCount"),
             numberDisplay: document.querySelector(".numberDisplay"),
             epTitle: document.querySelector(".ep-title"),
             countdownTimer: document.getElementById("countdown-timer"),
-
-            // Audio
             randomAudio: document.getElementById("randomAudio"),
             diceAudio: document.getElementById("diceAudio"),
             morbiusSound: document.getElementById("morbius-sound"),
-
-            // Special
             sonic: document.querySelector("#sonic")
         };
     }
@@ -404,7 +382,6 @@ class VideoManager {
 
     async playDiceVideo(number) {
         return new Promise((resolve) => {
-            // Update video sources
             document.getElementById("diceSource1").src = this.urls.d20HEVCArray[number - 1];
             document.getElementById("diceSource2").src = this.urls.d20webmArray[number - 1];
 
@@ -433,10 +410,8 @@ class VideoManager {
         const selector = this.dom.elements.chunkSelector;
         const maxChunk = calculatedChunkNumber - morbCount;
 
-        // Clear existing options
         selector.innerHTML = '';
 
-        // Add options
         for (let i = 0; i < maxChunk; i++) {
             const option = document.createElement("option");
             option.value = i + 1;
@@ -446,11 +421,9 @@ class VideoManager {
             selector.prepend(option);
         }
 
-        // Set current value
         selector.value = maxChunk;
         this.dom.setText('numberDisplay', maxChunk);
 
-        // Setup event listeners
         this.setupSelectorEvents(selector, chunkArray, titleArray);
     }
 
@@ -600,13 +573,13 @@ class SoundBoardManager {
 
 class ChunkPlayerApp {
     constructor() {
-        this.dateManager = new DateManager();
         this.apiService = new ApiService(CONFIG.api.baseUrl);
         this.domManager = new DOMManager();
-        this.audioManager = new AudioManager(); // Remove the empty object
+        this.audioManager = new AudioManager();
         this.videoManager = new VideoManager(this.domManager, this.audioManager);
         this.effectManager = new EffectManager();
         this.soundBoardManager = null;
+        this.dateManager = null; // Will be initialized after loading URLs
 
         this.urls = {};
         this.chunkArray = [];
@@ -632,6 +605,23 @@ class ChunkPlayerApp {
         const response = await fetch("urls.json");
         this.urls = await response.json();
 
+        // Set CONFIG.movies first
+        CONFIG.movies = {
+            old: {
+                code: oldMovieCode,
+                startDateString: this.urls[oldMovieCode].startDateString,
+                bgColor: this.urls[oldMovieCode].bgColor
+            },
+            new: {
+                code: newMovieCode,
+                startDateString: this.urls[newMovieCode].startDateString,
+                bgColor: this.urls[newMovieCode].bgColor
+            }
+        };
+
+        // NOW create DateManager with movies configured
+        this.dateManager = new DateManager(CONFIG.movies);
+
         this.chunkArray = this.urls[this.dateManager.currentMovie.code].chunks;
         this.titleArray = this.urls[this.dateManager.currentMovie.code].titles;
 
@@ -650,23 +640,16 @@ class ChunkPlayerApp {
     }
 
     setupEventListeners() {
-        // Roll button
         this.domManager.elements.rollButton.addEventListener("click", () => this.rollForMovieChoice());
-
-        // Archive button
         this.domManager.elements.archiveButton.addEventListener("click", () => this.updateVideo());
-
-        // Episode title click (debug dice)
         this.domManager.elements.epTitle.addEventListener("click", () => {
             this.videoManager.playDiceVideo(Math.floor(Math.random() * 20 + 1));
         });
 
-        // Morb unlock mechanisms
         this.setupMorbUnlocks();
     }
 
     setupMorbUnlocks() {
-        // Keyboard unlock
         let buffer = "";
         document.addEventListener("keydown", (event) => {
             buffer += event.key;
@@ -678,7 +661,6 @@ class ChunkPlayerApp {
             }
         });
 
-        // Tap unlock
         let tapCount = 0;
         let firstTapTime = 0;
         document.body.addEventListener("click", () => {
@@ -733,7 +715,6 @@ class ChunkPlayerApp {
         const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
         const videoNumberText = calculatedChunkNumber - this.morbCount;
 
-        // Setup posters
         this.domManager.show('posterSection');
         this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
         this.domManager.elements.poster2.src = this.urls.morb.poster;
@@ -743,7 +724,6 @@ class ChunkPlayerApp {
         this.randomNumber = StorageManager.getInt("randomNumber");
         this.morbCount = StorageManager.getInt("dailyMorbCount");
 
-        // Apply debug overrides
         if (CONFIG.debug.forceRoll) {
             this.randomNumber = CONFIG.debug.forceRoll;
         }
@@ -778,7 +758,7 @@ class ChunkPlayerApp {
             movieSpoilerCode = "???";
         }
 
-        this.domManager.setText('epTitle', `The next ${movieSpoilerCode}chunk is currently locked, it will unlock in`);
+        this.domManager.setText('epTitle', `The next ${movieSpoilerCode} chunk is currently locked, it will unlock in`);
         this.updateCountdown();
     }
 
@@ -823,21 +803,17 @@ class ChunkPlayerApp {
         const videoNumberText = calculatedChunkNumber - this.morbCount;
         const videoNumberIndex = videoNumberText - 1;
 
-        // Update video
         this.domManager.elements.videoPlayer.src = this.chunkArray[videoNumberIndex];
         this.domManager.show('container');
 
-        // Update displays
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
 
-        // Update poster and favicon
         const posterSrc = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
         this.domManager.elements.todaysPoster.src = posterSrc;
         this.domManager.changeFavicon(this.urls[this.dateManager.currentMovie.code].favicon);
         document.title = `${Utils.toSentenceCase(this.dateManager.currentMovie.code)} Chunk Player`;
 
-        // Setup selector
         this.videoManager.setupChunkSelector(calculatedChunkNumber, this.morbCount, this.chunkArray, this.titleArray);
 
         console.log(`Days passed: ${calculatedChunkNumber} - Morb count ${this.morbCount} = ${videoNumberText}`);
@@ -858,9 +834,9 @@ class ChunkPlayerApp {
         document.title = `${this.urls.morb.name} Chunk Player`;
         this.domManager.changeFavicon(this.urls.morb.favicon);
 
-        let currentMorbCount = this.apiService.getMorbCount();
+        let currentMorbCount = await this.apiService.getMorbCount();
         currentMorbCount += CONFIG.robMorbCount;
-        console.log(`curent mor ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
+        console.log(`current morb ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
         if (currentMorbCount === 0) currentMorbCount = 1;
 
         this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
@@ -885,14 +861,12 @@ class ChunkPlayerApp {
     }
 
     async rollForMovieChoice() {
-        // Setup dice video event
         this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
             this.audioManager.playDiceSound();
         });
 
         this.domManager.addClass('rollButton', 'rolled');
 
-        // Get roll from API or use debug override
         const roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
         const morbCount = await this.apiService.getMorbCount();
 
@@ -906,7 +880,6 @@ class ChunkPlayerApp {
 
         await this.videoManager.playDiceVideo(roll);
 
-        // Register visit
         StorageManager.registerVisit();
 
         if (roll === 1) {
@@ -931,7 +904,6 @@ class ChunkPlayerApp {
 // INITIALIZE APPLICATION
 // ====================
 
-// Initialize the application when DOM is loaded
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.chunkPlayerApp = new ChunkPlayerApp();
@@ -944,7 +916,6 @@ if (document.readyState === 'loading') {
 // DEBUG UTILITIES
 // ====================
 
-// Add some helpful debug functions to window for console use
 window.ChunkPlayerDebug = {
     clearLastVisit() {
         StorageManager.clearLastVisit();
