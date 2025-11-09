@@ -19,7 +19,6 @@ let CONFIG = {
         }
     },
     initialChunkNumber: 1,
-    robMorbCount: 1,
     movies: null // Will be set after loading urls.json
 };
 
@@ -619,6 +618,8 @@ class ChunkPlayerApp {
             }
         };
 
+        CONFIG.robMorbCount = this.urls.robMorbCount;
+
         // NOW create DateManager with movies configured
         this.dateManager = new DateManager(CONFIG.movies);
 
@@ -835,8 +836,8 @@ class ChunkPlayerApp {
         this.domManager.changeFavicon(this.urls.morb.favicon);
 
         let currentMorbCount = await this.apiService.getMorbCount();
+        console.log(`remote morb ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
         currentMorbCount += CONFIG.robMorbCount;
-        console.log(`current morb ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
         if (currentMorbCount === 0) currentMorbCount = 1;
 
         this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
