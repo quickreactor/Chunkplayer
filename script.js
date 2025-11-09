@@ -46,7 +46,7 @@ const CONFIG = {
 };
 
 // UNcommnet fdor testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("28/10");
+CONFIG.debug.testDate = CONFIG.debug.getTestDate("10/11");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -134,10 +134,13 @@ class ApiService {
 
     async fetchText(endpoint) {
         try {
+            console.log(`📡 Fetching from ${this.baseUrl}/${endpoint}`);
             const response = await fetch(`${this.baseUrl}/${endpoint}`);
-            return await response.text();
+            const result = await response.text();
+            console.log(`✅ Result from ${endpoint}:`, result);
+            return result;
         } catch (error) {
-            console.error(`API Error (${endpoint}):`, error);
+            console.error(`❌ API Error (${endpoint}):`, error);
             throw error;
         }
     }
@@ -379,6 +382,7 @@ class AudioManager {
 
     playMorbiusSound() {
         const audio = document.getElementById("morbius-sound");
+        audio.src = this.urls.morb.sound;
         audio.play();
     }
 }
@@ -851,11 +855,12 @@ class ChunkPlayerApp {
     }
 
     async morb(isFirst = false) {
-        document.title = "Clifford Chunk Player";
+        document.title = `${this.urls.morb.name} Chunk Player`;
         this.domManager.changeFavicon(this.urls.morb.favicon);
 
-        let currentMorbCount = StorageManager.getInt("dailyMorbCount");
+        let currentMorbCount = this.apiService.getMorbCount();
         currentMorbCount += CONFIG.robMorbCount;
+        console.log(`curent mor ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
         if (currentMorbCount === 0) currentMorbCount = 1;
 
         this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
@@ -870,7 +875,7 @@ class ChunkPlayerApp {
         }
 
         this.domManager.setText('dayCountDisplay', `/ ${this.urls.morb.chunks.length}`);
-        this.domManager.setText('epTitle', "It's Cliffordin' Time");
+        this.domManager.setText('epTitle', this.urls.morb.title);
         this.domManager.setText('numberDisplay', currentMorbCount);
         this.domManager.elements.todaysPoster.src = this.urls.morb.poster;
         this.domManager.elements.chunkSelector.style.pointerEvents = "none";

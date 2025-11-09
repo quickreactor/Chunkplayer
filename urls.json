@@ -1,5 +1,6 @@
 {
     "morb": {
+        "name": "joker",
         "chunks": [
             "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AElbH0odmT8xpMnTsu3VY-0/joker01.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1",
             "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AE5dM9FUklxBgQ40jaZpr0Q/joker02.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1",
@@ -28,9 +29,8 @@
             "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AGB0Fc1NIoVXIvLc0l6a-e0/joker25.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1",
             "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AOgyaNLxfjttIS2veJScoCY/joker26.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1"
         ],
-        "titles": [
-            "It's Jokerin' Time"
-        ],
+        "title": "It's Jokerin' Time",
+        "sound": "audio/joker.mp3",
         "poster": "images/joker.jpg",
         "favicon": "images/favicons/morb.png"
     },
@@ -750,7 +750,7 @@
             "The Truckening",
             "Get Trucked"
         ],
-        "poster": "images/maximum.jpg",
+        "poster": "images/maximum2.jpg",
         "favicon": "images/favicons/maximum.png"
     },
     "placeholder": {
