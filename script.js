@@ -1,8 +1,8 @@
 // ====================
 // CONFIG & CONSTANTS
 // ====================
-let oldMovieCode = "inner";
-let newMovieCode = "maximum";
+let oldMovieCode = "maximum";
+let newMovieCode = "toxic";
 
 let CONFIG = {
     api: {
@@ -23,7 +23,7 @@ let CONFIG = {
 };
 
 // Uncomment for testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("10/11");
+CONFIG.debug.testDate = CONFIG.debug.getTestDate("26/11");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -810,9 +810,9 @@ class ChunkPlayerApp {
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
 
-        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
+        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${this.dateManager.currentMovie.code}.jpg`;
         this.domManager.elements.todaysPoster.src = posterSrc;
-        this.domManager.changeFavicon(this.urls[this.dateManager.currentMovie.code].favicon);
+        this.domManager.changeFavicon(`images/favicons/${this.dateManager.currentMovie.code}.png`);
         document.title = `${Utils.toSentenceCase(this.dateManager.currentMovie.code)} Chunk Player`;
 
         this.videoManager.setupChunkSelector(calculatedChunkNumber, this.morbCount, this.chunkArray, this.titleArray);

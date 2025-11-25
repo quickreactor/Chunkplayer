@@ -758,13 +758,59 @@
         "poster": "images/maximum2.jpg",
         "favicon": "images/favicons/maximum.png"
     },
+    "toxic": {
+        "startDateString": "2025-11-26",
+        "bgColor": "#90ff1c",
+        "chunks": [
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ALztXmvAOltv4DX7sMM-7qE/toxic01.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AGvJ9zZhmstLCi34nev9xpo/toxic02.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AI53wBECFdimyHM3Hj4acTo/toxic03.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ACCIdl8FfcCQjC4mvg0bWoA/toxic04.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AIkRSYoJKnstsIhUQkptQuY/toxic05.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ABYIrhqciObEJi5nI-dbMxQ/toxic06.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AGtDf0mIM-pazB_p5HQ21_0/toxic07.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AKuBhsCrkHKmXjpJ9Z4WnyE/toxic08.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AFSSuuA7y2EPhUrMHhkvqUI/toxic09.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AE5e954Ricu2-O13WkltYso/toxic10.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ANWObFuFg_zadca5CcvUFtY/toxic11.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ADzk2X91-yU0s1V2f_Eztmc/toxic12.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AMahhwK6JwI-yRC-LhRI-2s/toxic13.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AKLbBp-82BGbFWl7hl616c0/toxic14.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AHPBCX-x2NqvA-ROmp1Mn9s/toxic15.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AHX2nWu-58EeQRtEVGEc5M8/toxic16.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AK7gitFm1HJT8zcvu8GYa9I/toxic17.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/AHJhMGkZ5nbC6MfAev0YCng/toxic18.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ACnbi8d3WeFG8XLj4yxJv1M/toxic19.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1",
+            "https://www.dropbox.com/scl/fo/ui0tnutk302eun03kxoho/ALrwCjM2MZSaWSdOeu9gJro/toxic20.mp4?rlkey=1nkcj9rgh28ktn140lwhldsdu&raw=1"
+        ],
+        "titles": [
+            "The Gooze Is Loose",
+            "Cleanup On Aisle Death",
+            "Real Men Wear Tutus",
+            "Six Degrees Of Radiation",
+            "Toxic Masculinity Literally",
+            "Mop Bucket Massacre",
+            "Troma-tized For Life",
+            "Winston’s Bad Skin Day",
+            "Mr *Dink*lage",
+            "Industrial Strength Revenge",
+            "Toxic Pew-sader",
+            "The Garbinger Of Doom",
+            "Sludge, Jury and Executioner",
+            "Elijiah Would",
+            "Straight Outta Tromaville",
+            "Kiss Me I’m Radioactive",
+            "Guts Gore And Guacamole",
+            "A Face Only Mom Could Melt",
+            "Waste Management Issues",
+            "This Mop Is Rated R"
+        ]
+    },
     "placeholder": {
         "startDateString": "2025-09-29",
         "bgColor": "#FA682F",
         "chunks": [],
-        "titles": [],
-        "poster": "",
-        "favicon": ""
+        "titles": []
     },
     "d20HEVCArray": [
         "https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1",
