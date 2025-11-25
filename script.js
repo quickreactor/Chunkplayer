@@ -23,7 +23,7 @@ let CONFIG = {
 };
 
 // Uncomment for testing specific dates
-CONFIG.debug.testDate = CONFIG.debug.getTestDate("26/11");
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("26/11");
 
 // ====================
 // UTILITY FUNCTIONS
