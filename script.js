@@ -717,7 +717,7 @@ class ChunkPlayerApp {
         const videoNumberText = calculatedChunkNumber - this.morbCount;
 
         this.domManager.show('posterSection');
-        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : this.urls[this.dateManager.currentMovie.code].poster;
+        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${this.dateManager.currentMovie.code}.jpg`;
         this.domManager.elements.poster2.src = this.urls.morb.poster;
     }
 
