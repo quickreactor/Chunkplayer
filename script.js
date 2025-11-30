@@ -66,7 +66,7 @@ class DateManager {
     constructor(movies = null) {
         this.now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
         this.movies = movies; // Store movies reference
-        
+
         if (this.movies) {
             this.currentMovie = this.getCurrentMovie();
             this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
@@ -861,6 +861,59 @@ class ChunkPlayerApp {
         this.audioManager.playMorbiusSound();
     }
 
+    // ==========================================
+    // NEW METHOD: Handles the Critical Success Sequence
+    // ==========================================
+    async playCriticalSuccessSequence(isFirst = false) {
+        console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
+
+        const playerElement = this.domManager.elements.videoPlayer;
+
+        // 1. Load the first Dark Realm chunk (Intro)
+        playerElement.src = this.urls.darkrealm[0];
+
+        // Set basic UI for the intro
+        this.domManager.setText('epTitle', "CRITICAL SUCCESS - Entering the Realm");
+        this.domManager.show('container');
+
+        if (isFirst) {
+            requestAnimationFrame(() => {
+                this.domManager.addClass('container', 'unhidden');
+            });
+        } else {
+            this.domManager.removeClass('container', 'hidden');
+        }
+
+        // 2. Listener: When Dark Realm Intro ends -> Load Normal Chunk
+        const handleIntroEnd = () => {
+            console.log("Dark Realm Intro ended. Loading normal chunk...");
+
+            // Load the standard daily video
+            this.updateVideo(false);
+
+            // 3. Listener: When Normal Chunk ends -> Load Dark Realm Outro
+            const handleNormalEnd = () => {
+                console.log("Normal chunk ended. Loading Dark Realm Outro...");
+
+                playerElement.src = this.urls.darkrealm[13];
+                this.domManager.setText('epTitle', "CRITICAL SUCCESS - Escaping the Realm");
+
+                // Optional: Auto-play the outro (browsers often require this after a src change)
+                // Note: Plyr might handle this, but raw element play ensures it starts.
+                playerElement.play();
+            };
+
+            // Attach the Outro listener (runs only once)
+            playerElement.addEventListener("ended", handleNormalEnd, { once: true });
+
+            // Auto-play the normal video
+            playerElement.play();
+        };
+
+        // Attach the Intro listener (runs only once)
+        playerElement.addEventListener("ended", handleIntroEnd, { once: true });
+    }
+
     async rollForMovieChoice() {
         this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
             this.audioManager.playDiceSound();
@@ -884,13 +937,28 @@ class ChunkPlayerApp {
         StorageManager.registerVisit();
 
         if (roll === 1) {
+            // CRITICAL FAIL (Rolled 1)
             await this.effectManager.movieWinnerLoser(
                 this.domManager.elements.poster2,
                 this.domManager.elements.poster1,
                 this.domManager.elements.rollButton
             );
             setTimeout(() => this.morb(true), 4000);
+
+        } else if (roll === 20) {
+            // CRITICAL SUCCESS (Rolled 20)
+            // We use the same visual "Winner" effect as a normal roll for the "Old Movie"
+            await this.effectManager.movieWinnerLoser(
+                this.domManager.elements.poster1,
+                this.domManager.elements.poster2,
+                this.domManager.elements.rollButton
+            );
+
+            // Trigger the special sequence
+            this.playCriticalSuccessSequence(true);
+
         } else {
+            // NORMAL ROLL (2-19)
             await this.effectManager.movieWinnerLoser(
                 this.domManager.elements.poster1,
                 this.domManager.elements.poster2,
