@@ -363,7 +363,7 @@ option {
     margin-top: 10px;
 }
 .animate {
-    animation: slide 5s linear forwards;
+    animation: slide 10s linear forwards;
 }
 
 @keyframes slide {

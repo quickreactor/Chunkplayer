@@ -23,7 +23,7 @@ let CONFIG = {
 };
 
 // Uncomment for testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("26/11");
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("2/12");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -43,8 +43,9 @@ const Utils = {
     },
 
     isDateSpecialDay(date, month, day) {
-        return date.getMonth() === month && date.getDate() === day;
+        return date.getMonth() === month - 1 && date.getDate() === day;
     },
+
 
     getDateBasedRandomIndex(length) {
         const today = new Date();
@@ -340,7 +341,12 @@ class AudioManager {
         const sounds = this.urls.randomSoundsCollection[randomArrNumber];
 
         console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
-        audioElement.src = sounds[num - 1];
+        // dark realm temp
+        if (num === 20) {
+            audioElement.src = this.urls.darkrealm.sounds[0];
+        } else {
+            audioElement.src = sounds[num - 1];
+        }
         audioElement.play();
 
         if (num === 20) {
@@ -362,6 +368,12 @@ class AudioManager {
         audio.src = this.urls.morb.sound;
         audio.play();
     }
+
+    // playDarkRealmSound() {
+    //     const audio = document.getElementById("morbius-sound");
+    //     audio.src = this.urls.morb.sound;
+    //     audio.play();
+    // }
 }
 
 // ====================
@@ -864,55 +876,61 @@ class ChunkPlayerApp {
     // ==========================================
     // NEW METHOD: Handles the Critical Success Sequence
     // ==========================================
-    async playCriticalSuccessSequence(isFirst = false) {
-        console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
+async playCriticalSuccessSequence(isFirst = false) {
+    console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
 
-        const playerElement = this.domManager.elements.videoPlayer;
+    const playerElement = this.domManager.elements.videoPlayer;
+    
+    // --- Phase 1: Play Dark Realm Intro ---
 
-        // 1. Load the first Dark Realm chunk (Intro)
-        playerElement.src = this.urls.darkrealm[0];
+    // Load the first Dark Realm chunk (Index 0)
+    playerElement.src = this.urls.darkrealm.chunks[0]; 
+    
+    // Set UI state for the intro
+    this.domManager.setText('epTitle', "CRITICAL SUCCESS - Entering the Realm");
+    this.domManager.show('container');
+    
+    // Handle container visibility/fade-in
+    if (isFirst) {
+        requestAnimationFrame(() => {
+            this.domManager.addClass('container', 'unhidden');
+        });
+    } else {
+        this.domManager.removeClass('container', 'hidden');
+    }
+    
 
-        // Set basic UI for the intro
-        this.domManager.setText('epTitle', "CRITICAL SUCCESS - Entering the Realm");
-        this.domManager.show('container');
+    // Listener 1: When Dark Realm Intro ends -> Load Normal Chunk
+    const handleIntroEnd = () => {
+        console.log("Dark Realm Intro ended. Loading normal chunk...");
+        
+        // Load the standard daily video (uses existing roll/storage data)
+        this.updateVideo(false); 
 
-        if (isFirst) {
-            requestAnimationFrame(() => {
-                this.domManager.addClass('container', 'unhidden');
-            });
-        } else {
-            this.domManager.removeClass('container', 'hidden');
-        }
+        // --- Phase 2: Play Normal Daily Chunk ---
 
-        // 2. Listener: When Dark Realm Intro ends -> Load Normal Chunk
-        const handleIntroEnd = () => {
-            console.log("Dark Realm Intro ended. Loading normal chunk...");
-
-            // Load the standard daily video
-            this.updateVideo(false);
-
-            // 3. Listener: When Normal Chunk ends -> Load Dark Realm Outro
-            const handleNormalEnd = () => {
-                console.log("Normal chunk ended. Loading Dark Realm Outro...");
-
-                playerElement.src = this.urls.darkrealm[13];
-                this.domManager.setText('epTitle', "CRITICAL SUCCESS - Escaping the Realm");
-
-                // Optional: Auto-play the outro (browsers often require this after a src change)
-                // Note: Plyr might handle this, but raw element play ensures it starts.
-                playerElement.play();
-            };
-
-            // Attach the Outro listener (runs only once)
-            playerElement.addEventListener("ended", handleNormalEnd, { once: true });
-
-            // Auto-play the normal video
+        // Listener 2: When Normal Chunk ends -> Load Dark Realm Outro
+        const handleNormalEnd = () => {
+            console.log("Normal chunk ended. Loading Dark Realm Outro...");
+            
+            // Load the Dark Realm Outro chunk (Index 13)
+            playerElement.src = this.urls.darkrealm.chunks[13];
+            this.domManager.setText('epTitle', "CRITICAL SUCCESS - Escaping the Realm");
+            
+            // Start Outro playback
             playerElement.play();
         };
 
-        // Attach the Intro listener (runs only once)
-        playerElement.addEventListener("ended", handleIntroEnd, { once: true });
-    }
+        // Attach the Outro listener (runs only once)
+        playerElement.addEventListener("ended", handleNormalEnd, { once: true });
+        
+        // Auto-play the normal video
+        playerElement.play();
+    };
+
+    // Attach the Intro listener (runs only once)
+    playerElement.addEventListener("ended", handleIntroEnd, { once: true });
+}
 
     async rollForMovieChoice() {
         this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
@@ -920,8 +938,11 @@ class ChunkPlayerApp {
         });
 
         this.domManager.addClass('rollButton', 'rolled');
-
-        const roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
+        let roll = 20;
+        if (!Utils.isDateSpecialDay(new Date("2025-12-2"), 12, 2)) {
+            console.log("sepc")
+            roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
+        }
         const morbCount = await this.apiService.getMorbCount();
 
         StorageManager.setInt("randomNumber", roll);
