@@ -887,7 +887,7 @@ async playCriticalSuccessSequence(isFirst = false) {
     playerElement.src = this.urls.darkrealm.chunks[1]; 
     
     // Set UI state for the intro
-    this.domManager.setText('epTitle', "CRITICAL SUCCESS - Entering the Realm");
+    this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
     this.domManager.show('container');
     
     // Handle container visibility/fade-in
@@ -915,7 +915,7 @@ async playCriticalSuccessSequence(isFirst = false) {
             
             // Load the Dark Realm Outro chunk (Index 13)
             playerElement.src = this.urls.darkrealm.chunks[14];
-            this.domManager.setText('epTitle', "CRITICAL SUCCESS - Escaping the Realm");
+            this.domManager.setText('epTitle', "Escaping the Dark Realm");
             
             // Start Outro playback
             playerElement.play();
