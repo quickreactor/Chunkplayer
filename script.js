@@ -884,7 +884,7 @@ async playCriticalSuccessSequence(isFirst = false) {
     // --- Phase 1: Play Dark Realm Intro ---
 
     // Load the first Dark Realm chunk (Index 0)
-    playerElement.src = this.urls.darkrealm.chunks[1]; 
+    playerElement.src = this.urls.darkrealm.chunks[2]; 
     
     // Set UI state for the intro
     this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
@@ -914,7 +914,7 @@ async playCriticalSuccessSequence(isFirst = false) {
             console.log("Normal chunk ended. Loading Dark Realm Outro...");
             
             // Load the Dark Realm Outro chunk (Index 13)
-            playerElement.src = this.urls.darkrealm.chunks[14];
+            playerElement.src = this.urls.darkrealm.chunks[15];
             this.domManager.setText('epTitle', "Escaping the Dark Realm");
             
             // Start Outro playback
@@ -938,11 +938,7 @@ async playCriticalSuccessSequence(isFirst = false) {
         });
 
         this.domManager.addClass('rollButton', 'rolled');
-        let roll = 20;
-        if (!Utils.isDateSpecialDay(new Date("2025-12-2"), 12, 2)) {
-            console.log("sepc")
-            roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
-        }
+        let roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
         const morbCount = await this.apiService.getMorbCount();
 
         StorageManager.setInt("randomNumber", roll);
