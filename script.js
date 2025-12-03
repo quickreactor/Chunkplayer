@@ -884,7 +884,7 @@ async playCriticalSuccessSequence(isFirst = false) {
     // --- Phase 1: Play Dark Realm Intro ---
 
     // Load the first Dark Realm chunk (Index 0)
-    playerElement.src = this.urls.darkrealm.chunks[2]; 
+    playerElement.src = this.urls.darkrealm.chunks[3]; 
     
     // Set UI state for the intro
     this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
@@ -914,7 +914,7 @@ async playCriticalSuccessSequence(isFirst = false) {
             console.log("Normal chunk ended. Loading Dark Realm Outro...");
             
             // Load the Dark Realm Outro chunk (Index 13)
-            playerElement.src = this.urls.darkrealm.chunks[15];
+            playerElement.src = this.urls.darkrealm.chunks[16];
             this.domManager.setText('epTitle', "Escaping the Dark Realm");
             
             // Start Outro playback
@@ -989,7 +989,6 @@ async playCriticalSuccessSequence(isFirst = false) {
 // ====================
 // INITIALIZE APPLICATION
 // ====================
-
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         window.chunkPlayerApp = new ChunkPlayerApp();
@@ -1040,3 +1039,5 @@ window.ChunkPlayerDebug = {
         console.log("Storage data:", data);
     }
 };
+
+window.ChunkPlayerDebug.clearLastVisit();
