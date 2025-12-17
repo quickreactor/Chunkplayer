@@ -105,13 +105,23 @@ class DateManager {
 
     calculateChunkNumber() {
         let calculatedChunkNumber = CONFIG.initialChunkNumber - 1;
-        for (let d = new Date(this.startDateMidnight); d <= this.now; d.setDate(d.getDate() + 1)) {
+
+        const today = new Date(this.now);
+        today.setHours(0, 0, 0, 0);
+
+        for (
+            let d = new Date(this.startDateMidnight.getTime());
+            d <= today;
+            d.setDate(d.getDate() + 1)
+        ) {
             if (d.getDay() !== 0) {
                 calculatedChunkNumber++;
             }
         }
+
         return calculatedChunkNumber;
     }
+
 }
 
 // ====================
@@ -876,62 +886,62 @@ class ChunkPlayerApp {
     // ==========================================
     // NEW METHOD: Handles the Critical Success Sequence
     // ==========================================
-async playCriticalSuccessSequence(isFirst = false) {
-    console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
+    async playCriticalSuccessSequence(isFirst = false) {
+        console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
 
-    const playerElement = this.domManager.elements.videoPlayer;
-    
-    // --- Phase 1: Play Dark Realm Intro ---
+        const playerElement = this.domManager.elements.videoPlayer;
 
-    // Load the first Dark Realm chunk (Index 0)
-    let darkRealmPointer = 5;
-    playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer]; 
-    
-    // Set UI state for the intro
-    this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
-    this.domManager.show('container');
-    
-    // Handle container visibility/fade-in
-    if (isFirst) {
-        requestAnimationFrame(() => {
-            this.domManager.addClass('container', 'unhidden');
-        });
-    } else {
-        this.domManager.removeClass('container', 'hidden');
-    }
-    
+        // --- Phase 1: Play Dark Realm Intro ---
 
-    // Listener 1: When Dark Realm Intro ends -> Load Normal Chunk
-    const handleIntroEnd = () => {
-        console.log("Dark Realm Intro ended. Loading normal chunk...");
-        
-        // Load the standard daily video (uses existing roll/storage data)
-        this.updateVideo(false); 
+        // Load the first Dark Realm chunk (Index 0)
+        let darkRealmPointer = 5;
+        playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer];
 
-        // --- Phase 2: Play Normal Daily Chunk ---
+        // Set UI state for the intro
+        this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
+        this.domManager.show('container');
 
-        // Listener 2: When Normal Chunk ends -> Load Dark Realm Outro
-        const handleNormalEnd = () => {
-            console.log("Normal chunk ended. Loading Dark Realm Outro...");
-            
-            // Load the Dark Realm Outro chunk (Index 13)
-            playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer + 13];
-            this.domManager.setText('epTitle', "Escaping the Dark Realm");
-            
-            // Start Outro playback
+        // Handle container visibility/fade-in
+        if (isFirst) {
+            requestAnimationFrame(() => {
+                this.domManager.addClass('container', 'unhidden');
+            });
+        } else {
+            this.domManager.removeClass('container', 'hidden');
+        }
+
+
+        // Listener 1: When Dark Realm Intro ends -> Load Normal Chunk
+        const handleIntroEnd = () => {
+            console.log("Dark Realm Intro ended. Loading normal chunk...");
+
+            // Load the standard daily video (uses existing roll/storage data)
+            this.updateVideo(false);
+
+            // --- Phase 2: Play Normal Daily Chunk ---
+
+            // Listener 2: When Normal Chunk ends -> Load Dark Realm Outro
+            const handleNormalEnd = () => {
+                console.log("Normal chunk ended. Loading Dark Realm Outro...");
+
+                // Load the Dark Realm Outro chunk (Index 13)
+                playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer + 13];
+                this.domManager.setText('epTitle', "Escaping the Dark Realm");
+
+                // Start Outro playback
+                playerElement.play();
+            };
+
+            // Attach the Outro listener (runs only once)
+            playerElement.addEventListener("ended", handleNormalEnd, { once: true });
+
+            // Auto-play the normal video
             playerElement.play();
         };
 
-        // Attach the Outro listener (runs only once)
-        playerElement.addEventListener("ended", handleNormalEnd, { once: true });
-        
-        // Auto-play the normal video
-        playerElement.play();
-    };
-
-    // Attach the Intro listener (runs only once)
-    playerElement.addEventListener("ended", handleIntroEnd, { once: true });
-}
+        // Attach the Intro listener (runs only once)
+        playerElement.addEventListener("ended", handleIntroEnd, { once: true });
+    }
 
     async rollForMovieChoice() {
         this.domManager.elements.d20RollerVideo.addEventListener("playing", () => {
@@ -941,7 +951,7 @@ async playCriticalSuccessSequence(isFirst = false) {
         this.domManager.addClass('rollButton', 'rolled');
         let roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
 
-        if (Utils.isDateSpecialDay(chunkPlayerApp.dateManager.now , 12, 18)) {
+        if (Utils.isDateSpecialDay(chunkPlayerApp.dateManager.now, 12, 18)) {
             roll = 20;
         }
 
