@@ -1,8 +1,8 @@
 // ====================
 // CONFIG & CONSTANTS
 // ====================
-let oldMovieCode = "maximum";
-let newMovieCode = "toxic";
+let oldMovieCode = "toxic";
+let newMovieCode = "fanatic";
 
 let CONFIG = {
     api: {
@@ -23,7 +23,7 @@ let CONFIG = {
 };
 
 // Uncomment for testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("2/12");
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("19/12");
 
 // ====================
 // UTILITY FUNCTIONS
@@ -884,7 +884,8 @@ async playCriticalSuccessSequence(isFirst = false) {
     // --- Phase 1: Play Dark Realm Intro ---
 
     // Load the first Dark Realm chunk (Index 0)
-    playerElement.src = this.urls.darkrealm.chunks[3]; 
+    let darkRealmPointer = 5;
+    playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer]; 
     
     // Set UI state for the intro
     this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
@@ -914,7 +915,7 @@ async playCriticalSuccessSequence(isFirst = false) {
             console.log("Normal chunk ended. Loading Dark Realm Outro...");
             
             // Load the Dark Realm Outro chunk (Index 13)
-            playerElement.src = this.urls.darkrealm.chunks[16];
+            playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer + 13];
             this.domManager.setText('epTitle', "Escaping the Dark Realm");
             
             // Start Outro playback
@@ -939,6 +940,11 @@ async playCriticalSuccessSequence(isFirst = false) {
 
         this.domManager.addClass('rollButton', 'rolled');
         let roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
+
+        if (Utils.isDateSpecialDay(chunkPlayerApp.dateManager.now , 12, 18)) {
+            roll = 20;
+        }
+
         const morbCount = await this.apiService.getMorbCount();
 
         StorageManager.setInt("randomNumber", roll);
@@ -1001,7 +1007,7 @@ if (document.readyState === 'loading') {
 // DEBUG UTILITIES
 // ====================
 
-window.ChunkPlayerDebug = {
+window.Debug = {
     clearLastVisit() {
         StorageManager.clearLastVisit();
         console.log("Last visit cleared, roll on!");
@@ -1040,4 +1046,4 @@ window.ChunkPlayerDebug = {
     }
 };
 
-window.ChunkPlayerDebug.clearLastVisit();
+// window.ChunkPlayerDebug.clearLastVisit();
