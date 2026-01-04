@@ -6,24 +6,23 @@ let newMovieCode = "fanatic";
 
 let CONFIG = {
     api: {
-        baseUrl: "https://morbcount-worker.quickreactor.workers.dev"
+        baseUrl: "https://chunkplayerneo.quickreactor.workers.dev"
     },
     debug: {
         testDate: null,
         forceRoll: null,
         clearLastVisit: false,
-        getTestDate: function (ddmm) {
+        getTestDate: function (ddmm, h) {
             const [day, month] = ddmm.split("/").map(Number);
             const year = new Date().getFullYear();
-            return new Date(year, month - 1, day, 8, 0, 0, 0);
+            return new Date(year, month - 1, day, h, 0, 0, 0);
         }
     },
-    initialChunkNumber: 1,
-    movies: null // Will be set after loading urls.json
+    movieData: null // Will be set after loading urls.json
 };
 
 // Uncomment for testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("19/12");
+// CONFIG.debug.testDate = CONFIG.debug.getTestDate("19/12", 4);
 
 // ====================
 // UTILITY FUNCTIONS
@@ -46,7 +45,7 @@ const Utils = {
         return date.getMonth() === month - 1 && date.getDate() === day;
     },
 
-
+    // this is for the sound randomiser to be consistent for everyone
     getDateBasedRandomIndex(length) {
         const today = new Date();
         const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
@@ -64,30 +63,8 @@ const Utils = {
 // ====================
 
 class DateManager {
-    constructor(movies = null) {
+    constructor() {
         this.now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
-        this.movies = movies; // Store movies reference
-
-        if (this.movies) {
-            this.currentMovie = this.getCurrentMovie();
-            this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
-            this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
-        }
-    }
-
-    getCurrentMovie() {
-        if (!this.movies) return null;
-        return this.now > new Date(this.movies.new.startDateString + "T00:00")
-            ? this.movies.new
-            : this.movies.old;
-    }
-
-    // Update movies and recalculate dependent properties
-    setMovies(movies) {
-        this.movies = movies;
-        this.currentMovie = this.getCurrentMovie();
-        this.startDateMidnight = new Date(this.currentMovie.startDateString + "T00:00");
-        this.startDate7AM = new Date(this.currentMovie.startDateString + "T07:00");
     }
 
     isTodaySunday() {
@@ -146,32 +123,31 @@ class ApiService {
         }
     }
 
-    async getMorbCount() {
-        const count = await this.fetchText('check');
-        return parseInt(count);
+    async selfMorb() {
+        const response = await fetch(`${this.baseUrl}/self-morb`)
+        const json = await response.json();
+        return json;
     }
 
-    async incrementMorbCount() {
-        const count = await this.fetchText('increment');
-        return parseInt(count);
+    async setNormalPointer(value) {
+        const response = await fetch(`${this.baseUrl}/set-normal-pointer?value=${value}`);
+        const json = await response.json();
+        return json;
+    }
+    async setPunishmentPointer(value) {
+        const response = await fetch(`${this.baseUrl}/set-punishment-pointer?value=${value}`);
+        const json = await response.json();
+        return json;
+    }
+    async setRewardPointer(value) {
+        const response = await fetch(`${this.baseUrl}/set-reward-pointer?value=${value}`);
+        const json = await response.json();
+        return json;
     }
 
-    async setMorbCount(value) {
-        const count = await this.fetchText(`set?newValue=${value}`);
-        return parseInt(count);
-    }
-
-    async getRoll() {
-        const roll = await this.fetchText('roll');
-        return parseInt(roll);
-    }
-
-    async resetDecision() {
-        return await this.fetchText('resetdecision');
-    }
-
-    async getDecision() {
-        return await this.fetchText('decisionroll');
+    async getDailyData() {
+        const response = await fetch(`${this.baseUrl}/get-daily-data`);
+        return await response.json();
     }
 }
 
@@ -353,7 +329,7 @@ class AudioManager {
         console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
         // dark realm temp
         if (num === 20) {
-            audioElement.src = this.urls.darkrealm.sounds[0];
+            audioElement.src = CONFIG.movieData.rewardMovie.sound;
         } else {
             audioElement.src = sounds[num - 1];
         }
@@ -375,15 +351,9 @@ class AudioManager {
 
     playMorbiusSound() {
         const audio = document.getElementById("morbius-sound");
-        audio.src = this.urls.morb.sound;
+        audio.src = CONFIG.movieData.punishmentMovie.sound;
         audio.play();
     }
-
-    // playDarkRealmSound() {
-    //     const audio = document.getElementById("morbius-sound");
-    //     audio.src = this.urls.morb.sound;
-    //     audio.play();
-    // }
 }
 
 // ====================
@@ -427,9 +397,9 @@ class VideoManager {
         });
     }
 
-    setupChunkSelector(calculatedChunkNumber, morbCount, chunkArray, titleArray) {
+    setupChunkSelector(calculatedChunkNumber, chunkArray, titleArray) {
         const selector = this.dom.elements.chunkSelector;
-        const maxChunk = calculatedChunkNumber - morbCount;
+        const maxChunk = calculatedChunkNumber;
 
         selector.innerHTML = '';
 
@@ -605,8 +575,6 @@ class ChunkPlayerApp {
         this.urls = {};
         this.chunkArray = [];
         this.titleArray = [];
-        this.morbCount = 0;
-        this.randomNumber = 0;
 
         this.init();
     }
@@ -625,28 +593,15 @@ class ChunkPlayerApp {
     async loadUrls() {
         const response = await fetch("urls.json");
         this.urls = await response.json();
-
-        // Set CONFIG.movies first
-        CONFIG.movies = {
-            old: {
-                code: oldMovieCode,
-                startDateString: this.urls[oldMovieCode].startDateString,
-                bgColor: this.urls[oldMovieCode].bgColor
-            },
-            new: {
-                code: newMovieCode,
-                startDateString: this.urls[newMovieCode].startDateString,
-                bgColor: this.urls[newMovieCode].bgColor
-            }
-        };
-
-        CONFIG.robMorbCount = this.urls.robMorbCount;
+        const response2 = await fetch("https://chunkplayerneo.quickreactor.workers.dev/get-daily-data");
+        // Set CONFIG.movieData first
+        CONFIG.movieData = await response2.json();
 
         // NOW create DateManager with movies configured
-        this.dateManager = new DateManager(CONFIG.movies);
+        this.dateManager = new DateManager();
 
-        this.chunkArray = this.urls[this.dateManager.currentMovie.code].chunks;
-        this.titleArray = this.urls[this.dateManager.currentMovie.code].titles;
+        this.chunkArray = CONFIG.movieData.targetMovie.chunks;
+        this.titleArray = CONFIG.movieData.targetMovie.titles;
 
         this.audioManager.setUrls(this.urls);
         this.videoManager.setUrls(this.urls);
@@ -659,7 +614,7 @@ class ChunkPlayerApp {
         }
 
         // Update theme
-        this.domManager.updateTheme(this.dateManager.currentMovie.bgColor);
+        this.domManager.updateTheme(CONFIG.movieData.targetMovie.bgColor);
     }
 
     setupEventListeners() {
@@ -735,17 +690,16 @@ class ChunkPlayerApp {
     }
 
     async handleFirstVisit() {
-        const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
-        const videoNumberText = calculatedChunkNumber - this.morbCount;
+        const targetMovie = CONFIG.movieData.targetMovie;
+        const punishmentMovie = CONFIG.movieData.punishmentMovie;
+        const videoNumberText = CONFIG.movieData.targetMovie.pointer;
 
         this.domManager.show('posterSection');
-        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${this.dateManager.currentMovie.code}.jpg`;
-        this.domManager.elements.poster2.src = this.urls.morb.poster;
+        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${targetMovie.name}.jpg`;
+        this.domManager.elements.poster2.src = `images/${punishmentMovie.name}.jpg`;
     }
 
     async handleReturnVisit() {
-        this.randomNumber = StorageManager.getInt("randomNumber");
-        this.morbCount = StorageManager.getInt("dailyMorbCount");
 
         if (CONFIG.debug.forceRoll) {
             this.randomNumber = CONFIG.debug.forceRoll;
@@ -776,7 +730,7 @@ class ChunkPlayerApp {
         this.domManager.hide('videoContainer');
         this.domManager.show('timerContainer');
 
-        let movieSpoilerCode = this.dateManager.currentMovie.code;
+        let movieSpoilerCode = CONFIG.movieData.targetMovie.name;
         if (this.dateManager.startDate7AM > this.dateManager.now) {
             movieSpoilerCode = "???";
         }
@@ -820,10 +774,9 @@ class ChunkPlayerApp {
         this.domManager.hide('timerContainer');
         this.domManager.hide('sundayDiv');
 
-        const calculatedChunkNumber = this.dateManager.calculateChunkNumber();
-        this.morbCount = await this.apiService.getMorbCount();
+        const calculatedChunkNumber = CONFIG.movieData.targetMovie.pointer;
 
-        const videoNumberText = calculatedChunkNumber - this.morbCount;
+        const videoNumberText = calculatedChunkNumber;
         const videoNumberIndex = videoNumberText - 1;
 
         this.domManager.elements.videoPlayer.src = this.chunkArray[videoNumberIndex];
@@ -832,14 +785,14 @@ class ChunkPlayerApp {
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
 
-        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${this.dateManager.currentMovie.code}.jpg`;
+        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${CONFIG.movieData.targetMovie.name}.jpg`;
         this.domManager.elements.todaysPoster.src = posterSrc;
-        this.domManager.changeFavicon(`images/favicons/${this.dateManager.currentMovie.code}.png`);
-        document.title = `${Utils.toSentenceCase(this.dateManager.currentMovie.code)} Chunk Player`;
+        this.domManager.changeFavicon(`images/favicons/${CONFIG.movieData.targetMovie.name}.png`);
+        document.title = `${Utils.toSentenceCase(CONFIG.movieData.targetMovie.name)} Chunk Player`;
 
-        this.videoManager.setupChunkSelector(calculatedChunkNumber, this.morbCount, this.chunkArray, this.titleArray);
+        this.videoManager.setupChunkSelector(calculatedChunkNumber, this.chunkArray, this.titleArray);
 
-        console.log(`Days passed: ${calculatedChunkNumber} - Morb count ${this.morbCount} = ${videoNumberText}`);
+        console.log(`Chunk number: ${calculatedChunkNumber}`);
 
         if (isFirst) {
             requestAnimationFrame(() => {
@@ -854,15 +807,13 @@ class ChunkPlayerApp {
     }
 
     async morb(isFirst = false) {
-        document.title = `${this.urls.morb.name} Chunk Player`;
-        this.domManager.changeFavicon(this.urls.morb.favicon);
+        const punishmentMovie = CONFIG.movieData.punishmentMovie;
+        document.title = `${punishmentMovie.name} Chunk Player`;
+        this.domManager.changeFavicon(`images/favicons/${punishmentMovie.name}.png`);
 
-        let currentMorbCount = await this.apiService.getMorbCount();
-        console.log(`remote morb ${currentMorbCount} robmorb ${CONFIG.robMorbCount}`);
-        currentMorbCount += CONFIG.robMorbCount;
-        if (currentMorbCount === 0) currentMorbCount = 1;
-
-        this.domManager.elements.videoPlayer.src = this.urls.morb.chunks[currentMorbCount - 1];
+        let currentMorbCount = punishmentMovie.pointer;
+        this.domManager.elements.videoPlayer.src = punishmentMovie.chunks[currentMorbCount - 1];
+        this.domManager.updateTheme(punishmentMovie.bgColor);
         this.domManager.show('container');
 
         if (isFirst) {
@@ -873,12 +824,11 @@ class ChunkPlayerApp {
             this.domManager.removeClass('container', 'hidden');
         }
 
-        this.domManager.setText('dayCountDisplay', `/ ${this.urls.morb.chunks.length}`);
-        this.domManager.setText('epTitle', this.urls.morb.title);
+        this.domManager.setText('dayCountDisplay', `/ ${punishmentMovie.chunks.length}`);
+        this.domManager.setText('epTitle', punishmentMovie.title);
         this.domManager.setText('numberDisplay', currentMorbCount);
-        this.domManager.elements.todaysPoster.src = this.urls.morb.poster;
+        this.domManager.elements.todaysPoster.src = `images/${punishmentMovie.name}.jpg`;
         this.domManager.elements.chunkSelector.style.pointerEvents = "none";
-        this.domManager.setText('dayCountDisplay', `${this.urls.morb.chunks.length}`);
 
         this.audioManager.playMorbiusSound();
     }
@@ -889,13 +839,14 @@ class ChunkPlayerApp {
     async playCriticalSuccessSequence(isFirst = false) {
         console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
 
+        const rewardMovie = CONFIG.movieData.rewardMovie;
         const playerElement = this.domManager.elements.videoPlayer;
 
         // --- Phase 1: Play Dark Realm Intro ---
 
         // Load the first Dark Realm chunk (Index 0)
-        let darkRealmPointer = 5;
-        playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer];
+        let rewardMoviePointer = rewardMovie.pointer;
+        playerElement.src = rewardMovie.preRoll[rewardMoviePointer];
 
         // Set UI state for the intro
         this.domManager.setText('epTitle', "You are now entering... the Dark Realm");
@@ -925,7 +876,7 @@ class ChunkPlayerApp {
                 console.log("Normal chunk ended. Loading Dark Realm Outro...");
 
                 // Load the Dark Realm Outro chunk (Index 13)
-                playerElement.src = this.urls.darkrealm.chunks[darkRealmPointer + 13];
+                playerElement.src = rewardMovie.postRoll[rewardMoviePointer];
                 this.domManager.setText('epTitle', "Escaping the Dark Realm");
 
                 // Start Outro playback
@@ -949,19 +900,11 @@ class ChunkPlayerApp {
         });
 
         this.domManager.addClass('rollButton', 'rolled');
-        let roll = CONFIG.debug.forceRoll || await this.apiService.getRoll();
+        let roll = CONFIG.debug.forceRoll || CONFIG.movieData.roll;
 
         if (Utils.isDateSpecialDay(chunkPlayerApp.dateManager.now, 12, 18)) {
             roll = 20;
         }
-
-        const morbCount = await this.apiService.getMorbCount();
-
-        StorageManager.setInt("randomNumber", roll);
-        StorageManager.setInt("dailyMorbCount", morbCount);
-
-        this.randomNumber = roll;
-        this.morbCount = morbCount;
 
         console.log(`Daily roll is: ${roll}`);
 
@@ -1049,11 +992,8 @@ window.Debug = {
         const data = {
             lastVisit: StorageManager.get("lastVisit"),
             randomNumber: StorageManager.getInt("randomNumber"),
-            dailyMorbCount: StorageManager.getInt("dailyMorbCount"),
             decision: StorageManager.get("decision")
         };
         console.log("Storage data:", data);
     }
 };
-
-// window.ChunkPlayerDebug.clearLastVisit();
