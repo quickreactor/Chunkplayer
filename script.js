@@ -22,7 +22,7 @@ let CONFIG = {
 };
 
 // Uncomment for testing specific dates
-// CONFIG.debug.testDate = CONFIG.debug.getTestDate("19/12", 4);
+CONFIG.debug.testDate = CONFIG.debug.getTestDate("19/01", 9);
 
 // ====================
 // UTILITY FUNCTIONS
@@ -287,6 +287,47 @@ class DOMManager {
     updateTheme(bgColor) {
         document.documentElement.style.setProperty('--plyr-video-background', bgColor);
         document.documentElement.style.setProperty('--poster-color', bgColor);
+    }
+
+    showError(errorMessage) {
+        // Remove existing error if present
+        const existingError = document.getElementById('app-error-display');
+        if (existingError) {
+            existingError.remove();
+        }
+
+        // Create error display element
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'app-error-display';
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #dc3545;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            z-index: 9999;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        `;
+        errorDiv.innerHTML = `
+            <strong style="font-size: 16px;">❌ Error</strong><br>
+            ${errorMessage}
+        `;
+        document.body.appendChild(errorDiv);
+
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 10000);
     }
 }
 
@@ -593,15 +634,29 @@ class ChunkPlayerApp {
     async loadUrls() {
         const response = await fetch("urls.json");
         this.urls = await response.json();
-        const response2 = await fetch("https://chunkplayerneo.quickreactor.workers.dev/get-daily-data");
+        const response2 = await fetch("https://chunkplayerneo.quickreactor.workers.dev/get-daily-data")
+            .catch(error => {
+                const errorMsg = `Failed to fetch daily data: ${error.message || error}`;
+                console.error(errorMsg, error);
+                this.domManager.showError(errorMsg);
+                throw error;
+            });
         // Set CONFIG.movieData first
-        CONFIG.movieData = await response2.json();
+        CONFIG.movieData = await response2.json()
+            .catch(error => {
+                const errorMsg = `Failed to parse daily data JSON: ${error.message || error}`;
+                console.error(errorMsg, error);
+                this.domManager.showError(errorMsg);
+                throw error;
+            });
 
         // NOW create DateManager with movies configured
         this.dateManager = new DateManager();
 
-        this.chunkArray = CONFIG.movieData.targetMovie.chunks;
-        this.titleArray = CONFIG.movieData.targetMovie.titles;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
+
+        this.chunkArray = targetMovie.chunks;
+        this.titleArray = targetMovie.titles;
 
         this.audioManager.setUrls(this.urls);
         this.videoManager.setUrls(this.urls);
@@ -614,7 +669,7 @@ class ChunkPlayerApp {
         }
 
         // Update theme
-        this.domManager.updateTheme(CONFIG.movieData.targetMovie.bgColor);
+        this.domManager.updateTheme(targetMovie.bgColor);
     }
 
     setupEventListeners() {
@@ -690,12 +745,13 @@ class ChunkPlayerApp {
     }
 
     async handleFirstVisit() {
-        const targetMovie = CONFIG.movieData.targetMovie;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
         const punishmentMovie = CONFIG.movieData.punishmentMovie;
-        const videoNumberText = CONFIG.movieData.targetMovie.pointer;
+        const normalMovie = CONFIG.movieData.normalMovie;
+        const videoNumberText = targetMovie.pointer;
 
         this.domManager.show('posterSection');
-        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${targetMovie.name}.jpg`;
+        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${normalMovie.name}.jpg`;
         this.domManager.elements.poster2.src = `images/${punishmentMovie.name}.jpg`;
     }
 
@@ -730,7 +786,7 @@ class ChunkPlayerApp {
         this.domManager.hide('videoContainer');
         this.domManager.show('timerContainer');
 
-        let movieSpoilerCode = CONFIG.movieData.targetMovie.name;
+        let movieSpoilerCode = CONFIG.movieData.normalMovie.name;
         if (this.dateManager.startDate7AM > this.dateManager.now) {
             movieSpoilerCode = "???";
         }
@@ -774,7 +830,9 @@ class ChunkPlayerApp {
         this.domManager.hide('timerContainer');
         this.domManager.hide('sundayDiv');
 
-        const calculatedChunkNumber = CONFIG.movieData.targetMovie.pointer;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
+
+        const calculatedChunkNumber = targetMovie.pointer;
 
         const videoNumberText = calculatedChunkNumber;
         const videoNumberIndex = videoNumberText - 1;
@@ -785,10 +843,10 @@ class ChunkPlayerApp {
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
 
-        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${CONFIG.movieData.targetMovie.name}.jpg`;
+        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${targetMovie.name}.jpg`;
         this.domManager.elements.todaysPoster.src = posterSrc;
-        this.domManager.changeFavicon(`images/favicons/${CONFIG.movieData.targetMovie.name}.png`);
-        document.title = `${Utils.toSentenceCase(CONFIG.movieData.targetMovie.name)} Chunk Player`;
+        this.domManager.changeFavicon(`images/favicons/${targetMovie.name}.png`);
+        document.title = `${Utils.toSentenceCase(targetMovie.name)} Chunk Player`;
 
         this.videoManager.setupChunkSelector(calculatedChunkNumber, this.chunkArray, this.titleArray);
 
