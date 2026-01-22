@@ -653,7 +653,7 @@ class ChunkPlayerApp {
         // NOW create DateManager with movies configured
         this.dateManager = new DateManager();
 
-        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.normalMovie;
 
         this.chunkArray = targetMovie.chunks;
         this.titleArray = targetMovie.titles;
@@ -745,7 +745,7 @@ class ChunkPlayerApp {
     }
 
     async handleFirstVisit() {
-        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.normalMovie;
         const punishmentMovie = CONFIG.movieData.punishmentMovie;
         const normalMovie = CONFIG.movieData.normalMovie;
         const videoNumberText = targetMovie.pointer;
@@ -830,7 +830,7 @@ class ChunkPlayerApp {
         this.domManager.hide('timerContainer');
         this.domManager.hide('sundayDiv');
 
-        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.targetMovie;
+        const targetMovie = CONFIG.movieData.morbed ? CONFIG.movieData.punishmentMovie : CONFIG.movieData.normalMovie;
 
         const calculatedChunkNumber = targetMovie.pointer;
 
