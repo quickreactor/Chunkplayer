@@ -751,8 +751,8 @@ class ChunkPlayerApp {
         const videoNumberText = targetMovie.pointer;
 
         this.domManager.show('posterSection');
-        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : `images/${normalMovie.name}.jpg`;
-        this.domManager.elements.poster2.src = `images/${punishmentMovie.name}.jpg`;
+        this.domManager.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : normalMovie.posterUrl;
+        this.domManager.elements.poster2.src = punishmentMovie.posterUrl;
     }
 
     async handleReturnVisit() {
@@ -843,9 +843,9 @@ class ChunkPlayerApp {
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
         this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
 
-        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : `images/${targetMovie.name}.jpg`;
+        const posterSrc = videoNumberText == 1 ? "images/question.jpg" : targetMovie.posterUrl;
         this.domManager.elements.todaysPoster.src = posterSrc;
-        this.domManager.changeFavicon(`images/favicons/${targetMovie.name}.png`);
+        this.domManager.changeFavicon(targetMovie.faviconUrl);
         document.title = `${Utils.toSentenceCase(targetMovie.name)} Chunk Player`;
 
         this.videoManager.setupChunkSelector(calculatedChunkNumber, this.chunkArray, this.titleArray);
@@ -867,7 +867,7 @@ class ChunkPlayerApp {
     async morb(isFirst = false) {
         const punishmentMovie = CONFIG.movieData.punishmentMovie;
         document.title = `${punishmentMovie.name} Chunk Player`;
-        this.domManager.changeFavicon(`images/favicons/${punishmentMovie.name}.png`);
+        this.domManager.changeFavicon(punishmentMovie.faviconUrl);
 
         let currentMorbCount = punishmentMovie.pointer;
         this.domManager.elements.videoPlayer.src = punishmentMovie.chunks[currentMorbCount - 1];
