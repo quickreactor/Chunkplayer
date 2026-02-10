@@ -465,7 +465,7 @@ class VideoManager {
             const selectedIndex = selectedValue - 1;
 
             this.dom.elements.videoPlayer.src = chunkArray[selectedIndex];
-            this.dom.setText('epTitle', titleArray[selectedIndex]);
+            this.dom.setText('epTitle', (titleArray[selectedIndex] || titleArray[0]));
             this.dom.setText('numberDisplay', selectedValue);
             e.target.blur();
         });
@@ -841,7 +841,7 @@ class ChunkPlayerApp {
         this.domManager.show('container');
 
         this.domManager.setText('dayCountDisplay', `/ ${this.chunkArray.length}`);
-        this.domManager.setText('epTitle', this.titleArray[videoNumberIndex]);
+        this.domManager.setText('epTitle', this.titleArray[videoNumberIndex] || this.titleArray[0]);
 
         const posterSrc = videoNumberText == 1 ? "images/question.jpg" : targetMovie.posterUrl;
         this.domManager.elements.todaysPoster.src = posterSrc;
@@ -883,7 +883,7 @@ class ChunkPlayerApp {
         }
 
         this.domManager.setText('dayCountDisplay', `/ ${punishmentMovie.chunks.length}`);
-        this.domManager.setText('epTitle', punishmentMovie.title);
+        this.domManager.setText('epTitle', (punishmentMovie.titles[punishmentMovie.pointer - 1] || punishmentMovie.titles[0]));
         this.domManager.setText('numberDisplay', currentMorbCount);
         this.domManager.elements.todaysPoster.src = `images/${punishmentMovie.name}.jpg`;
         this.domManager.elements.chunkSelector.style.pointerEvents = "none";
