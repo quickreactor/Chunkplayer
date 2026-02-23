@@ -7,7 +7,39 @@
     <link rel="stylesheet" href="style.css">
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <script src="script.js" defer></script>
+
+    <!-- Application Scripts (loaded in order) -->
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    <script src="errorHandler.js"></script>
+
+    <!-- Utilities -->
+    <script src="utils/dateHelpers.js"></script>
+    <script src="utils/diceRollLogic.js"></script>
+
+    <!-- Repositories -->
+    <script src="repositories/visitRepository.js"></script>
+
+    <!-- Services -->
+    <script src="services/apiService.js"></script>
+    <script src="services/audioService.js"></script>
+    <script src="services/dateService.js"></script>
+    <script src="services/domService.js"></script>
+    <script src="services/effectService.js"></script>
+    <script src="services/soundBoardService.js"></script>
+    <script src="services/videoService.js"></script>
+    <script src="services/adminService.js"></script>
+
+    <!-- Use Cases -->
+    <script src="useCases/dailyFlowUseCase.js"></script>
+    <script src="useCases/coinFlipUseCase.js"></script>
+    <script src="useCases/diceRollUseCase.js"></script>
+    <script src="useCases/lockdownUseCase.js"></script>
+    <script src="useCases/videoPlaybackUseCase.js"></script>
+
+    <!-- Main Application -->
+    <script src="app.js" defer></script>
+
     <title>Movie Chunk Player</title>
 </head>
 
@@ -26,6 +58,7 @@
         <div id="poster-container-1" class="poster-container"><img class="poster-image" id="poster-image-1" src=""
                 alt=""></div>
         <div id="roll-button">ROLL</div>
+        <div id="flip-button" style="display: none;">FLIP</div>
         <div id="poster-container-2" class="poster-container"><img class="poster-image" src="" alt=""
                 id="poster-image-2"></div>
     </div>
@@ -71,6 +104,50 @@
             <button id="tomorrow-btn" onclick="window.ChunkPlayerDebug.fakeTomorrow()">TOMORROW</button>
         </div>
     </div>
+
+    <!-- Admin Section (Top Right, Always Available) -->
+    <div id="admin-section" class="admin-section">
+        <button id="admin-toggle-btn">⚙️</button>
+        <div id="admin-panel" class="admin-panel hidden">
+            <!-- Password Entry -->
+            <div id="admin-login" class="admin-login">
+                <input type="password" id="admin-password" placeholder="Clearance code (L1: grab / L2: grief)">
+                <button id="admin-login-btn">Access</button>
+                <span class="admin-error" id="admin-error"></span>
+            </div>
+
+            <!-- Level 1 Clearance (Self-Report) -->
+            <div id="admin-level-1" class="admin-level hidden">
+                <h3>Level 1</h3>
+                <button id="punishment-report-btn">I morbed (missed a chunk)</button>
+            </div>
+
+            <!-- Level 2 Clearance (Admin Functions) -->
+            <div id="admin-level-2" class="admin-level hidden">
+                <h3>Level 2</h3>
+                <button id="bypass-lockdown-btn">Bypass Lockdown</button>
+                <button id="admin-reset-btn">Reset Daily State</button>
+                <button id="admin-force-roll-btn">Force Re-roll</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirm-dialog" class="confirm-dialog hidden">
+        <div class="confirm-content">
+            <p id="confirm-message">Are you sure you are ready to morb?</p>
+            <div class="confirm-buttons">
+                <button id="confirm-yes" class="confirm-btn yes">Yes, I morbed</button>
+                <button id="confirm-no" class="confirm-btn no">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 </body>
 

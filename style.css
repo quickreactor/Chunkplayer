@@ -242,7 +242,28 @@ option {
     cursor: default;
 }
 
+#flip-button {
+    background: url(images/coin.png);
+    background-size: contain;
+    width: 4vw;
+    height: 4vw;
+    font-size: 0.9vw;
+    font-weight: 900;
+    text-align: center;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+}
+
 .rolled {
+    transform-origin: center;
+    transition: all 1s ease-in-out;
+    transform: translate(0, -20px);
+    opacity: 0;
+}
+
+.flipped {
     transform-origin: center;
     transition: all 1s ease-in-out;
     transform: translate(0, -20px);
@@ -343,6 +364,12 @@ option {
         height: 4vh;
         font-size: 2vw;
     }
+
+    #flip-button {
+        width: 4vh;
+        height: 4vh;
+        font-size: 2vw;
+    }
 }
 
 #sonic {
@@ -374,4 +401,227 @@ option {
     to {
         left: -130%;
     }
+}
+
+/* ==================== */
+/* Admin Section Styles */
+/* ==================== */
+
+/* Admin Section - Top Right, Hidden Until After Roll */
+.admin-section {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Show on hover or when container is not hidden (after-roll state) */
+.container:not(.hidden) ~ .admin-section,
+.admin-section:hover {
+    opacity: 1;
+}
+
+#admin-toggle-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+#admin-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 280px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.admin-login input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.admin-login button {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.admin-login button:hover {
+    background: #45a049;
+}
+
+.admin-error {
+    color: #ff4444;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+    min-height: 16px;
+}
+
+.admin-level {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-level h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: normal;
+}
+
+#punishment-report-btn,
+#admin-reset-btn,
+#admin-force-roll-btn {
+    width: 100%;
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+
+#punishment-report-btn {
+    background: #ff4444;
+}
+
+#punishment-report-btn:hover {
+    background: #cc0000;
+}
+
+#admin-reset-btn,
+#admin-force-roll-btn {
+    background: #555;
+}
+
+#admin-reset-btn:hover,
+#admin-force-roll-btn:hover {
+    background: #666;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 2000;
+    animation: slideIn 0.3s ease;
+}
+
+.toast.error {
+    background: #ff4444;
+}
+
+.toast.info {
+    background: #2196F3;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Confirmation Dialog */
+.confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.confirm-content {
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.confirm-content p {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn.yes {
+    background: #ff4444;
+    color: white;
+}
+
+.confirm-btn.yes:hover {
+    background: #cc0000;
+}
+
+.confirm-btn.no {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.confirm-btn.no:hover {
+    background: rgba(255, 255, 255, 0.3);
 }

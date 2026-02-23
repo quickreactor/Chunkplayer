@@ -1,3 +1,16 @@
 _tools/
 refactored-js-code.js
 _archive/
+.claude/
+
+# Worker development
+worker/
+worker/.dev.vars
+worker/node_modules/
+worker/.wrangler/
+worker/package-lock.json
+node_modules/
+CLAUDE.md
+README.md
+worker/.dev.vars.example
+SELF_REPORT_FEATURE.md
