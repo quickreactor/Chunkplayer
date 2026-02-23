@@ -407,9 +407,9 @@ option {
 /* Admin Section Styles */
 /* ==================== */
 
-/* Admin Section - Bottom Right, Always Available */
+/* Admin Section - At Bottom of Page Content */
 .admin-section {
-    position: fixed;
+    position: absolute;
     bottom: 20px;
     right: 20px;
     z-index: 2000;
@@ -417,8 +417,7 @@ option {
     transition: opacity 0.3s ease;
 }
 
-/* Show on hover or when container is not hidden (after-roll state) */
-.container:not(.hidden) ~ .admin-section,
+/* Show on hover */
 .admin-section:hover {
     opacity: 1;
 }
@@ -500,6 +499,7 @@ option {
 }
 
 #punishment-report-btn,
+#bypass-lockdown-btn,
 #admin-reset-btn,
 #admin-force-roll-btn {
     width: 100%;
@@ -521,11 +521,13 @@ option {
     background: #cc0000;
 }
 
+#bypass-lockdown-btn,
 #admin-reset-btn,
 #admin-force-roll-btn {
     background: #555;
 }
 
+#bypass-lockdown-btn:hover,
 #admin-reset-btn:hover,
 #admin-force-roll-btn:hover {
     background: #666;
