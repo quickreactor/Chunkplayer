@@ -407,19 +407,13 @@ option {
 /* Admin Section Styles */
 /* ==================== */
 
-/* Admin Section - At Bottom of Page Content */
+/* Admin Section - Centered at Bottom of Container */
 .admin-section {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    z-index: 2000;
-    opacity: 0.3;
-    transition: opacity 0.3s ease;
-}
-
-/* Show on hover */
-.admin-section:hover {
-    opacity: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
 }
 
 #admin-toggle-btn {
@@ -441,7 +435,6 @@ option {
 .admin-panel {
     position: absolute;
     bottom: 100%;
-    right: 0;
     margin-bottom: 10px;
     background: rgba(0, 0, 0, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);

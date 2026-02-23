@@ -111,14 +111,16 @@ class ChunkPlayerApp {
             this.domService,
             this.videoService,
             this.audioService,
-            this.soundBoardService
+            this.soundBoardService,
+            () => this.showAdminSection() // Show admin after roll
         );
 
         // Lockdown use case
         this.lockdownUseCase = new LockdownUseCase(
             this.domService,
             this.dateService,
-            () => this.updateVideo(false) // onUnlock callback
+            () => this.updateVideo(false), // onUnlock callback
+            () => this.showAdminSection() // Show admin during lockdown
         );
 
         // Dice roll use case

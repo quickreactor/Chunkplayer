@@ -14,12 +14,14 @@ class VideoPlaybackUseCase {
      * @param {VideoService} videoService - Video service instance
      * @param {AudioService} audioService - Audio service instance
      * @param {SoundBoardService} soundBoardService - Soundboard service instance
+     * @param {Function} onShowAdmin - Callback to show admin section
      */
-    constructor(domService, videoService, audioService, soundBoardService) {
+    constructor(domService, videoService, audioService, soundBoardService, onShowAdmin = null) {
         this.dom = domService;
         this.video = videoService;
         this.audio = audioService;
         this.soundBoard = soundBoardService;
+        this.onShowAdmin = onShowAdmin;
     }
 
     /**
@@ -58,6 +60,8 @@ class VideoPlaybackUseCase {
             requestAnimationFrame(() => {
                 void this.dom.elements.container.offsetWidth;
                 this.dom.removeClass('container', 'hidden');
+                // Show admin section after roll
+                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');
@@ -83,6 +87,8 @@ class VideoPlaybackUseCase {
         if (isFirst) {
             requestAnimationFrame(() => {
                 this.dom.addClass('container', 'unhidden');
+                // Show admin section after roll
+                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');
@@ -122,6 +128,8 @@ class VideoPlaybackUseCase {
         if (isFirst) {
             requestAnimationFrame(() => {
                 this.dom.addClass('container', 'unhidden');
+                // Show admin section after roll
+                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');

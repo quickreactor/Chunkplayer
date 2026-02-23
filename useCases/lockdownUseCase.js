@@ -10,11 +10,13 @@ class LockdownUseCase {
      * @param {DOMService} domService - DOM service instance
      * @param {DateService} dateService - Date service instance
      * @param {Function} onUnlock - Callback when lockdown ends
+     * @param {Function} onShowAdmin - Callback to show admin section
      */
-    constructor(domService, dateService, onUnlock) {
+    constructor(domService, dateService, onUnlock, onShowAdmin = null) {
         this.dom = domService;
         this.dateService = dateService;
         this.onUnlock = onUnlock;
+        this.onShowAdmin = onShowAdmin;
         this.timeoutId = null;
     }
 
@@ -29,6 +31,9 @@ class LockdownUseCase {
 
         this.dom.hide('videoContainer');
         this.dom.show('timerContainer');
+
+        // Show admin section during lockdown
+        if (this.onShowAdmin) this.onShowAdmin();
 
         let movieSpoilerCode = CONFIG.movieData.normalMovie.name;
         if (this.dateService.startDate7AM > this.dateService.now) {
