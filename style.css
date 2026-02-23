@@ -536,6 +536,9 @@ option {
     padding: 15px 25px;
     border-radius: 8px;
     z-index: 2000;
+}
+
+.toast:not(.hidden) {
     animation: slideIn 0.3s ease;
 }
 

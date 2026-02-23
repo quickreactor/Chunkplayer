@@ -134,7 +134,6 @@ class VideoService {
             this.dom.elements.videoPlayer.src = chunkArray[selectedIndex];
             this.dom.setText('epTitle', (titleArray[selectedIndex] || titleArray[0]));
             this.dom.setText('numberDisplay', selectedValue);
-            e.target.blur();
         });
 
         const focusHandler = function () {
