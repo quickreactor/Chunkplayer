@@ -27,7 +27,7 @@ class DebugConfig {
     constructor() {
         this.testDate = null;
         this.forceRoll = null;
-        this.clearLastVisit = false;
+        this.shouldClearLastVisit = false;
     }
 
     getTestDate(ddmm, h) {
@@ -79,7 +79,7 @@ class DebugConfig {
         console.table({
             testDate: this.testDate ? this.testDate.toLocaleString() : 'null (real time)',
             forceRoll: this.forceRoll || 'null (random)',
-            clearLastVisit: this.clearLastVisit
+            shouldClearLastVisit: this.shouldClearLastVisit
         });
     }
 

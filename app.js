@@ -261,7 +261,7 @@ class ChunkPlayerApp {
      * Setup debug mode
      */
     setupDebugMode() {
-        if (CONFIG.debug.clearLastVisit) {
+        if (CONFIG.debug.shouldClearLastVisit) {
             VisitRepository.clearLastVisit();
         }
     }

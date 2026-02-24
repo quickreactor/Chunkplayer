@@ -60,12 +60,12 @@ class VideoPlaybackUseCase {
             requestAnimationFrame(() => {
                 void this.dom.elements.container.offsetWidth;
                 this.dom.removeClass('container', 'hidden');
-                // Show admin section after roll
-                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');
         }
+        // Always show admin section when entering video playback
+        if (this.onShowAdmin) this.onShowAdmin();
 
         this.soundBoard.init();
     }
@@ -87,12 +87,12 @@ class VideoPlaybackUseCase {
         if (isFirst) {
             requestAnimationFrame(() => {
                 this.dom.addClass('container', 'unhidden');
-                // Show admin section after roll
-                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');
         }
+        // Always show admin section when entering video playback
+        if (this.onShowAdmin) this.onShowAdmin();
 
         this.dom.setText('dayCountDisplay', `/ ${punishmentMovie.chunks.length}`);
         this.dom.setText('epTitle', (punishmentMovie.titles[punishmentMovie.pointer - 1] || punishmentMovie.titles[0]));
@@ -128,12 +128,12 @@ class VideoPlaybackUseCase {
         if (isFirst) {
             requestAnimationFrame(() => {
                 this.dom.addClass('container', 'unhidden');
-                // Show admin section after roll
-                if (this.onShowAdmin) this.onShowAdmin();
             });
         } else {
             this.dom.removeClass('container', 'hidden');
         }
+        // Always show admin section when entering video playback
+        if (this.onShowAdmin) this.onShowAdmin();
 
         // Listener 1: When Dark Realm Intro ends → Load Normal Chunk
         const handleIntroEnd = () => {
