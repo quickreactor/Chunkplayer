@@ -56,6 +56,17 @@ class DOMService {
             adminResetBtn: document.getElementById("admin-reset-btn"),
             adminForceRollBtn: document.getElementById("admin-force-roll-btn"),
 
+            // Pointer controls
+            adminNormalPointerInput: document.getElementById("normal-pointer-input"),
+            adminPunishmentPointerInput: document.getElementById("punishment-pointer-input"),
+            adminRewardPointerInput: document.getElementById("reward-pointer-input"),
+            adminFakeRollInput: document.getElementById("fake-roll-input"),
+            adminExecuteFakeRollBtn: document.getElementById("execute-fake-roll-btn"),
+            adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
+            stepperMinusBtns: document.querySelectorAll(".stepper-minus"),
+            stepperPlusBtns: document.querySelectorAll(".stepper-plus"),
+            stepperSetBtns: document.querySelectorAll('.stepper-set-btn'),
+
             // Dialog and toast
             confirmDialog: document.getElementById("confirm-dialog"),
             confirmMessage: document.getElementById("confirm-message"),

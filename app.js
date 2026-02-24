@@ -208,14 +208,55 @@ class ChunkPlayerApp {
             this.adminService.showToast("Lockdown bypassed", "success");
         });
 
-        // Admin reset button (Level 2)
-        this.domService.elements.adminResetBtn?.addEventListener("click", () => {
-            this.adminService.showToast("Reset feature coming soon", "info");
+        // Stepper minus buttons (only update UI, no API call)
+        this.domService.elements.stepperMinusBtns.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const type = e.target.dataset.type;
+                const inputId = type === 'fakeroll' ? 'fake-roll-input' : `${type}-pointer-input`;
+                const input = document.getElementById(inputId);
+                const min = 1;
+                const currentValue = parseInt(input.value) || 0;
+                input.value = Math.max(currentValue - 1, min);
+                // No API call - only update input value
+            });
         });
 
-        // Admin force roll button (Level 2)
-        this.domService.elements.adminForceRollBtn?.addEventListener("click", () => {
-            this.adminService.showToast("Force roll feature coming soon", "info");
+        // Stepper plus buttons (only update UI, no API call)
+        this.domService.elements.stepperPlusBtns.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const type = e.target.dataset.type;
+                const inputId = type === 'fakeroll' ? 'fake-roll-input' : `${type}-pointer-input`;
+                const input = document.getElementById(inputId);
+                const max = type === 'fakeroll' ? 20 : Infinity;
+                const currentValue = parseInt(input.value) || 0;
+                input.value = Math.min(currentValue + 1, max);
+                // No API call - only update input value
+            });
+        });
+
+        // Set buttons for pointers (triggers API call)
+        this.domService.elements.stepperSetBtns.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const type = e.target.dataset.type;
+                const input = document.getElementById(`${type}-pointer-input`);
+                const value = parseInt(input.value);
+                this.handlePointerChange(type, value);
+            });
+        });
+
+        // Execute Fake Roll button
+        this.domService.elements.adminExecuteFakeRollBtn?.addEventListener("click", () => {
+            const rollValue = parseInt(this.domService.elements.adminFakeRollInput.value);
+            if (rollValue >= 1 && rollValue <= 20) {
+                this.adminService.executeFakeRoll(rollValue);
+            } else {
+                this.adminService.showToast('Roll must be between 1 and 20', 'error');
+            }
+        });
+
+        // Clear Last Visit button (renamed from Reset Daily State)
+        this.domService.elements.adminClearLastVisitBtn?.addEventListener("click", () => {
+            this.adminService.clearLastVisitAndReload();
         });
     }
 
@@ -459,13 +500,14 @@ class ChunkPlayerApp {
 
         // Clear error and show appropriate admin level
         this.domService.elements.adminError.textContent = "";
-        this.domService.elements.adminLogin.classList.add('hidden');
+        this.domService.elements.adminLogin.classList.add('display-none');
 
         if (level >= 1) {
-            this.domService.elements.adminLevel1.classList.remove('hidden');
+            this.domService.elements.adminLevel1.classList.remove('display-none');
         }
         if (level >= 2) {
-            this.domService.elements.adminLevel2.classList.remove('hidden');
+            this.domService.elements.adminLevel2.classList.remove('display-none');
+            await this.initializePointerInputs();
         }
 
         this.adminService.showToast(`Level ${level} access granted`, "success");
@@ -505,6 +547,40 @@ class ChunkPlayerApp {
      */
     showAdminSection() {
         this.domService.elements.adminSection.classList.remove('hidden');
+    }
+
+    /**
+     * Initialize pointer input fields with current values
+     */
+    async initializePointerInputs() {
+        try {
+            const data = await this.apiService.getDailyData();
+
+            this.domService.elements.adminNormalPointerInput.value = data.normalMovie.pointer || 1;
+            this.domService.elements.adminPunishmentPointerInput.value = data.punishmentMovie.pointer || 1;
+            this.domService.elements.adminRewardPointerInput.value = data.rewardMovie.pointer || 1;
+            this.domService.elements.adminFakeRollInput.value = data.roll || 10;
+        } catch (error) {
+            console.error('Failed to load pointer values:', error);
+            // Set defaults
+            this.domService.elements.adminNormalPointerInput.value = 1;
+            this.domService.elements.adminPunishmentPointerInput.value = 1;
+            this.domService.elements.adminRewardPointerInput.value = 1;
+            this.domService.elements.adminFakeRollInput.value = 10;
+        }
+    }
+
+    /**
+     * Handle pointer value change from stepper
+     * @param {string} type - Pointer type
+     * @param {number} value - New value
+     */
+    async handlePointerChange(type, value) {
+        if (isNaN(value) || value < 1) {
+            this.adminService.showToast('Invalid pointer value', 'error');
+            return;
+        }
+        await this.adminService.updatePointer(type, value);
     }
 }
 

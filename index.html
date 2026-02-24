@@ -51,7 +51,7 @@
             src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
             type='video/mp4; codecs="hvc1"'>
         <source id="diceSource2"
-            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
+            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1bgkok5mum&raw=1"
             type="video/webm">
     </video>
     <div class="poster-section">
@@ -112,17 +112,67 @@
             </div>
 
             <!-- Level 1 Clearance (Self-Report) -->
-            <div id="admin-level-1" class="admin-level hidden">
+            <div id="admin-level-1" class="admin-level display-none">
                 <h3>Level 1</h3>
-                <button id="punishment-report-btn">I morbed (missed a chunk)</button>
+                <button id="punishment-report-btn" class="admin-action-btn danger">I morbed (missed a chunk)</button>
             </div>
 
             <!-- Level 2 Clearance (Admin Functions) -->
-            <div id="admin-level-2" class="admin-level hidden">
+            <div id="admin-level-2" class="admin-level display-none">
                 <h3>Level 2</h3>
-                <button id="bypass-lockdown-btn">Bypass Lockdown</button>
-                <button id="admin-reset-btn">Reset Daily State</button>
-                <button id="admin-force-roll-btn">Force Re-roll</button>
+
+                <!-- Pointer Controls -->
+                <div class="admin-pointer-control">
+                    <label>Normal Pointer</label>
+                    <div class="stepper-with-action">
+                        <div class="stepper">
+                            <button class="stepper-minus" data-type="normal">−</button>
+                            <input type="number" class="stepper-input" id="normal-pointer-input" min="1">
+                            <button class="stepper-plus" data-type="normal">+</button>
+                        </div>
+                        <button class="stepper-set-btn" data-type="normal">Set</button>
+                    </div>
+                </div>
+
+                <div class="admin-pointer-control">
+                    <label>Punishment Pointer</label>
+                    <div class="stepper-with-action">
+                        <div class="stepper">
+                            <button class="stepper-minus" data-type="punishment">−</button>
+                            <input type="number" class="stepper-input" id="punishment-pointer-input" min="1">
+                            <button class="stepper-plus" data-type="punishment">+</button>
+                        </div>
+                        <button class="stepper-set-btn" data-type="punishment">Set</button>
+                    </div>
+                </div>
+
+                <div class="admin-pointer-control">
+                    <label>Reward Pointer</label>
+                    <div class="stepper-with-action">
+                        <div class="stepper">
+                            <button class="stepper-minus" data-type="reward">−</button>
+                            <input type="number" class="stepper-input" id="reward-pointer-input" min="1">
+                            <button class="stepper-plus" data-type="reward">+</button>
+                        </div>
+                        <button class="stepper-set-btn" data-type="reward">Set</button>
+                    </div>
+                </div>
+
+                <!-- Fake Roll Control -->
+                <div class="admin-pointer-control">
+                    <label>Execute Fake Roll</label>
+                    <div class="stepper">
+                        <button class="stepper-minus" data-type="fakeroll">−</button>
+                        <input type="number" class="stepper-input" id="fake-roll-input" min="1" max="20">
+                        <button class="stepper-plus" data-type="fakeroll">+</button>
+                    </div>
+                    <button id="execute-fake-roll-btn" class="admin-action-btn">Execute Fake Roll</button>
+                </div>
+
+                <hr class="admin-divider">
+
+                <button id="bypass-lockdown-btn" class="admin-action-btn">Bypass Lockdown</button>
+                <button id="clear-last-visit-btn" class="admin-action-btn">Clear Last Visit</button>
             </div>
         </div>
     </div>

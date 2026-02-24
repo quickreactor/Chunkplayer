@@ -181,9 +181,11 @@ option {
 
 .hidden {
     opacity: 0;
-    /* Fully transparent */
     pointer-events: none;
-    /* Prevent interactions when hidden */
+}
+
+.display-none {
+    display: none;
 }
 
 .unhidden {
@@ -440,15 +442,16 @@ option {
     background: rgba(0, 0, 0, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    padding: 20px;
-    min-width: 280px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .admin-login input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 8px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
@@ -458,7 +461,7 @@ option {
 
 .admin-login button {
     width: 100%;
-    padding: 10px;
+    padding: 8px;
     background: #4CAF50;
     color: white;
     border: none;
@@ -473,41 +476,34 @@ option {
 
 .admin-error {
     color: #ff4444;
-    font-size: 12px;
+    font-size: 11px;
     display: block;
-    margin-top: 5px;
-    min-height: 16px;
+    min-height: 14px;
 }
 
 .admin-level {
-    margin-top: 15px;
-    padding-top: 15px;
+    padding-top: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .admin-level h3 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
+    margin: 0 0 6px 0;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
     font-weight: normal;
 }
 
-#punishment-report-btn,
-#bypass-lockdown-btn,
-#admin-reset-btn,
-#admin-force-roll-btn {
+/* Admin Action Buttons - Combined Styles */
+#punishment-report-btn {
     width: 100%;
-    padding: 12px;
+    padding: 8px;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
-    margin-bottom: 8px;
-}
-
-#punishment-report-btn {
+    margin-bottom: 4px;
     background: #ff4444;
 }
 
@@ -515,16 +511,121 @@ option {
     background: #cc0000;
 }
 
-#bypass-lockdown-btn,
-#admin-reset-btn,
-#admin-force-roll-btn {
+/* Pointer Controls */
+.admin-pointer-control {
+    margin-bottom: 6px;
+}
+
+.admin-pointer-control label {
+    display: block;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 3px;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.stepper button {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.stepper button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.stepper-input {
+    flex: 1;
+    width: 50px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.stepper-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.stepper-with-action {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.stepper-with-action .stepper {
+    margin-bottom: 0;
+}
+
+.stepper-set-btn {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.stepper-set-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.stepper-set-btn:active {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.admin-action-btn {
+    width: 100%;
+    padding: 8px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-bottom: 4px;
     background: #555;
 }
 
-#bypass-lockdown-btn:hover,
-#admin-reset-btn:hover,
-#admin-force-roll-btn:hover {
+.admin-action-btn:hover {
     background: #666;
+}
+
+.admin-action-btn.danger {
+    background: #ff4444;
+}
+
+.admin-action-btn.danger:hover {
+    background: #cc0000;
+}
+
+.admin-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 4px 0;
 }
 
 /* Toast Notification */
