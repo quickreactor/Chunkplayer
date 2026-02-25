@@ -81,6 +81,14 @@ class DOMService {
      * Setup Plyr video player
      */
     setupPlayer() {
+        // Wait for Plyr to be loaded (it's loaded at the end of body)
+        if (typeof Plyr === 'undefined') {
+            console.warn('Plyr not loaded yet, will retry...');
+            // Retry after a short delay
+            setTimeout(() => this.setupPlayer(), 50);
+            return;
+        }
+
         this.player = new Plyr("#videoPlayer", {
             fullscreen: {
                 enabled: true,

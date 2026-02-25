@@ -18,11 +18,27 @@ class ApiService {
     async fetchText(endpoint) {
         try {
             console.log(`📡 Fetching from ${this.baseUrl}/${endpoint}`);
-            const response = await fetch(`${this.baseUrl}/${endpoint}`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+            const response = await fetch(`${this.baseUrl}/${endpoint}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const result = await response.text();
             console.log(`✅ Result from ${endpoint}:`, result);
             return result;
         } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error(`❌ API Timeout (${endpoint}): Request took too long`);
+                throw new Error(`Request timeout - the server took too long to respond`);
+            }
             console.error(`❌ API Error (${endpoint}):`, error);
             ErrorHandler.handle(error, 'ApiService.fetchText', { throw: true });
         }

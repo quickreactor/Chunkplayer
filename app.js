@@ -59,8 +59,41 @@ class ChunkPlayerApp {
             const response = await fetch("urls.json");
             this.urls = await response.json();
 
-            // Load daily movie data
-            const response2 = await fetch(`${CONFIG.api.baseUrl}/get-daily-data`);
+            // Load daily movie data with retry logic
+            let response2;
+            let retries = 3;
+            let lastError;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+                    response2 = await fetch(`${CONFIG.api.baseUrl}/get-daily-data`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!response2.ok) {
+                        throw new Error(`API returned ${response2.status}: ${response2.statusText}`);
+                    }
+
+                    break; // Success, exit retry loop
+                } catch (fetchError) {
+                    lastError = fetchError;
+                    console.warn(`Fetch attempt ${i + 1} failed:`, fetchError.message);
+
+                    if (i < retries - 1) {
+                        // Wait before retry with exponential backoff
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    }
+                }
+            }
+
+            if (!response2 || !response2.ok) {
+                throw new Error(`Failed to fetch daily data after ${retries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
+            }
+
             CONFIG.movieData = await response2.json();
 
             // Initialize DateService after movie data is loaded
@@ -587,13 +620,8 @@ class ChunkPlayerApp {
 // ====================
 // INITIALIZE APPLICATION
 // ====================
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.chunkPlayerApp = new ChunkPlayerApp();
-    });
-} else {
-    window.chunkPlayerApp = new ChunkPlayerApp();
-}
+// Use defer on the script tag, so DOM and Plyr are ready when this runs
+window.chunkPlayerApp = new ChunkPlayerApp();
 
 // ====================
 // DEBUG UTILITIES
