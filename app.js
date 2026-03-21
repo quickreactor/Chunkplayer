@@ -64,15 +64,42 @@ class ChunkPlayerApp {
             let retries = 3;
             let lastError;
 
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            // Detect browser for debugging
+            const isFirefox = navigator.userAgent.includes('Firefox');
+            const isAndroid = navigator.userAgent.includes('Android');
+            const isFirefoxAndroid = isFirefox && isAndroid;
+            const connectionType = navigator.connection?.effectiveType || 'unknown';
 
-                    response2 = await fetch(`${CONFIG.api.baseUrl}/get-daily-data`, {
-                        signal: controller.signal
+            console.log(`📱 Device/Browser: Firefox=${isFirefox}, Android=${isAndroid}, Connection=${connectionType}`);
+
+            for (let i = 0; i < retries; i++) {
+                let controller = null;
+                let timeoutId = null;
+                let fetchStart = 0;
+
+                try {
+                    controller = new AbortController();
+                    // Longer timeout for first attempt (cold start), shorter for retries
+                    const timeoutMs = (i === 0) ? 15000 : 10000;
+                    timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                    const fetchUrl = `${CONFIG.api.baseUrl}/get-daily-data`;
+                    fetchStart = performance.now();
+
+                    console.log(`🌐 [Attempt ${i + 1}/${retries}] Fetching from: ${fetchUrl}`);
+                    console.log(`⏱️ Timeout set to ${timeoutMs}ms for this attempt`);
+
+                    response2 = await fetch(fetchUrl, {
+                        signal: controller.signal,
+                        mode: 'cors',
+                        credentials: 'omit'
                     });
+
+                    const fetchDuration = Math.round(performance.now() - fetchStart);
                     clearTimeout(timeoutId);
+                    timeoutId = null;
+
+                    console.log(`✅ Response received in ${fetchDuration}ms | Status: ${response2.status}`);
 
                     if (!response2.ok) {
                         throw new Error(`API returned ${response2.status}: ${response2.statusText}`);
@@ -80,12 +107,41 @@ class ChunkPlayerApp {
 
                     break; // Success, exit retry loop
                 } catch (fetchError) {
+                    if (timeoutId) clearTimeout(timeoutId);
+
+                    const attemptDuration = fetchStart ? Math.round(performance.now() - fetchStart) + 'ms' : 'unknown';
+
                     lastError = fetchError;
-                    console.warn(`Fetch attempt ${i + 1} failed:`, fetchError.message);
+
+                    // Detailed error logging for debugging first-load issues
+                    console.group(`❌ Fetch attempt ${i + 1}/${retries} FAILED (${attemptDuration})`);
+                    console.log('Error type:', fetchError.name);
+                    console.log('Message:', fetchError.message);
+                    console.log('Is timeout abort?', fetchError.name === 'AbortError');
+                    console.log('Is network error?', fetchError.name === 'TypeError');
+                    console.log('Full error:', fetchError);
+                    console.groupEnd();
+
+                    if (fetchError.name === 'AbortError' && i === 0) {
+                        console.warn('⚠️ First attempt timed out - likely cold start or radio wake-up');
+                        console.warn('🔄 Retrying with shorter timeout...');
+
+                        // Mobile debug: show alert with diagnostic info
+                        if (isFirefoxAndroid || isAndroid) {
+                            alert(
+                                `⏱️ Fetch timed out after ${attemptDuration}\n` +
+                                `Error: ${fetchError.name}\n` +
+                                `Connection: ${connectionType}\n` +
+                                `Likely cause: cold start or slow network\n` +
+                                `Retrying...`
+                            );
+                        }
+                    }
 
                     if (i < retries - 1) {
-                        // Wait before retry with exponential backoff
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                        const backoffTime = Math.pow(2, i) * 1000;
+                        console.log(`⏳ Waiting ${backoffTime}ms before retry...`);
+                        await new Promise(resolve => setTimeout(resolve, backoffTime));
                     }
                 }
             }
