@@ -45,6 +45,12 @@ class ChunkPlayerApp {
             this.setupDebugMode();
             this.setupMorbUnlocks();
             await this.runMainLogic();
+
+            // Check for Rensday (Wednesday) and trigger effect
+            if (this.dateService.isWednesday()) {
+                console.log('🎉 Happy Rensday! Triggering Jeremy Renner animation...');
+                this.effectService.triggerRensday();
+            }
         } catch (error) {
             ErrorHandler.handle(error, 'ChunkPlayerApp.init');
         }
@@ -800,5 +806,18 @@ window.Debug = {
         };
         console.log(`%c[Debug] Coin-flip mode forced (winner: movie${winnerIndex + 1})`, 'color: #00ff00; font-weight: bold');
         window.chunkPlayerApp = new ChunkPlayerApp();
+    },
+
+    /**
+     * Trigger Rensday effect (Jeremy Renner walking + confetti + text)
+     * @param {number} duration - Duration in milliseconds (default: 8000)
+     */
+    rensday(duration = 8000) {
+        if (!window.chunkPlayerApp || !window.chunkPlayerApp.effectService) {
+            console.error('%c[Debug] App not initialized', 'color: #ff0000; font-weight: bold');
+            return;
+        }
+        console.log('%c[Debug] 🎉 Triggering Rensday!', 'color: #ff6b6b; font-weight: bold');
+        window.chunkPlayerApp.effectService.triggerRensday(duration);
     }
 };

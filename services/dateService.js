@@ -45,6 +45,14 @@ class DateService {
     }
 
     /**
+     * Check if today is Wednesday (Rensday!)
+     * @returns {boolean} True if Wednesday
+     */
+    isWednesday() {
+        return this.now.getDay() === 3; // 0 = Sunday, 3 = Wednesday
+    }
+
+    /**
      * Check if we should be in lockdown mode
      * Lockdown if: past midnight OR before start date
      * @returns {boolean} True if should lockdown

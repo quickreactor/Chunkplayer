@@ -74,6 +74,100 @@ class EffectService {
         };
         document.head.append(script);
     }
+
+    /**
+     * Trigger Happy Rensday effect (Jeremy Renner walking + confetti + text)
+     * @param {number} duration - Duration in milliseconds (default: 8000ms to match GIF animation)
+     */
+    triggerRensday(duration = 8000) {
+        console.log('🎉 Triggering Rensday effect!');
+
+        // Play sound after 1 second delay
+        setTimeout(() => {
+            const audio = document.getElementById('renner-audio');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.warn('Could not play Renner audio:', e));
+            }
+        }, 1000);
+
+        // Show Renner GIF
+        const renner = document.getElementById('renner');
+        if (renner) {
+            renner.style.display = 'block';
+            renner.classList.add('animate');
+        }
+
+        // Show "HAPPY RENSDAY" text
+        const rensdayText = document.getElementById('rensday-text');
+        if (rensdayText) {
+            rensdayText.style.display = 'block';
+        }
+
+        // Start confetti
+        this.startConfetti(duration);
+
+        // Clean up after duration
+        setTimeout(() => {
+            if (renner) {
+                renner.style.display = 'none';
+                renner.classList.remove('animate');
+            }
+            if (rensdayText) {
+                rensdayText.style.display = 'none';
+            }
+            this.stopConfetti();
+            console.log('🎉 Rensday effect ended');
+        }, duration);
+    }
+
+    /**
+     * Start confetti animation
+     * @param {number} duration - How long to spawn confetti
+     */
+    startConfetti(duration) {
+        const container = document.getElementById('confetti-container');
+        if (!container) return;
+
+        const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#1dd1a1'];
+        const confettiInterval = 50; // Spawn rate in ms
+
+        this._confettiIntervalId = setInterval(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's'; // 2-4 seconds
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+            // Random shapes
+            if (Math.random() > 0.5) {
+                confetti.style.borderRadius = '50%';
+            }
+
+            container.appendChild(confetti);
+
+            // Remove confetti after it falls
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }, confettiInterval);
+
+        // Stop spawning after duration
+        setTimeout(() => {
+            this.stopConfetti();
+        }, duration);
+    }
+
+    /**
+     * Stop confetti animation
+     */
+    stopConfetti() {
+        if (this._confettiIntervalId) {
+            clearInterval(this._confettiIntervalId);
+            this._confettiIntervalId = null;
+        }
+    }
 }
 
 // Export for use in other modules
