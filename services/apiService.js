@@ -156,6 +156,53 @@ class ApiService {
             throw error;
         }
     }
+
+    /**
+     * Get today's graffiti
+     * @returns {Promise<Object>} Graffiti data { locked, text, x, y, fontSize, rotation }
+     */
+    async getGraffiti() {
+        try {
+            const response = await fetch(`${this.baseUrl}/get-graffiti`);
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.getGraffiti');
+            return { locked: false, text: null };
+        }
+    }
+
+    /**
+     * Submit graffiti for today
+     * @param {Object} graffitiData - { text, x, y, fontSize, rotation }
+     * @returns {Promise<Object>} Response with success status
+     */
+    async submitGraffiti(graffitiData) {
+        try {
+            const response = await fetch(`${this.baseUrl}/submit-graffiti`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(graffitiData)
+            });
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.submitGraffiti');
+            throw error;
+        }
+    }
+
+    /**
+     * Clear graffiti (admin/debug function)
+     * @returns {Promise<Object>} Response with success status
+     */
+    async clearGraffiti() {
+        try {
+            const response = await fetch(`${this.baseUrl}/clear-graffiti`);
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.clearGraffiti');
+            throw error;
+        }
+    }
 }
 
 // Export for use in other modules

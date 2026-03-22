@@ -17,6 +17,7 @@ class ChunkPlayerApp {
         this.dateService = null; // Will be initialized after loading URLs
         this.soundBoardService = null;
         this.adminService = null; // Will be initialized after DOM service is ready
+        this.graffitiService = null; // Will be initialized after services are ready
 
         // Runtime state
         this.urls = {};
@@ -195,6 +196,8 @@ class ChunkPlayerApp {
     setupServices() {
         // Initialize admin service after DOM service is ready
         this.adminService = new AdminService(this.apiService, this.domService);
+        // Initialize graffiti service
+        this.graffitiService = new GraffitiService(this.apiService, this.domService);
     }
 
     /**
@@ -207,7 +210,13 @@ class ChunkPlayerApp {
             this.videoService,
             this.audioService,
             this.soundBoardService,
-            () => this.showAdminSection() // Show admin after roll
+            () => {
+                this.showAdminSection();
+                // Initialize graffiti when entering video playback
+                if (this.graffitiService) {
+                    this.graffitiService.init();
+                }
+            }
         );
 
         // Lockdown use case
@@ -547,6 +556,10 @@ class ChunkPlayerApp {
      * Show Sunday rest day screen
      */
     showSundayScreen() {
+        // Clean up graffiti elements
+        if (this.graffitiService) {
+            this.graffitiService.destroy();
+        }
         this.domService.removeClass('container', 'hidden');
         this.domService.show('container');
         this.domService.elements.sundayDiv.style.justifyContent = "center";
@@ -819,5 +832,33 @@ window.Debug = {
         }
         console.log('%c[Debug] 🎉 Triggering Rensday!', 'color: #ff6b6b; font-weight: bold');
         window.chunkPlayerApp.effectService.triggerRensday(duration);
+    },
+
+    /**
+     * Clear graffiti (for testing purposes)
+     * Clears both server-side graffiti and re-initializes the UI
+     */
+    async clearGraffiti() {
+        if (!window.chunkPlayerApp || !window.chunkPlayerApp.graffitiService) {
+            console.error('%c[Debug] GraffitiService not initialized', 'color: #ff0000; font-weight: bold');
+            return;
+        }
+
+        try {
+            console.log('%c[Debug] 🎨 Clearing graffiti...', 'color: #00ff00; font-weight: bold');
+            const result = await window.chunkPlayerApp.apiService.clearGraffiti();
+
+            if (result.success) {
+                console.log('%c[Debug] Graffiti cleared successfully!', 'color: #00ff00; font-weight: bold');
+                // Re-initialize graffiti to update UI
+                window.chunkPlayerApp.graffitiService.destroy();
+                window.chunkPlayerApp.graffitiService.initialized = false;
+                await window.chunkPlayerApp.graffitiService.init();
+            } else {
+                console.error('%c[Debug] Failed to clear graffiti:', 'color: #ff0000; font-weight: bold', result);
+            }
+        } catch (error) {
+            console.error('%c[Debug] Error clearing graffiti:', 'color: #ff0000; font-weight: bold', error);
+        }
     }
 };

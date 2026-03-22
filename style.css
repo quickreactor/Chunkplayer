@@ -4,6 +4,50 @@
     --plyr-color-main: rgba(0, 0, 0, 0.5);
 }
 
+/* ==================== */
+/* CUSTOM FONT FACES     */
+/* ==================== */
+
+@font-face {
+    font-family: 'Street2Art';
+    src: url('fonts/Street2Art-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'FromStreetArt';
+    src: url('fonts/FromStreetArt-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SuperPopstar';
+    src: url('fonts/Super Popstar.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Edo';
+    src: url('fonts/edo.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'HVD Peace';
+    src: url('fonts/HVD_Peace.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 body,
 html {
     margin: 0;
@@ -275,6 +319,8 @@ option {
 #todays-poster-container {
     margin-top: 35px;
     width: 70vw;
+    position: relative;
+    overflow: hidden;
 }
 
 #todays-poster {
@@ -793,4 +839,507 @@ option {
 
 .confirm-btn.no:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* ==================== */
+/* Graffiti Styles */
+/* ==================== */
+
+/* Graffiti Button - positioned on poster container */
+#graffiti-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#graffiti-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+}
+
+#graffiti-btn.graffiti-locked {
+    background: rgba(100, 100, 255, 0.6);
+}
+
+/* Graffiti Overlay - displayed on poster */
+.graffiti-overlay {
+    position: absolute;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    color: white;
+    text-shadow:
+        2px 2px 0 #000,
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        0 2px 0 #000,
+        0 -2px 0 #000,
+        2px 0 0 #000,
+        -2px 0 0 #000;
+    pointer-events: none;
+    z-index: 50;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+/* Control Panel Overlay - Above poster */
+.graffiti-controls-panel {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+/* Live graffiti element during editing */
+.graffiti-live {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    transform-origin: 50% 50%;
+    white-space: nowrap;
+    font-weight: bold;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+    touch-action: none;
+}
+
+/* Control rows */
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0;
+    gap: 10px;
+}
+
+.control-row label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    min-width: 50px;
+}
+
+.control-row input[type="range"],
+.control-row input[type="color"],
+.control-row select {
+    flex: 1;
+    height: 30px;
+}
+
+.control-row select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Font preview in dropdown */
+.font-preview-select {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Style for disabled separator option */
+.font-preview-select option:disabled {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+}
+
+/* Additional attempt at dropdown font preview - browser dependent */
+.font-preview-select option:not([disabled]) {
+    font-size: 14px;
+}
+
+.font-preview-select option {
+    font-family: inherit;
+}
+
+/* Basic fonts */
+.font-preview-select option[value="sans-serif"] { font-family: 'Segoe UI', sans-serif !important; }
+.font-preview-select option[value="serif"] { font-family: Georgia, serif !important; }
+.font-preview-select option[value="monospace"] { font-family: 'Courier New', monospace !important; }
+.font-preview-select option[value="cursive"] { font-family: 'Comic Sans MS', cursive !important; }
+.font-preview-select option[value="fantasy"] { font-family: Impact, fantasy !important; }
+.font-preview-select option[value="system-ui"] { font-family: system-ui !important; }
+.font-preview-select option[value="rounded"] { font-family: sans-serif !important; font-weight: 500; }
+.font-preview-select option[value="typewriter"] { font-family: 'Courier New', monospace !important; }
+
+/* Graffiti fonts */
+.font-preview-select option[value="graffiti-marker"] { font-family: 'Permanent Marker', cursive !important; }
+.font-preview-select option[value="graffiti-messy"] { font-family: 'Rock Salt', cursive !important; }
+.font-preview-select option[value="graffiti-bubble"] { font-family: 'Knewave', display !important; }
+.font-preview-select option[value="graffiti-outline"] { font-family: 'Monoton', cursive !important; }
+.font-preview-select option[value="graffiti-spray"] { font-family: 'Rubik Marker Hatch', cursive !important; }
+.font-preview-select option[value="graffiti-comic"] { font-family: 'Bangers', cursive !important; }
+.font-preview-select option[value="graffiti-fast"] { font-family: 'Faster One', cursive !important; }
+
+/* ==================== */
+/* CUSTOM FONT DROPDOWN  */
+/* ==================== */
+
+.custom-font-dropdown {
+    position: relative;
+    flex: 1;
+}
+
+.custom-font-dropdown-trigger {
+    width: 100%;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    padding: 0 25px 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    position: relative;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.custom-font-dropdown-trigger::after {
+    content: '▼';
+    position: absolute;
+    right: 8px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+}
+
+.custom-font-dropdown-trigger:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-font-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 20, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    margin-top: 4px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.custom-font-dropdown-menu.open {
+    display: block;
+}
+
+.font-dropdown-separator {
+    padding: 8px 10px;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    user-select: none;
+}
+
+.font-dropdown-option {
+    padding: 10px 8px;
+    cursor: pointer;
+    color: white;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.font-dropdown-option:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.font-dropdown-option.selected {
+    background: rgba(0, 150, 255, 0.3);
+}
+
+/* Scrollbar styling for dropdown menu */
+.custom-font-dropdown-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-font-dropdown-menu::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.custom-font-dropdown-menu::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.custom-font-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.control-row input[type="color"] {
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* Color Picker Wrapper and Trigger */
+.color-picker-wrapper {
+    flex: 1;
+    display: flex;
+}
+
+.pickr-trigger {
+    width: 100%;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pickr-trigger:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.color-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Pickr Button (generated by Pickr) */
+.pickr-trigger .pcr-button {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Pickr App Positioning */
+.pcr-app {
+    position: fixed !important;
+    z-index: 1000;
+}
+
+/* Textarea */
+#graffiti-text {
+    width: 100%;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    padding: 8px;
+    resize: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    box-sizing: border-box;
+    text-align: left !important;
+    text-align-last: left;
+    word-spacing: normal;
+    letter-spacing: normal;
+}
+
+/* Graffiti hint text */
+.graffiti-hint {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin: 5px 0 8px 0;
+    font-style: italic;
+}
+
+#graffiti-text:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+#graffiti-text::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    text-align: left !important;
+}
+
+#graffiti-text::-webkit-input-placeholder {
+    text-align: left;
+}
+
+#graffiti-text::-moz-placeholder {
+    text-align: left;
+}
+
+#graffiti-text:-ms-input-placeholder {
+    text-align: left;
+}
+
+/* Buttons */
+.control-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.control-buttons button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#graffiti-cancel {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+#graffiti-cancel:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#graffiti-submit {
+    background: #4CAF50;
+    color: white;
+}
+
+#graffiti-submit:hover {
+    background: #45a049;
+}
+
+#graffiti-submit:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+/* ==================== */
+/* MOBILE RESPONSIVE     */
+/* ==================== */
+
+@media (max-width: 768px) {
+    .graffiti-controls-panel {
+        width: 95%;
+        max-width: none;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .control-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .control-row label {
+        font-size: 11px;
+        min-width: 45px;
+        flex-basis: 45px;
+    }
+
+    .control-row input[type="range"],
+    .control-row input[type="color"],
+    .custom-font-dropdown,
+    .color-picker-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #graffiti-text {
+        height: 45px;
+        font-size: 14px;
+    }
+
+    .graffiti-hint {
+        font-size: 10px;
+        margin: 4px 0 6px 0;
+    }
+
+    .color-icon {
+        font-size: 14px;
+    }
+
+    .custom-font-dropdown-menu {
+        max-height: 250px;
+    }
+
+    .font-dropdown-option {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+
+    .control-buttons button {
+        font-size: 13px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .graffiti-controls-panel {
+        padding: 10px;
+        margin-bottom: 8px;
+    }
+
+    .control-row label {
+        font-size: 10px;
+        min-width: 40px;
+        flex-basis: 40px;
+    }
+
+    .control-row input[type="range"],
+    .control-row input[type="color"],
+    .custom-font-dropdown,
+    .color-picker-wrapper {
+        height: 28px;
+    }
+
+    .color-picker-wrapper {
+        flex: 1;
+    }
+
+    .pickr-trigger {
+        height: 28px;
+    }
+
+    #graffiti-text {
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .graffiti-hint {
+        font-size: 9px;
+        margin: 3px 0 5px 0;
+    }
+
+    .color-icon {
+        font-size: 13px;
+    }
+
+    .custom-font-dropdown-trigger {
+        font-size: 13px;
+    }
 }

@@ -8,6 +8,21 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 
+    <!-- Google Fonts for Graffiti -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap" rel="stylesheet">
+
+    <!-- Preload Custom TTF Fonts -->
+    <link rel="preload" href="fonts/Street2Art-Bold.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="fonts/FromStreetArt-Bold.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="fonts/Super Popstar.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="fonts/edo.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="fonts/HVD_Peace.ttf" as="font" type="font/ttf" crossorigin>
+
+    <!-- Pickr Color Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
+
     <!-- Application Scripts (loaded in order) -->
     <!-- Configuration -->
     <script src="config.js"></script>
@@ -29,6 +44,7 @@
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js"></script>
     <script src="services/adminService.js"></script>
+    <script src="services/graffitiService.js"></script>
 
     <!-- Use Cases -->
     <script src="useCases/dailyFlowUseCase.js"></script>
@@ -36,6 +52,9 @@
     <script src="useCases/diceRollUseCase.js"></script>
     <script src="useCases/lockdownUseCase.js"></script>
     <script src="useCases/videoPlaybackUseCase.js"></script>
+
+    <!-- Pickr Color Picker -->
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 
     <!-- Main Application -->
     <script src="app.js" defer></script>
