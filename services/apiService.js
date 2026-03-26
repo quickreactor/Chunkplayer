@@ -203,6 +203,30 @@ class ApiService {
             throw error;
         }
     }
+
+    /**
+     * Upload poster image to B2 via Worker
+     * @param {File} file - Image file (JPEG/PNG)
+     * @param {string} movieName - Movie name for path construction
+     * @returns {Promise<Object>} Response with success status and poster URL
+     */
+    async uploadPoster(file, movieName) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('movieName', movieName);
+
+            const response = await fetch(`${this.baseUrl}/upload-poster`, {
+                method: 'POST',
+                body: formData
+            });
+
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.uploadPoster');
+            throw error;
+        }
+    }
 }
 
 // Export for use in other modules

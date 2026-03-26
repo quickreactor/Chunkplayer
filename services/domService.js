@@ -63,6 +63,13 @@ class DOMService {
             adminFakeRollInput: document.getElementById("fake-roll-input"),
             adminExecuteFakeRollBtn: document.getElementById("execute-fake-roll-btn"),
             adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
+
+            // Poster upload controls
+            posterFileInput: document.getElementById("poster-file-input"),
+            selectPosterBtn: document.getElementById("select-poster-btn"),
+            uploadPosterBtn: document.getElementById("upload-poster-btn"),
+            posterUploadStatus: document.getElementById("poster-upload-status"),
+
             stepperMinusBtns: document.querySelectorAll(".stepper-minus"),
             stepperPlusBtns: document.querySelectorAll(".stepper-plus"),
             stepperSetBtns: document.querySelectorAll('.stepper-set-btn'),

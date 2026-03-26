@@ -223,6 +223,67 @@ class AdminService {
         this.showToast('Last visit cleared - reloading...', 'success');
         setTimeout(() => location.reload(), 1000);
     }
+
+    /**
+     * Handle poster upload flow
+     * @param {File} file - Selected image file
+     * @param {HTMLElement} statusEl - Status element for displaying messages
+     * @param {Object} movieData - Movie data from CONFIG
+     * @returns {Promise<boolean>} Success status
+     */
+    async handlePosterUpload(file, statusEl, movieData) {
+        // 1. Validate file type (JPEG/PNG only)
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            statusEl.textContent = 'Invalid file type. Only JPEG and PNG allowed.';
+            statusEl.className = 'upload-status error';
+            return false;
+        }
+
+        // 2. Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            statusEl.textContent = 'File too large. Maximum size is 10MB.';
+            statusEl.className = 'upload-status error';
+            return false;
+        }
+
+        // 3. Get movie name from CONFIG
+        const movieName = movieData?.normalMovie?.name;
+        if (!movieName) {
+            statusEl.textContent = 'Movie name not available.';
+            statusEl.className = 'upload-status error';
+            return false;
+        }
+
+        // 4. Show uploading status
+        statusEl.textContent = 'Uploading...';
+        statusEl.className = 'upload-status';
+
+        try {
+            // 5. Call API
+            const result = await this.apiService.uploadPoster(file, movieName);
+
+            if (result.success) {
+                statusEl.textContent = 'Poster updated!';
+                statusEl.className = 'upload-status success';
+                this.showToast('Poster uploaded successfully!', 'success');
+
+                // 6. Reload page to show new poster
+                setTimeout(() => location.reload(), 1500);
+                return true;
+            } else {
+                statusEl.textContent = result.error || 'Upload failed.';
+                statusEl.className = 'upload-status error';
+                return false;
+            }
+        } catch (error) {
+            console.error('Poster upload error:', error);
+            statusEl.textContent = 'Upload failed. Please try again.';
+            statusEl.className = 'upload-status error';
+            return false;
+        }
+    }
 }
 
 // Export for use in other modules

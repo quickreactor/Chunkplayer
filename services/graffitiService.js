@@ -53,31 +53,30 @@ class GraffitiService {
 
     /**
      * Render the graffiti button on the poster container
+     * Only shows pencil icon when graffiti hasn't been applied yet
+     * Shows nothing when graffiti has been applied for the day
      */
     renderButton() {
         // Remove existing button if any
         if (this.buttonElement) {
             this.buttonElement.remove();
+            this.buttonElement = null;
+        }
+
+        // If graffiti is locked (already applied), don't show any button
+        if (this.graffiti?.locked) {
+            return;
         }
 
         const posterContainer = document.getElementById('todays-poster-container');
         if (!posterContainer) return;
 
-        // Create button
+        // Create button with pencil icon - can create graffiti
         this.buttonElement = document.createElement('button');
         this.buttonElement.id = 'graffiti-btn';
-        this.buttonElement.title = this.graffiti?.locked ? 'View today\'s graffiti' : 'Create today\'s graffiti';
-
-        if (this.graffiti?.locked) {
-            // Eye icon - someone already created graffiti
-            this.buttonElement.innerHTML = '&#128065;';
-            this.buttonElement.classList.add('graffiti-locked');
-            this.buttonElement.addEventListener('click', () => this.showGraffitiInfo());
-        } else {
-            // Pencil icon - can create graffiti
-            this.buttonElement.innerHTML = '&#9998;';
-            this.buttonElement.addEventListener('click', () => this.startEditing());
-        }
+        this.buttonElement.title = 'Create today\'s graffiti';
+        this.buttonElement.innerHTML = '&#9998;';
+        this.buttonElement.addEventListener('click', () => this.startEditing());
 
         posterContainer.appendChild(this.buttonElement);
     }
@@ -130,7 +129,7 @@ class GraffitiService {
             'serif': "'Georgia', 'Times New Roman', Times, serif",
             'monospace': "'Courier New', Courier, monospace",
             'cursive': "'Comic Sans MS', 'Chalkboard SE', cursive",
-            'fantasy': "'Impact', 'Charcoal', fantasy",
+            'fantasy': "'Anton', 'Impact', sans-serif",
             'system-ui': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             'rounded': "'Varela Round', 'Quicksand', 'Nunito', sans-serif",
             'typewriter': "'Special Elite', 'Courier Prime', 'Courier New', monospace",
@@ -193,7 +192,7 @@ class GraffitiService {
             { id: 'serif', name: 'Serif', family: 'Georgia, serif', category: 'basic' },
             { id: 'monospace', name: 'Mono', family: "'Courier New', monospace", category: 'basic' },
             { id: 'cursive', name: 'Hand', family: "'Comic Sans MS', cursive", category: 'basic' },
-            { id: 'fantasy', name: 'Bold', family: 'Impact, fantasy', category: 'basic' },
+            { id: 'fantasy', name: 'Bold', family: "'Anton', Impact, sans-serif", category: 'basic' },
             { id: 'system-ui', name: 'Modern', family: 'system-ui', category: 'basic' },
             { id: 'rounded', name: 'Round', family: 'sans-serif', category: 'basic' },
             { id: 'typewriter', name: 'Type', family: "'Courier New', monospace", category: 'basic' },

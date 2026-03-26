@@ -362,6 +362,32 @@ class ChunkPlayerApp {
         this.domService.elements.adminClearLastVisitBtn?.addEventListener("click", () => {
             this.adminService.clearLastVisitAndReload();
         });
+
+        // Poster upload controls
+        this.domService.elements.selectPosterBtn?.addEventListener("click", () => {
+            this.domService.elements.posterFileInput?.click();
+        });
+
+        this.domService.elements.posterFileInput?.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Show the upload button and filename
+                this.domService.elements.uploadPosterBtn.style.display = 'block';
+                this.domService.elements.posterUploadStatus.textContent = `Selected: ${file.name}`;
+                this.domService.elements.posterUploadStatus.className = 'upload-status';
+                this.selectedPosterFile = file;
+            }
+        });
+
+        this.domService.elements.uploadPosterBtn?.addEventListener("click", async () => {
+            if (this.selectedPosterFile) {
+                await this.adminService.handlePosterUpload(
+                    this.selectedPosterFile,
+                    this.domService.elements.posterUploadStatus,
+                    CONFIG.movieData
+                );
+            }
+        });
     }
 
     /**

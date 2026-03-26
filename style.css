@@ -743,6 +743,27 @@ option {
     margin: 4px 0;
 }
 
+/* Poster Upload Section */
+#poster-upload-section .poster-upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#poster-upload-section .upload-status {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    min-height: 16px;
+}
+
+#poster-upload-section .upload-status.error {
+    color: #ff6b6b;
+}
+
+#poster-upload-section .upload-status.success {
+    color: #4CAF50;
+}
+
 /* Toast Notification */
 .toast {
     position: fixed;
@@ -977,7 +998,7 @@ option {
 .font-preview-select option[value="serif"] { font-family: Georgia, serif !important; }
 .font-preview-select option[value="monospace"] { font-family: 'Courier New', monospace !important; }
 .font-preview-select option[value="cursive"] { font-family: 'Comic Sans MS', cursive !important; }
-.font-preview-select option[value="fantasy"] { font-family: Impact, fantasy !important; }
+.font-preview-select option[value="fantasy"] { font-family: 'Anton', Impact, sans-serif !important; }
 .font-preview-select option[value="system-ui"] { font-family: system-ui !important; }
 .font-preview-select option[value="rounded"] { font-family: sans-serif !important; font-weight: 500; }
 .font-preview-select option[value="typewriter"] { font-family: 'Courier New', monospace !important; }

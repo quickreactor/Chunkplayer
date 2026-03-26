@@ -11,7 +11,7 @@
     <!-- Google Fonts for Graffiti -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap" rel="stylesheet">
 
     <!-- Preload Custom TTF Fonts -->
     <link rel="preload" href="fonts/Street2Art-Bold.ttf" as="font" type="font/ttf" crossorigin>
@@ -138,6 +138,19 @@
             <div id="admin-level-1" class="admin-level display-none">
                 <h3>Level 1</h3>
                 <button id="punishment-report-btn" class="admin-action-btn danger">I morbed (missed a chunk)</button>
+
+                <hr class="admin-divider">
+
+                <!-- Poster Upload Section -->
+                <div class="admin-pointer-control" id="poster-upload-section">
+                    <label>Change Normal Poster</label>
+                    <div class="poster-upload-controls">
+                        <input type="file" id="poster-file-input" accept="image/jpeg,image/png" style="display:none">
+                        <button id="select-poster-btn" class="admin-action-btn">Select Image</button>
+                        <button id="upload-poster-btn" class="admin-action-btn" style="display:none">Upload Poster</button>
+                        <div id="poster-upload-status" class="upload-status"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Level 2 Clearance (Admin Functions) -->
