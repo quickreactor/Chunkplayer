@@ -59,10 +59,32 @@ class GraffitiService {
         if (!this.graffiti || !this.graffiti.text) return;
 
         const prerollContainer = document.getElementById('poster-container-1');
-        if (prerollContainer) {
-            this.prerollOverlayElement = this.createOverlayElement(0.57);
-            prerollContainer.appendChild(this.prerollOverlayElement);
-        }
+        const posterImage = document.getElementById('poster-image-1');
+        if (!prerollContainer || !posterImage) return;
+
+        // Wait for image to load so we get accurate dimensions
+        await new Promise(resolve => {
+            if (posterImage.complete) return resolve();
+            posterImage.addEventListener('load', resolve, { once: true });
+            posterImage.addEventListener('error', resolve, { once: true });
+        });
+
+        // Scale graffiti to match: pre-roll image width vs today's poster (70vw)
+        const imageWidth = posterImage.offsetWidth;
+        const imageHeight = posterImage.offsetHeight;
+        const todaysWidth = window.innerWidth * 0.7;
+        const scale = imageWidth / todaysWidth;
+
+        this.prerollOverlayElement = this.createOverlayElement(scale);
+
+        // Position relative to the actual image area within the container,
+        // not the container itself (which includes image margins)
+        const pxX = posterImage.offsetLeft + (this.graffiti.x / 100) * imageWidth;
+        const pxY = posterImage.offsetTop + (this.graffiti.y / 100) * imageHeight;
+        this.prerollOverlayElement.style.left = `${pxX}px`;
+        this.prerollOverlayElement.style.top = `${pxY}px`;
+
+        prerollContainer.appendChild(this.prerollOverlayElement);
     }
 
     /**
@@ -290,7 +312,7 @@ class GraffitiService {
             <div class="graffiti-hint">👆 Drag text on the poster to move it</div>
             <div class="control-row">
                 <label>Size</label>
-                <input type="range" id="graffiti-size" min="2" max="30" value="4" step="0.5">
+                <input type="range" id="graffiti-size" min="0.5" max="30" value="4" step="0.25">
             </div>
             <div class="control-row">
                 <label>Rotate</label>
