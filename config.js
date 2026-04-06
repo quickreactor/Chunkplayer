@@ -87,9 +87,8 @@ class DebugConfig {
      * Clear last visit from localStorage (triggers poster selection)
      */
     clearLastVisit() {
-        const todayKey = DateHelpers.getNZFormattedDate();
-        localStorage.removeItem(`lastVisit_${todayKey}`);
-        console.log(`%c[Debug] Cleared last visit for ${todayKey}`, 'color: #00ff00; font-weight: bold');
+        localStorage.removeItem("lastVisit");
+        console.log(`%c[Debug] Cleared last visit`, 'color: #00ff00; font-weight: bold');
         console.log('%c[Debug] Reload the page to see poster selection screen', 'color: #ffaa00');
     }
 

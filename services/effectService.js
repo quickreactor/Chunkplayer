@@ -15,14 +15,19 @@ class EffectService {
      */
     async movieWinnerLoser(winner, loser, rollButton) {
         return new Promise((resolve) => {
-            winner.classList.add("winner");
             const posterComputed = getComputedStyle(winner);
             const posterMargin = parseFloat(posterComputed.marginLeft);
             const posterWidth = winner.getBoundingClientRect().width;
             const rollButtonWidth = rollButton.getBoundingClientRect().width;
             const movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
 
-            if (winner.id === "poster-image-1") {
+            // Move the parent container so graffiti overlay moves with the poster
+            const container = winner.parentElement;
+            if (winner.id === "poster-image-1" && container) {
+                container.classList.add("winner");
+                container.style.transform = `translate(${movementDistance}px, 0)`;
+            } else {
+                winner.classList.add("winner");
                 winner.style.transform = `translate(${movementDistance}px, 0)`;
             }
 

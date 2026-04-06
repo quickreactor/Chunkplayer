@@ -14,6 +14,7 @@ class GraffitiService {
         this.controlsElement = null;
         this.buttonElement = null;
         this.overlayElement = null;
+        this.prerollOverlayElement = null;
         this.liveElement = null;
         this.pickr = null;
         this.initialized = false;
@@ -30,14 +31,48 @@ class GraffitiService {
     }
 
     /**
+     * Fetch graffiti data if not already loaded
+     */
+    async fetchData() {
+        if (this.graffiti) return;
+        try {
+            this.graffiti = await this.apiService.getGraffiti();
+            console.log('🎨 Graffiti loaded:', this.graffiti);
+        } catch (error) {
+            console.error('Failed to fetch graffiti:', error);
+            ErrorHandler.handle(error, 'GraffitiService.fetchData');
+        }
+    }
+
+    /**
+     * Render graffiti overlay on the pre-roll poster (poster-container-1)
+     * Called early so graffiti appears before the user clicks ROLL
+     */
+    async renderPrerollOverlay() {
+        await this.fetchData();
+
+        if (this.prerollOverlayElement) {
+            this.prerollOverlayElement.remove();
+            this.prerollOverlayElement = null;
+        }
+
+        if (!this.graffiti || !this.graffiti.text) return;
+
+        const prerollContainer = document.getElementById('poster-container-1');
+        if (prerollContainer) {
+            this.prerollOverlayElement = this.createOverlayElement(0.57);
+            prerollContainer.appendChild(this.prerollOverlayElement);
+        }
+    }
+
+    /**
      * Initialize graffiti - fetch from API and render button/overlay
      */
     async init() {
         if (this.initialized) return;
 
         try {
-            this.graffiti = await this.apiService.getGraffiti();
-            console.log('🎨 Graffiti loaded:', this.graffiti);
+            await this.fetchData();
 
             this.renderButton();
             if (this.graffiti && this.graffiti.text) {
@@ -95,29 +130,37 @@ class GraffitiService {
         const posterContainer = document.getElementById('todays-poster-container');
         if (!posterContainer) return;
 
-        // Create overlay
-        this.overlayElement = document.createElement('div');
-        this.overlayElement.className = 'graffiti-overlay';
-        this.overlayElement.textContent = this.graffiti.text;
-        this.overlayElement.style.left = `${this.graffiti.x}%`;
-        this.overlayElement.style.top = `${this.graffiti.y}%`;
+        // Create overlay for today's poster
+        this.overlayElement = this.createOverlayElement();
+        posterContainer.appendChild(this.overlayElement);
+    }
+
+    /**
+     * Create a graffiti overlay DOM element
+     */
+    createOverlayElement(scale = 1) {
+        const el = document.createElement('div');
+        el.className = 'graffiti-overlay';
+        el.textContent = this.graffiti.text;
+        el.style.left = `${this.graffiti.x}%`;
+        el.style.top = `${this.graffiti.y}%`;
         // Use responsive vw units for new graffiti, px for old (backward compatibility)
         // Old graffiti stored fontSize as px (16-72 range), new is vw (2-30 range)
         const isOldFormat = this.graffiti.fontSize > 30;
-        this.overlayElement.style.fontSize = isOldFormat
-            ? `${this.graffiti.fontSize}px`
-            : `${this.graffiti.fontSize}vw`;
-        this.overlayElement.style.transform = `translate(-50%, -50%) rotate(${this.graffiti.rotation}deg)`;
+        el.style.fontSize = isOldFormat
+            ? `${this.graffiti.fontSize * scale}px`
+            : `${this.graffiti.fontSize * scale}vw`;
+        el.style.transform = `translate(-50%, -50%) rotate(${this.graffiti.rotation}deg)`;
 
         // Apply color and font if they exist
         if (this.graffiti.color) {
-            this.overlayElement.style.color = this.graffiti.color;
+            el.style.color = this.graffiti.color;
         }
         if (this.graffiti.font) {
-            this.overlayElement.style.fontFamily = this.getFontFamily(this.graffiti.font);
+            el.style.fontFamily = this.getFontFamily(this.graffiti.font);
         }
 
-        posterContainer.appendChild(this.overlayElement);
+        return el;
     }
 
     /**
@@ -626,6 +669,10 @@ class GraffitiService {
         if (this.overlayElement) {
             this.overlayElement.remove();
             this.overlayElement = null;
+        }
+        if (this.prerollOverlayElement) {
+            this.prerollOverlayElement.remove();
+            this.prerollOverlayElement = null;
         }
         if (this.controlsElement) {
             this.controlsElement.remove();

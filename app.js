@@ -261,6 +261,13 @@ class ChunkPlayerApp {
      */
     setupEventListeners() {
         this.domService.elements.rollButton.addEventListener("click", () => {
+            // Unlock rensday audio while we have user gesture context
+            if (this.dateService.isWednesday()) {
+                const audio = document.getElementById('renner-audio');
+                if (audio) {
+                    audio.play().then(() => audio.pause()).catch(() => {});
+                }
+            }
             this.diceRollUseCase.execute(
                 CONFIG.movieData,
                 this.dateService.now,
@@ -481,6 +488,9 @@ class ChunkPlayerApp {
 
         // Theme: use movie1's colors
         this.domService.updateTheme(coinFlip.movie1.bgColor);
+
+        // Show graffiti on pre-roll poster
+        this.graffitiService.renderPrerollOverlay();
     }
 
     /**
@@ -497,6 +507,9 @@ class ChunkPlayerApp {
         this.domService.show('posterSection');
         this.domService.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : normalMovie.posterUrl;
         this.domService.elements.poster2.src = punishmentMovie.posterUrl;
+
+        // Show graffiti on pre-roll poster
+        this.graffitiService.renderPrerollOverlay();
     }
 
     /**
@@ -547,6 +560,13 @@ class ChunkPlayerApp {
 
         // Reset roll button click handler
         this.domService.elements.rollButton.onclick = () => {
+            // Unlock rensday audio while we have user gesture context
+            if (this.dateService.isWednesday()) {
+                const audio = document.getElementById('renner-audio');
+                if (audio) {
+                    audio.play().then(() => audio.pause()).catch(() => {});
+                }
+            }
             this.diceRollUseCase.execute(
                 CONFIG.movieData,
                 this.dateService.now,
