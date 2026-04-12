@@ -36,6 +36,35 @@
     return canvas.toDataURL('image/png');
   }
 
+  function copyImageFallback(dataUrl) {
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    if (!img.complete) return false;
+    img.style.position = 'fixed';
+    img.style.left = '-9999px';
+    document.body.appendChild(img);
+    const range = document.createRange();
+    range.selectNode(img);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    let success = false;
+    try { success = document.execCommand('copy'); } catch (e) {}
+    sel.removeAllRanges();
+    document.body.removeChild(img);
+    return success;
+  }
+
+  function showCopiedToast() {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    if (!toast || !toastMessage) return;
+    toastMessage.textContent = 'Screenshot copied to clipboard';
+    toast.className = 'toast success';
+    toast.classList.remove('hidden');
+    setTimeout(() => { toast.classList.add('hidden'); }, 2000);
+  }
+
   document.addEventListener('ready', (event) => {
     const curPlayer = event.detail.plyr;
     const { config } = curPlayer;
@@ -69,16 +98,26 @@
         const file = new File([blob], filename, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          console.log('[Capture] Using Web Share API');
           navigator.share({ files: [file] }).catch(() => {
+            console.log('[Capture] Share cancelled, downloading');
             downloadScreenshot(dataUrl, filename);
           });
         } else if (navigator.clipboard && window.ClipboardItem) {
+          console.log('[Capture] Using Clipboard API');
           navigator.clipboard.write([
             new ClipboardItem({ 'image/png': blob })
-          ]).catch(() => {
+          ]).then(() => {
+            showCopiedToast();
+          }).catch(() => {
+            console.log('[Capture] Clipboard failed, downloading');
             downloadScreenshot(dataUrl, filename);
           });
+        } else if (copyImageFallback(dataUrl)) {
+          console.log('[Capture] Using execCommand fallback');
+          showCopiedToast();
         } else {
+          console.log('[Capture] Using file download');
           downloadScreenshot(dataUrl, filename);
         }
       });

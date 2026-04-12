@@ -291,6 +291,7 @@ class ChunkPlayerApp {
         // Admin toggle button
         this.domService.elements.adminToggleBtn?.addEventListener("click", () => {
             this.domService.elements.adminPanel.classList.toggle('hidden');
+            this.domService.elements.adminPassword?.focus();
         });
 
         // Admin login
