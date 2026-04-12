@@ -1,17 +1,33 @@
 (function init(document) {
+  function downloadScreenshot(dataUrl, filename) {
+    const saveLink = document.createElement('a');
+    saveLink.href = dataUrl;
+    saveLink.download = filename;
+    saveLink.dispatchEvent(new MouseEvent('click'));
+  }
+
   function capture(player) {
     const width = player.media.videoWidth;
     const height = player.media.videoHeight;
     const canvas = Object.assign(document.createElement('canvas'), { width, height });
     const canvasCtx = canvas.getContext('2d');
     canvasCtx.drawImage(player.media, 0, 0, width, height);
+
     canvas.toBlob((blob) => {
       if (!blob) return;
-      navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]).catch((err) => {
-        console.error('Failed to copy screenshot to clipboard:', err);
-      });
+      const file = new File([blob], 'capture.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {});
+      } else if (navigator.clipboard && window.ClipboardItem) {
+        navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]).catch(() => {
+          downloadScreenshot(canvas.toDataURL('image/png'), 'capture.png');
+        });
+      } else {
+        downloadScreenshot(canvas.toDataURL('image/png'), 'capture.png');
+      }
     }, 'image/png');
   }
 
