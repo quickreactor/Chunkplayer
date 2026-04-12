@@ -6,29 +6,34 @@
     saveLink.dispatchEvent(new MouseEvent('click'));
   }
 
-  function capture(player) {
+  function dataURLtoBlob(dataURL) {
+    const byteString = atob(dataURL.split(',')[1]);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: 'image/png' });
+  }
+
+  function getFilename() {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const movieName = (CONFIG.movieData &&
+      (CONFIG.movieData.morbed
+        ? CONFIG.movieData.punishmentMovie
+        : CONFIG.movieData.normalMovie
+      ).name) || 'capture';
+    return `${movieName} ${timestamp}.png`;
+  }
+
+  function captureToDataURL(player) {
     const width = player.media.videoWidth;
     const height = player.media.videoHeight;
     const canvas = Object.assign(document.createElement('canvas'), { width, height });
-    const canvasCtx = canvas.getContext('2d');
-    canvasCtx.drawImage(player.media, 0, 0, width, height);
-
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const file = new File([blob], 'capture.png', { type: 'image/png' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file] }).catch(() => {});
-      } else if (navigator.clipboard && window.ClipboardItem) {
-        navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]).catch(() => {
-          downloadScreenshot(canvas.toDataURL('image/png'), 'capture.png');
-        });
-      } else {
-        downloadScreenshot(canvas.toDataURL('image/png'), 'capture.png');
-      }
-    }, 'image/png');
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(player.media, 0, 0, width, height);
+    return canvas.toDataURL('image/png');
   }
 
   document.addEventListener('ready', (event) => {
@@ -58,7 +63,24 @@
       menu.insertAdjacentHTML('beforebegin', btn);
       const btnElement = document.querySelector('button[data-plyr="capture"]');
       btnElement.addEventListener('click', () => {
-        capture(curPlayer);
+        const dataUrl = captureToDataURL(curPlayer);
+        const filename = getFilename();
+        const blob = dataURLtoBlob(dataUrl);
+        const file = new File([blob], filename, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file] }).catch(() => {
+            downloadScreenshot(dataUrl, filename);
+          });
+        } else if (navigator.clipboard && window.ClipboardItem) {
+          navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]).catch(() => {
+            downloadScreenshot(dataUrl, filename);
+          });
+        } else {
+          downloadScreenshot(dataUrl, filename);
+        }
       });
     }
   });
