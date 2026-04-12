@@ -40,25 +40,6 @@
     return canvas.toDataURL('image/png');
   }
 
-  function copyImageFallback(dataUrl) {
-    const img = document.createElement('img');
-    img.src = dataUrl;
-    if (!img.complete) return false;
-    img.style.position = 'fixed';
-    img.style.left = '-9999px';
-    document.body.appendChild(img);
-    const range = document.createRange();
-    range.selectNode(img);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-    let success = false;
-    try { success = document.execCommand('copy'); } catch (e) {}
-    sel.removeAllRanges();
-    document.body.removeChild(img);
-    return success;
-  }
-
   function showCopiedToast() {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
@@ -106,28 +87,19 @@
           downloadScreenshot(blob, filename);
         }
 
-        function tryExecCommand() {
-          if (copyImageFallback(dataUrl)) {
-            console.log('[Capture] Using execCommand fallback');
-            showCopiedToast();
-          } else {
-            tryDownload();
-          }
-        }
-
         function tryClipboard() {
-          if (navigator.clipboard && window.ClipboardItem) {
+          try {
+            const item = new ClipboardItem({ 'image/png': blob });
             console.log('[Capture] Using Clipboard API');
-            navigator.clipboard.write([
-              new ClipboardItem({ 'image/png': blob })
-            ]).then(() => {
+            navigator.clipboard.write([item]).then(() => {
               showCopiedToast();
             }).catch((err) => {
-              console.log('[Capture] Clipboard failed:', err.message);
-              tryExecCommand();
+              console.log('[Capture] Clipboard write failed:', err.message);
+              tryDownload();
             });
-          } else {
-            tryExecCommand();
+          } catch (err) {
+            console.log('[Capture] ClipboardItem not available:', err.message);
+            tryDownload();
           }
         }
 
