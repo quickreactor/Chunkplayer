@@ -1,9 +1,13 @@
 (function init(document) {
-  function downloadScreenshot(dataUrl, filename) {
+  function downloadScreenshot(blob, filename) {
+    const blobUrl = URL.createObjectURL(blob);
     const saveLink = document.createElement('a');
-    saveLink.href = dataUrl;
+    saveLink.href = blobUrl;
     saveLink.download = filename;
-    saveLink.dispatchEvent(new MouseEvent('click'));
+    document.body.appendChild(saveLink);
+    saveLink.click();
+    document.body.removeChild(saveLink);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   }
 
   function dataURLtoBlob(dataURL) {
@@ -97,28 +101,44 @@
         const blob = dataURLtoBlob(dataUrl);
         const file = new File([blob], filename, { type: 'image/png' });
 
+        function tryDownload() {
+          console.log('[Capture] Using file download');
+          downloadScreenshot(blob, filename);
+        }
+
+        function tryExecCommand() {
+          if (copyImageFallback(dataUrl)) {
+            console.log('[Capture] Using execCommand fallback');
+            showCopiedToast();
+          } else {
+            tryDownload();
+          }
+        }
+
+        function tryClipboard() {
+          if (navigator.clipboard && window.ClipboardItem) {
+            console.log('[Capture] Using Clipboard API');
+            navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob })
+            ]).then(() => {
+              showCopiedToast();
+            }).catch((err) => {
+              console.log('[Capture] Clipboard failed:', err.message);
+              tryExecCommand();
+            });
+          } else {
+            tryExecCommand();
+          }
+        }
+
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           console.log('[Capture] Using Web Share API');
           navigator.share({ files: [file] }).catch(() => {
-            console.log('[Capture] Share cancelled, downloading');
-            downloadScreenshot(dataUrl, filename);
+            console.log('[Capture] Share cancelled, trying clipboard');
+            tryClipboard();
           });
-        } else if (navigator.clipboard && window.ClipboardItem) {
-          console.log('[Capture] Using Clipboard API');
-          navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob })
-          ]).then(() => {
-            showCopiedToast();
-          }).catch(() => {
-            console.log('[Capture] Clipboard failed, downloading');
-            downloadScreenshot(dataUrl, filename);
-          });
-        } else if (copyImageFallback(dataUrl)) {
-          console.log('[Capture] Using execCommand fallback');
-          showCopiedToast();
         } else {
-          console.log('[Capture] Using file download');
-          downloadScreenshot(dataUrl, filename);
+          tryClipboard();
         }
       });
     }
