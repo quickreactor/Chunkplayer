@@ -104,7 +104,7 @@ class DOMService {
             },
             controls: [
                 "play-large", "play", "progress", "current-time",
-                "duration", "pip", "fullscreen",
+                "duration", "pip", "capture", "fullscreen",
             ],
         });
     }

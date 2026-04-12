@@ -105,7 +105,7 @@
         </div>
         <div class="videoContainer">
             <div id="video-frame">
-                <video id="videoPlayer" controls playsinline data-poster="images/chunkplayerlogo.png">
+                <video id="videoPlayer" crossorigin="anonymous" controls playsinline data-poster="images/chunkplayerlogo.png">
                     <source src="" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -230,6 +230,7 @@
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="utils/plyr-plugin-capture.js"></script>
 </body>
 
 </html>
