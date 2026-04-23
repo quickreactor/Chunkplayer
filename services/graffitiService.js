@@ -348,6 +348,7 @@ class GraffitiService {
         this.liveElement.textContent = 'Your text here';
         this.liveElement.style.left = '50%';
         this.liveElement.style.top = '50%';
+        this.liveElement.style.width = '90%';
         this.liveElement.style.fontSize = '4vw';  // Responsive size
         this.liveElement.style.color = '#ffffff';
         this.liveElement.style.fontFamily = this.getFontFamily('sans-serif');

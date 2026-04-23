@@ -914,7 +914,7 @@ option {
     z-index: 50;
     white-space: pre-wrap;
     word-break: break-word;
-    max-width: 90%;
+    width: 90%;
     text-align: center;
     font-weight: bold;
 }
@@ -941,7 +941,7 @@ option {
     transform-origin: 50% 50%;
     white-space: pre-wrap;
     word-break: break-word;
-    max-width: 90%;
+    width: 90%;
     text-align: center;
     font-weight: bold;
     font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
