@@ -31,13 +31,102 @@
     return `${movieName} ${timestamp}.png`;
   }
 
-  function captureToDataURL(player) {
-    const width = player.media.videoWidth;
-    const height = player.media.videoHeight;
+  function isCanvasBlack(ctx, width, height) {
+    const sampleX = Math.floor(width * 0.25);
+    const sampleY = Math.floor(height * 0.25);
+    const sampleW = Math.floor(width * 0.5);
+    const sampleH = Math.floor(height * 0.5);
+    const data = ctx.getImageData(sampleX, sampleY, sampleW, sampleH).data;
+    let blackPixels = 0;
+    for (let i = 0; i < data.length; i += 16) {
+      if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) {
+        blackPixels++;
+      }
+    }
+    return blackPixels / (data.length / 16) > 0.99;
+  }
+
+  function capturePosterFallback(video, canvas, ctx, width, height) {
+    const posterUrl = video.poster || video.getAttribute('poster') || video.getAttribute('data-poster');
+    if (posterUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(null);
+        img.src = posterUrl;
+      });
+    }
+    return null;
+  }
+
+  // Async fallback for Firefox mobile hardware-decoded black frames
+  async function captureBlackFrameFix(video) {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
     const canvas = Object.assign(document.createElement('canvas'), { width, height });
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(player.media, 0, 0, width, height);
-    return canvas.toDataURL('image/png');
+    const wasPlaying = !video.paused;
+
+    // Attempt 1: captureStream + ImageCapture — best Firefox support for HW frames
+    try {
+      const stream = video.captureStream ? video.captureStream() : video.mozCaptureStream();
+      const track = stream.getVideoTracks()[0];
+      if (track && typeof ImageCapture !== 'undefined') {
+        const imageCapture = new ImageCapture(track);
+        const bitmap = await imageCapture.grabFrame();
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        bitmap.close();
+        track.stop();
+        if (!isCanvasBlack(ctx, width, height)) {
+          if (wasPlaying) video.play().catch(() => {});
+          return canvas.toDataURL('image/png');
+        }
+      }
+    } catch (e) { /* ImageCapture not available */ }
+
+    // Attempt 2: Pause + willReadFrequently + delay (recommended for Firefox Android)
+    video.pause();
+    await new Promise(r => setTimeout(r, 150));
+    const ctx2 = canvas.getContext('2d', { willReadFrequently: true, alpha: false });
+    ctx2.drawImage(video, 0, 0, width, height);
+    if (!isCanvasBlack(ctx2, width, height)) {
+      if (wasPlaying) video.play().catch(() => {});
+      return canvas.toDataURL('image/png');
+    }
+
+    // Attempt 3: Seek away then back to force re-decode
+    const originalTime = video.currentTime;
+    const seekAway = Math.max(0, originalTime - 1);
+    await new Promise(r => {
+      const t = setTimeout(r, 2000);
+      video.addEventListener('seeked', () => { clearTimeout(t); r(); }, { once: true });
+      video.currentTime = seekAway;
+    });
+    await new Promise(r => requestAnimationFrame(r));
+
+    await new Promise(r => {
+      const t = setTimeout(r, 2000);
+      video.addEventListener('seeked', () => { clearTimeout(t); r(); }, { once: true });
+      video.currentTime = originalTime;
+    });
+    await new Promise(r => requestAnimationFrame(r));
+
+    ctx2.clearRect(0, 0, width, height);
+    ctx2.drawImage(video, 0, 0, width, height);
+
+    if (wasPlaying) video.play().catch(() => {});
+
+    if (!isCanvasBlack(ctx2, width, height)) {
+      return canvas.toDataURL('image/png');
+    }
+
+    // Poster fallback
+    const posterResult = await capturePosterFallback(video, canvas, ctx2, width, height);
+    return posterResult || canvas.toDataURL('image/png');
   }
 
   function showCopiedToast() {
@@ -77,7 +166,24 @@
       menu.insertAdjacentHTML('beforebegin', btn);
       const btnElement = document.querySelector('button[data-plyr="capture"]');
       btnElement.addEventListener('click', () => {
-        const dataUrl = captureToDataURL(curPlayer);
+        // Synchronous capture
+        const video = curPlayer.media;
+        const width = video.videoWidth;
+        const height = video.videoHeight;
+        const canvas = Object.assign(document.createElement('canvas'), { width, height });
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/png');
+
+        // If black frame (Firefox mobile HW decode), fix asynchronously then download
+        if (width && height && isCanvasBlack(ctx, width, height)) {
+          captureBlackFrameFix(video).then(fixedDataUrl => {
+            downloadScreenshot(dataURLtoBlob(fixedDataUrl), getFilename());
+          });
+          return;
+        }
+
+        // Normal path — clipboard/share logic, fully synchronous
         const filename = getFilename();
         const blob = dataURLtoBlob(dataUrl);
         const file = new File([blob], filename, { type: 'image/png' });

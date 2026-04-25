@@ -186,8 +186,9 @@ h1 {
     margin: 20px 0;
     position: relative;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     word-spacing: -3.4px;
+    flex-shrink: 0;
 }
 
 .numberDisplay {
@@ -340,6 +341,15 @@ option {
     display: flex;
     justify-content: space-between;
     width: 100%;
+    min-width: 0;
+}
+
+.ep-title {
+    flex: 1;
+    min-width: 0;
+    margin-right: 12px;
+    text-align: left;
+    align-self: flex-start;
 }
 
 .tabs {
@@ -915,7 +925,7 @@ option {
     white-space: pre-wrap;
     word-break: break-word;
     width: 90%;
-    text-align: center;
+    text-align: left;
     font-weight: bold;
 }
 
@@ -942,7 +952,7 @@ option {
     white-space: pre-wrap;
     word-break: break-word;
     width: 90%;
-    text-align: center;
+    text-align: left;
     font-weight: bold;
     font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
     touch-action: none;

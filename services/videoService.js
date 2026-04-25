@@ -110,7 +110,7 @@ class VideoService {
             option.value = i + 1;
             option.dataset.display = i + 1;
             option.dataset.descr = titleArray[i];
-            option.textContent = i + 1;
+            option.textContent = `${i + 1}: ${titleArray[i]}`;
             selector.prepend(option);
         }
 
@@ -135,22 +135,6 @@ class VideoService {
             this.dom.setText('epTitle', (titleArray[selectedIndex] || titleArray[0]));
             this.dom.setText('numberDisplay', selectedValue);
         });
-
-        const focusHandler = function () {
-            Array.from(this.options).forEach(o => {
-                o.textContent = `${o.getAttribute("value")}: ${o.getAttribute("data-descr")}`;
-            });
-        };
-
-        const blurHandler = function () {
-            Array.from(this.options).forEach(o => {
-                o.textContent = o.getAttribute("value");
-            });
-        };
-
-        selector.addEventListener("focus", focusHandler);
-        selector.addEventListener("blur", blurHandler);
-        blurHandler.call(selector);
     }
 }
 
