@@ -23,10 +23,14 @@ class GraffitiService {
             text: '',
             x: 50,
             y: 50,
-            fontSize: 4,  // in vw units (responsive)
+            fontSize: 4,
             rotation: 0,
             color: '#ffffff',
-            font: 'sans-serif'
+            font: 'sans-serif',
+            shadowEnabled: true,
+            shadowOffset: 2,
+            shadowBlur: 4,
+            shadowOpacity: 0.8
         };
     }
 
@@ -174,12 +178,23 @@ class GraffitiService {
             : `${this.graffiti.fontSize * scale}vw`;
         el.style.transform = `translate(-50%, -50%) rotate(${this.graffiti.rotation}deg)`;
 
-        // Apply color and font if they exist
+  // Apply color and font if they exist
         if (this.graffiti.color) {
             el.style.color = this.graffiti.color;
         }
         if (this.graffiti.font) {
             el.style.fontFamily = this.getFontFamily(this.graffiti.font);
+        }
+
+        // Apply shadow if enabled in stored data
+        if (this.graffiti.shadowEnabled) {
+            const offset = this.graffiti.shadowOffset || 2;
+            const blur = this.graffiti.shadowBlur || 4;
+            const opacity = this.graffiti.shadowOpacity || 0.8;
+            const rgba = `rgba(0, 0, 0, ${opacity})`;
+            el.style.textShadow = `${offset}px ${offset}px ${blur}px ${rgba}`;
+        } else {
+            el.style.textShadow = 'none';
         }
 
         return el;
@@ -333,6 +348,25 @@ class GraffitiService {
                     <div class="custom-font-dropdown-menu" id="font-dropdown-menu"></div>
                 </div>
             </div>
+            <div class="control-row">
+                <label>Shadow</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="graffiti-shadow-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="control-row">
+                <label>Offset</label>
+                <input type="range" id="graffiti-shadow-offset" min="1" max="15" value="2" step="1">
+            </div>
+            <div class="control-row">
+                <label>Blur</label>
+                <input type="range" id="graffiti-shadow-blur" min="0" max="20" value="4" step="1">
+            </div>
+            <div class="control-row">
+                <label>Opacity</label>
+                <input type="range" id="graffiti-shadow-opacity" min="0" max="100" value="80" step="5">
+            </div>
             <div class="control-buttons">
                 <button id="graffiti-cancel">Cancel</button>
                 <button id="graffiti-submit">Submit</button>
@@ -362,11 +396,17 @@ class GraffitiService {
             text: '',
             x: 50,
             y: 50,
-            fontSize: 4,  // in vw units (responsive)
+            fontSize: 4,
             rotation: 0,
             color: '#ffffff',
-            font: 'sans-serif'
+            font: 'sans-serif',
+            shadowEnabled: true,
+            shadowOffset: 2,
+            shadowBlur: 4,
+            shadowOpacity: 0.8
         };
+
+        this.applyShadow();
 
         // Build the custom font dropdown
         this.buildFontDropdown();
@@ -507,13 +547,15 @@ class GraffitiService {
         });
     }
 
-    /**
+   /**
      * Setup control panel event handlers
      */
     setupControlHandlers() {
         const textInput = document.getElementById('graffiti-text');
         const sizeSlider = document.getElementById('graffiti-size');
         const rotationSlider = document.getElementById('graffiti-rotation');
+        const shadowToggle = document.getElementById('graffiti-shadow-toggle');
+        const shadowOffsetSlider = document.getElementById('graffiti-shadow-offset');
         const cancelBtn = document.getElementById('graffiti-cancel');
         const submitBtn = document.getElementById('graffiti-submit');
 
@@ -534,6 +576,40 @@ class GraffitiService {
             this.currentEdit.rotation = parseInt(rotationSlider.value);
             this.liveElement.style.transform = `translate(-50%, -50%) rotate(${this.currentEdit.rotation}deg)`;
         });
+
+        // Shadow toggle handler
+        if (shadowToggle) {
+            shadowToggle.addEventListener('change', () => {
+                this.currentEdit.shadowEnabled = shadowToggle.checked;
+                this.applyShadow();
+            });
+        }
+
+        // Shadow offset slider handler
+        if (shadowOffsetSlider) {
+            shadowOffsetSlider.addEventListener('input', () => {
+                this.currentEdit.shadowOffset = parseInt(shadowOffsetSlider.value);
+                this.applyShadow();
+            });
+        }
+
+        // Shadow blur slider handler
+        const shadowBlurSlider = document.getElementById('graffiti-shadow-blur');
+        if (shadowBlurSlider) {
+            shadowBlurSlider.addEventListener('input', () => {
+                this.currentEdit.shadowBlur = parseInt(shadowBlurSlider.value);
+                this.applyShadow();
+            });
+        }
+
+        // Shadow opacity slider handler
+        const shadowOpacitySlider = document.getElementById('graffiti-shadow-opacity');
+        if (shadowOpacitySlider) {
+            shadowOpacitySlider.addEventListener('input', () => {
+                this.currentEdit.shadowOpacity = parseInt(shadowOpacitySlider.value) / 100;
+                this.applyShadow();
+            });
+        }
 
         // Initialize Pickr color picker
         this.initializePickr();
@@ -557,14 +633,18 @@ class GraffitiService {
             submitBtn.textContent = 'Submitting...';
 
             try {
-                const graffitiData = {
+          const graffitiData = {
                     text: text,
                     x: this.currentEdit.x,
                     y: this.currentEdit.y,
                     fontSize: this.currentEdit.fontSize,
                     rotation: this.currentEdit.rotation,
                     color: this.currentEdit.color,
-                    font: this.currentEdit.font
+                    font: this.currentEdit.font,
+                    shadowEnabled: this.currentEdit.shadowEnabled,
+                    shadowOffset: this.currentEdit.shadowOffset,
+                    shadowBlur: this.currentEdit.shadowBlur,
+                    shadowOpacity: this.currentEdit.shadowOpacity
                 };
 
                 const result = await this.apiService.submitGraffiti(graffitiData);
@@ -586,6 +666,23 @@ class GraffitiService {
                 submitBtn.textContent = 'Submit';
             }
         });
+    }
+
+    /**
+     * Apply text-shadow to live preview element
+     */
+    applyShadow() {
+        if (!this.liveElement) return;
+
+        if (this.currentEdit.shadowEnabled) {
+            const offset = this.currentEdit.shadowOffset;
+            const blur = this.currentEdit.shadowBlur;
+            const opacity = this.currentEdit.shadowOpacity;
+            const rgba = `rgba(0, 0, 0, ${opacity})`;
+            this.liveElement.style.textShadow = `${offset}px ${offset}px ${blur}px ${rgba}`;
+        } else {
+            this.liveElement.style.textShadow = 'none';
+        }
     }
 
     /**

@@ -5,13 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <link rel="stylesheet" href="style.css">
+    <link href="utils/flip/flip.min.css" rel="stylesheet">
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 
     <!-- Google Fonts for Graffiti -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap"
+        rel="stylesheet">
 
     <!-- Preload Custom TTF Fonts -->
     <link rel="preload" href="fonts/Street2Art-Bold.ttf" as="font" type="font/ttf" crossorigin>
@@ -105,7 +108,8 @@
         </div>
         <div class="videoContainer">
             <div id="video-frame">
-                <video id="videoPlayer" crossorigin="anonymous" controls playsinline data-poster="images/chunkplayerlogo.png">
+                <video id="videoPlayer" crossorigin="anonymous" controls playsinline
+                    data-poster="images/chunkplayerlogo.png">
                     <source src="" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
@@ -125,112 +129,127 @@
         </div>
         <!-- Admin Section -->
         <div id="admin-section" class="admin-section hidden">
-        <button id="admin-toggle-btn">⚙️</button>
-        <div id="admin-panel" class="admin-panel hidden">
-            <!-- Password Entry -->
-            <div id="admin-login" class="admin-login">
-                <input type="password" id="admin-password" placeholder="Enter clearance code">
-                <button id="admin-login-btn">Access</button>
-                <span class="admin-error" id="admin-error"></span>
-            </div>
-
-            <!-- Level 1 Clearance (Self-Report) -->
-            <div id="admin-level-1" class="admin-level display-none">
-                <h3>Level 1</h3>
-                <button id="punishment-report-btn" class="admin-action-btn danger">I morbed (missed a chunk)</button>
-
-                <hr class="admin-divider">
-
-                <!-- Poster Upload Section -->
-                <div class="admin-pointer-control" id="poster-upload-section">
-                    <label>Change Normal Poster</label>
-                    <div class="poster-upload-controls">
-                        <input type="file" id="poster-file-input" accept="image/jpeg,image/png" style="display:none">
-                        <button id="select-poster-btn" class="admin-action-btn">Select Image</button>
-                        <button id="upload-poster-btn" class="admin-action-btn" style="display:none">Upload Poster</button>
-                        <div id="poster-upload-status" class="upload-status"></div>
-                    </div>
+            <button id="admin-toggle-btn">⚙️</button>
+            <div id="admin-panel" class="admin-panel hidden">
+                <!-- Password Entry -->
+                <div id="admin-login" class="admin-login">
+                    <input type="password" id="admin-password" placeholder="Enter clearance code">
+                    <button id="admin-login-btn">Access</button>
+                    <span class="admin-error" id="admin-error"></span>
                 </div>
-            </div>
 
-            <!-- Level 2 Clearance (Admin Functions) -->
-            <div id="admin-level-2" class="admin-level display-none">
-                <h3>Level 2</h3>
+                <!-- Level 1 Clearance (Self-Report) -->
+                <div id="admin-level-1" class="admin-level display-none">
+                    <h3>Level 1</h3>
+                    <button id="punishment-report-btn" class="admin-action-btn danger">I morbed (missed a
+                        chunk)</button>
 
-                <!-- Pointer Controls -->
-                <div class="admin-pointer-control">
-                    <label>Normal Pointer</label>
-                    <div class="stepper-with-action">
-                        <div class="stepper">
-                            <button class="stepper-minus" data-type="normal">−</button>
-                            <input type="number" class="stepper-input" id="normal-pointer-input" min="1">
-                            <button class="stepper-plus" data-type="normal">+</button>
+                    <hr class="admin-divider">
+
+                    <!-- Poster Upload Section -->
+                    <div class="admin-pointer-control" id="poster-upload-section">
+                        <label>Change Normal Poster</label>
+                        <div class="poster-upload-controls">
+                            <input type="file" id="poster-file-input" accept="image/jpeg,image/png"
+                                style="display:none">
+                            <button id="select-poster-btn" class="admin-action-btn">Select Image</button>
+                            <button id="upload-poster-btn" class="admin-action-btn" style="display:none">Upload
+                                Poster</button>
+                            <div id="poster-upload-status" class="upload-status"></div>
                         </div>
-                        <button class="stepper-set-btn" data-type="normal">Set</button>
                     </div>
                 </div>
 
-                <div class="admin-pointer-control">
-                    <label>Punishment Pointer</label>
-                    <div class="stepper-with-action">
-                        <div class="stepper">
-                            <button class="stepper-minus" data-type="punishment">−</button>
-                            <input type="number" class="stepper-input" id="punishment-pointer-input" min="1">
-                            <button class="stepper-plus" data-type="punishment">+</button>
+                <!-- Level 2 Clearance (Admin Functions) -->
+                <div id="admin-level-2" class="admin-level display-none">
+                    <h3>Level 2</h3>
+
+                    <!-- Pointer Controls -->
+                    <div class="admin-pointer-control">
+                        <label>Normal Pointer</label>
+                        <div class="stepper-with-action">
+                            <div class="stepper">
+                                <button class="stepper-minus" data-type="normal">−</button>
+                                <input type="number" class="stepper-input" id="normal-pointer-input" min="1">
+                                <button class="stepper-plus" data-type="normal">+</button>
+                            </div>
+                            <button class="stepper-set-btn" data-type="normal">Set</button>
                         </div>
-                        <button class="stepper-set-btn" data-type="punishment">Set</button>
                     </div>
-                </div>
 
-                <div class="admin-pointer-control">
-                    <label>Reward Pointer</label>
-                    <div class="stepper-with-action">
-                        <div class="stepper">
-                            <button class="stepper-minus" data-type="reward">−</button>
-                            <input type="number" class="stepper-input" id="reward-pointer-input" min="1">
-                            <button class="stepper-plus" data-type="reward">+</button>
+                    <div class="admin-pointer-control">
+                        <label>Punishment Pointer</label>
+                        <div class="stepper-with-action">
+                            <div class="stepper">
+                                <button class="stepper-minus" data-type="punishment">−</button>
+                                <input type="number" class="stepper-input" id="punishment-pointer-input" min="1">
+                                <button class="stepper-plus" data-type="punishment">+</button>
+                            </div>
+                            <button class="stepper-set-btn" data-type="punishment">Set</button>
                         </div>
-                        <button class="stepper-set-btn" data-type="reward">Set</button>
                     </div>
-                </div>
 
-                <!-- Fake Roll Control -->
-                <div class="admin-pointer-control">
-                    <label>Execute Fake Roll</label>
-                    <div class="stepper">
-                        <button class="stepper-minus" data-type="fakeroll">−</button>
-                        <input type="number" class="stepper-input" id="fake-roll-input" min="1" max="20">
-                        <button class="stepper-plus" data-type="fakeroll">+</button>
+                    <div class="admin-pointer-control">
+                        <label>Reward Pointer</label>
+                        <div class="stepper-with-action">
+                            <div class="stepper">
+                                <button class="stepper-minus" data-type="reward">−</button>
+                                <input type="number" class="stepper-input" id="reward-pointer-input" min="1">
+                                <button class="stepper-plus" data-type="reward">+</button>
+                            </div>
+                            <button class="stepper-set-btn" data-type="reward">Set</button>
+                        </div>
                     </div>
-                    <button id="execute-fake-roll-btn" class="admin-action-btn">Execute Fake Roll</button>
+
+                    <!-- Fake Roll Control -->
+                    <div class="admin-pointer-control">
+                        <label>Execute Fake Roll</label>
+                        <div class="stepper">
+                            <button class="stepper-minus" data-type="fakeroll">−</button>
+                            <input type="number" class="stepper-input" id="fake-roll-input" min="1" max="20">
+                            <button class="stepper-plus" data-type="fakeroll">+</button>
+                        </div>
+                        <button id="execute-fake-roll-btn" class="admin-action-btn">Execute Fake Roll</button>
+                    </div>
+
+                    <hr class="admin-divider">
+
+                    <button id="bypass-lockdown-btn" class="admin-action-btn">Bypass Lockdown</button>
+                    <button id="clear-last-visit-btn" class="admin-action-btn">Clear Last Visit</button>
                 </div>
-
-                <hr class="admin-divider">
-
-                <button id="bypass-lockdown-btn" class="admin-action-btn">Bypass Lockdown</button>
-                <button id="clear-last-visit-btn" class="admin-action-btn">Clear Last Visit</button>
             </div>
         </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden">
-        <span id="toast-message"></span>
-    </div>
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden">
+            <span id="toast-message"></span>
+        </div>
 
-    <!-- Confirmation Dialog -->
-    <div id="confirm-dialog" class="confirm-dialog hidden">
-        <div class="confirm-content">
-            <p id="confirm-message">Are you sure you are ready to morb?</p>
-            <div class="confirm-buttons">
-                <button id="confirm-yes" class="confirm-btn yes">Yes, I morbed</button>
-                <button id="confirm-no" class="confirm-btn no">Cancel</button>
+        <!-- Confirmation Dialog -->
+        <div id="confirm-dialog" class="confirm-dialog hidden">
+            <div class="confirm-content">
+                <p id="confirm-message">Are you sure you are ready to morb?</p>
+                <div class="confirm-buttons">
+                    <button id="confirm-yes" class="confirm-btn yes">Yes, I morbed</button>
+                    <button id="confirm-no" class="confirm-btn no">Cancel</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="utils/plyr-plugin-capture.js"></script>
+   </div>
+    <div id="flip-counter" class="flip-counter">
+            <div class="fc-device">
+                <div class="fc-screen">
+                    <span class="fc-digit">0</span>
+                    <span class="fc-digit">0</span>
+                    <span class="fc-digit">1</span>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+        <script src="utils/plyr-plugin-capture.js"></script>
+        <script src="utils/flip/flip.min.js"></script>
 </body>
 
 </html>

@@ -46,6 +46,7 @@ class ChunkPlayerApp {
             this.setupDebugMode();
             this.setupMorbUnlocks();
             await this.runMainLogic();
+            this.initFlipCounter();
 
             // Check for Rensday (Wednesday) and trigger effect
             if (this.dateService.isWednesday()) {
@@ -234,7 +235,8 @@ class ChunkPlayerApp {
             this.audioService,
             this.effectService,
             this.videoPlaybackUseCase,
-            VisitRepository
+            VisitRepository,
+            this
         );
 
         // Coin flip use case
@@ -450,6 +452,70 @@ class ChunkPlayerApp {
      */
     async runMainLogic() {
         await this.dailyFlowUseCase.execute();
+    }
+
+    /**
+     * Initialize flip counter animation
+     */
+    initFlipCounter() {
+       if (typeof Flip === 'undefined') {
+            console.warn('Flip library not loaded');
+            return;
+        }
+
+        const counter = document.getElementById('flip-counter');
+        if (!counter) return;
+
+        Flip.from(counter, {
+            size: 65,
+            width: 45,
+            height: 90,
+            delay: 75,
+            delayMode: 0,
+            useImage: true,
+            textFont: 'Anton, Bangers, monospace',
+            textSize: 40,
+            textureHorizon: 0,
+            perspective: 800,
+            smoothStart: true,
+            startNumber: 1
+        });
+
+        console.log('%c[Flip] Counter initialized to "001"', 'color: #00ff00; font-weight: bold');
+    }
+
+    /**
+     * Tick the flip counter up by 1
+     */
+    tickFlipCounter() {
+        const counter = document.getElementById('flip-counter');
+        if (!counter || typeof Flip === 'undefined') return;
+
+        const digits = counter.querySelectorAll('.fc-digit');
+        let currentNum = 0;
+        for (const digit of digits) {
+            currentNum = currentNum * 10 + parseInt(digit.textContent || '0', 10);
+        }
+
+        const nextNum = currentNum + 1;
+
+        Flip.to(counter, {
+            size: 65,
+            width: 45,
+            height: 90,
+            delay: 75,
+            delayMode: 0,
+            useImage: true,
+            textFont: 'Anton, Bangers, monospace',
+            textSize: 40,
+            textureHorizon: 0,
+            perspective: 800,
+            smoothStart: true,
+            startNumber: currentNum,
+            endNumber: nextNum
+        });
+
+        console.log(`%c[Flip] Counter ticked from "${String(currentNum).padStart(3, '0')}" to "${String(nextNum).padStart(3, '0')}"`, 'color: #00ff00; font-weight: bold');
     }
 
     /**

@@ -14,13 +14,14 @@ class DiceRollUseCase {
      * @param {VideoPlaybackUseCase} videoPlaybackUseCase - Video playback use case
      * @param {VisitRepository} visitRepository - Visit repository
      */
-    constructor(domService, videoService, audioService, effectService, videoPlaybackUseCase, visitRepository) {
+    constructor(domService, videoService, audioService, effectService, videoPlaybackUseCase, visitRepository, app) {
         this.dom = domService;
         this.video = videoService;
         this.audio = audioService;
         this.effect = effectService;
         this.videoPlayback = videoPlaybackUseCase;
         this.visitRepo = visitRepository;
+        this.app = app;
     }
 
     /**
@@ -49,6 +50,9 @@ class DiceRollUseCase {
 
         // Play dice video
         await this.video.playDiceVideo(roll);
+
+        // Tick flip counter
+        this.app.tickFlipCounter();
 
         // Register visit
         this.visitRepo.registerVisit();
