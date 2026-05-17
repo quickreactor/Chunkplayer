@@ -7,8 +7,8 @@
  */
 class DateService {
     constructor(startDateMidnight = null) {
-        // Use test date if configured, otherwise use current date
-        this.now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
+        // Backing field for now (use test date if configured, otherwise current date)
+        this._now = CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : new Date();
 
         // Set start date (when chunk player began)
         // Default to Jan 1, 2024 at midnight if not specified
@@ -18,6 +18,18 @@ class DateService {
 
         // Initial chunk number
         this.initialChunkNumber = 1;
+    }
+
+    /**
+     * Dynamic getter that checks CONFIG.debug.testDate first
+     * Allows Debug.setTestDate() to take effect immediately
+     */
+    get now() {
+        return CONFIG.debug.testDate ? new Date(CONFIG.debug.testDate) : this._now;
+    }
+
+    set now(val) {
+        this._now = val;
     }
 
     /**

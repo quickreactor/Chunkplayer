@@ -343,6 +343,21 @@ class ChunkPlayerApp {
             this.adminService.showToast("Lockdown bypassed", "success");
         });
 
+        // Bypass Sunday button (Level 2)
+        this.domService.elements.bypassSundayBtn?.addEventListener("click", () => {
+            Debug.bypassSunday();
+            this.adminService.showToast("Sunday bypassed", "success");
+        });
+
+        // Set Test Date button (Level 2)
+        this.domService.elements.setTestDateBtn?.addEventListener("click", () => {
+            const day = this.domService.elements.testDateDay.value;
+            const month = this.domService.elements.testDateMonth.value;
+            const hour = this.domService.elements.testDateHour.value;
+            Debug.setTestDate(`${day}/${month}`, parseInt(hour));
+            this.adminService.showToast(`Test date set to ${day}/${month} at ${hour}:00`, "success");
+        });
+
         // Stepper minus buttons (only update UI, no API call)
         this.domService.elements.stepperMinusBtns.forEach(btn => {
             btn.addEventListener("click", (e) => {
@@ -531,19 +546,13 @@ class ChunkPlayerApp {
         const hasRolledToday = !VisitRepository.isFirstVisitToday();
         const startValue = hasRolledToday ? jokerlessDays : jokerlessDaysOld;
 
-        // Try to find existing tick instance first (may have been created by data-did-init)
-        let tick = Tick.DOM.find(counter);
-
-        // If no tick found, parse the element to create one
-        if (!tick && typeof Tick !== 'undefined') {
+        // Set initial data-value before parsing to avoid animation from 0
+        if (typeof Tick !== 'undefined') {
             counter.setAttribute('data-value', startValue);
-            tick = Tick.DOM.parse(counter);
-        } else if (tick) {
-            // Set initial value on existing tick
-            tick.value = startValue;
+            Tick.DOM.parse(counter);
         }
 
-        console.log(`%c[Flip] Counter initialized to "${String(startValue).padStart(3, '0')}" (hasRolledToday: ${hasRolledToday}, tick found: ${!!tick})`, 'color: #00ff00; font-weight: bold');
+        console.log(`%c[Flip] Counter initialized to "${String(startValue).padStart(3, '0')}" (hasRolledToday: ${hasRolledToday})`, 'color: #00ff00; font-weight: bold');
     }
 
     /**
@@ -554,13 +563,8 @@ class ChunkPlayerApp {
         const counter = document.getElementById('flip-counter');
         if (!counter) return;
 
-        // Try to find existing tick instance
-        let tick = Tick.DOM.find(counter);
-
-        // Fall back to window.flipTick if available
-        if (!tick && window.flipTick) {
-            tick = window.flipTick;
-        }
+        // Find existing tick instance created by initFlipCounter
+        const tick = Tick.DOM.find(counter);
 
         if (!tick) {
             console.warn('Flip tick instance not found');
@@ -734,6 +738,7 @@ class ChunkPlayerApp {
         this.domService.show('sundayDiv');
         this.domService.hide('videoContainer');
         this.domService.hide('timerContainer');
+        this.showAdminSection();
     }
 
     /**
@@ -944,6 +949,24 @@ window.Debug = {
         console.log('%c[Debug] Bypassing lockdown and loading video...', 'color: #00ff00; font-weight: bold');
         window.chunkPlayerApp.lockdownUseCase.stop();
         window.chunkPlayerApp.updateVideo(false);
+    },
+
+    /**
+     * Bypass Sunday rest day and show the roll screen
+     * Sets test date to next day (Monday) at 9 AM and re-runs the daily flow
+     */
+    bypassSunday() {
+        if (!window.chunkPlayerApp) {
+            console.error('%c[Debug] App not initialized yet', 'color: #ff0000; font-weight: bold');
+            return;
+        }
+        const monday = new Date();
+        monday.setDate(monday.getDate() + 1);
+        const dd = String(monday.getDate()).padStart(2, '0');
+        const mm = String(monday.getMonth() + 1).padStart(2, '0');
+        CONFIG.debug.setTestDate(`${dd}/${mm}`, 9);
+        console.log('%c[Debug] Bypassing Sunday - re-running daily flow...', 'color: #00ff00; font-weight: bold');
+        window.chunkPlayerApp.dailyFlowUseCase.execute();
     },
 
     /**

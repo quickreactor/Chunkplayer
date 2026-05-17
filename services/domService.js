@@ -53,6 +53,7 @@ class DOMService {
             adminLevel2: document.getElementById("admin-level-2"),
             punishmentReportBtn: document.getElementById("punishment-report-btn"),
             bypassLockdownBtn: document.getElementById("bypass-lockdown-btn"),
+            bypassSundayBtn: document.getElementById("bypass-sunday-btn"),
             adminResetBtn: document.getElementById("admin-reset-btn"),
             adminForceRollBtn: document.getElementById("admin-force-roll-btn"),
 
@@ -67,6 +68,12 @@ class DOMService {
             adminTestFlipBtn: document.getElementById("test-flip-btn"),
             adminTestFlipInput: document.getElementById("test-flip-input"),
             adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
+
+            // Test date controls
+            testDateDay: document.getElementById("test-date-day"),
+            testDateMonth: document.getElementById("test-date-month"),
+            testDateHour: document.getElementById("test-date-hour"),
+            setTestDateBtn: document.getElementById("set-test-date-btn"),
 
             // Poster upload controls
             posterFileInput: document.getElementById("poster-file-input"),
