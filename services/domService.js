@@ -61,7 +61,11 @@ class DOMService {
             adminPunishmentPointerInput: document.getElementById("punishment-pointer-input"),
             adminRewardPointerInput: document.getElementById("reward-pointer-input"),
             adminFakeRollInput: document.getElementById("fake-roll-input"),
+            adminJokerlessDaysInput: document.getElementById("jokerless-days-input"),
+            adminJokerlessDaysOldInput: document.getElementById("jokerless-days-old-input"),
             adminExecuteFakeRollBtn: document.getElementById("execute-fake-roll-btn"),
+            adminTestFlipBtn: document.getElementById("test-flip-btn"),
+            adminTestFlipInput: document.getElementById("test-flip-input"),
             adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
 
             // Poster upload controls

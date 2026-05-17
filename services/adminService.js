@@ -199,6 +199,46 @@ class AdminService {
     }
 
     /**
+     * Update jokerless days
+     * @param {number} value - New jokerless days value
+     * @returns {Promise<boolean>} Success status
+     */
+    async updateJokerlessDays(value) {
+        try {
+            const result = await this.apiService.setJokerlessDays(value);
+            if (result.success) {
+                this.showToast(`Jokerless days set to ${value}`, 'success');
+                return true;
+            }
+            return false;
+        } catch (error) {
+            this.showToast('Failed to update jokerless days', 'error');
+            console.error(error);
+            return false;
+        }
+    }
+
+    /**
+     * Update jokerless days old
+     * @param {number} value - New jokerless days old value
+     * @returns {Promise<boolean>} Success status
+     */
+    async updateJokerlessDaysOld(value) {
+        try {
+            const result = await this.apiService.setJokerlessDaysOld(value);
+            if (result.success) {
+                this.showToast(`Jokerless days old set to ${value}`, 'success');
+                return true;
+            }
+            return false;
+        } catch (error) {
+            this.showToast('Failed to update jokerless days old', 'error');
+            console.error(error);
+            return false;
+        }
+    }
+
+    /**
      * Execute fake roll with clear last visit
      * @param {number} rollValue - Roll value (1-20)
      */

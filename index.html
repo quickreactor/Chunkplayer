@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Oswald&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap"
         rel="stylesheet">
 
     <!-- Preload Custom TTF Fonts -->
@@ -58,6 +58,9 @@
 
     <!-- Pickr Color Picker -->
     <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
+    <!-- Flip Counter Library -->
+    <script src="utils/flip/flip.min.js"></script>
 
     <!-- Main Application -->
     <script src="app.js" defer></script>
@@ -201,6 +204,30 @@
                         </div>
                     </div>
 
+                    <div class="admin-pointer-control">
+                        <label>Jokerless Days</label>
+                        <div class="stepper-with-action">
+                            <div class="stepper">
+                                <button class="stepper-minus" data-type="jokerlessdays">−</button>
+                                <input type="number" class="stepper-input" id="jokerless-days-input" min="0">
+                                <button class="stepper-plus" data-type="jokerlessdays">+</button>
+                            </div>
+                            <button class="stepper-set-btn" data-type="jokerlessdays">Set</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-pointer-control">
+                        <label>Jokerless Days Old</label>
+                        <div class="stepper-with-action">
+                            <div class="stepper">
+                                <button class="stepper-minus" data-type="jokerlessdaysold">−</button>
+                                <input type="number" class="stepper-input" id="jokerless-days-old-input" min="0">
+                                <button class="stepper-plus" data-type="jokerlessdaysold">+</button>
+                            </div>
+                            <button class="stepper-set-btn" data-type="jokerlessdaysold">Set</button>
+                        </div>
+                    </div>
+
                     <!-- Fake Roll Control -->
                     <div class="admin-pointer-control">
                         <label>Execute Fake Roll</label>
@@ -210,6 +237,17 @@
                             <button class="stepper-plus" data-type="fakeroll">+</button>
                         </div>
                         <button id="execute-fake-roll-btn" class="admin-action-btn">Execute Fake Roll</button>
+                    </div>
+
+                    <!-- Test Flip Counter -->
+                    <div class="admin-pointer-control">
+                        <label>Test Flip Counter</label>
+                        <div class="stepper">
+                            <button class="stepper-minus" data-type="testflip">−</button>
+                            <input type="number" class="stepper-input" id="test-flip-input" min="0">
+                            <button class="stepper-plus" data-type="testflip">+</button>
+                        </div>
+                        <button id="test-flip-btn" class="admin-action-btn">Flip to</button>
                     </div>
 
                     <hr class="admin-divider">
@@ -236,16 +274,23 @@
             </div>
         </div>
 
-   </div>
-    <div id="flip-counter" class="flip-counter">
-            <div class="fc-device">
-                <div class="fc-screen">
-                    <span class="fc-digit">0</span>
-                    <span class="fc-digit">0</span>
-                    <span class="fc-digit">1</span>
-                </div>
-            </div>
-        </div>
+</div>
+     <div id="flip-counter-wrapper">
+         <div id="flip-counter-label" class="flip-counter-label">Days since last Joker</div>
+         <div id="flip-counter" class="tick" data-value="0" data-did-init="handleFlipInit" data-credits="false">
+             <div data-layout="horizontal center" data-repeat="true"
+                  data-transform="tween(2s, ease-in-out-expo) -> round -> pad('000') -> split -> delay(rtl, 100, 150)">
+                 <span data-view="flip"></span>
+             </div>
+         </div>
+     </div>
+
+     <script>
+     function handleFlipInit(tick) {
+         console.log('[Flip] Initialized via data-did-init callback', tick);
+         window.flipTick = tick;
+     }
+     </script>
 
         <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
         <script src="utils/plyr-plugin-capture.js"></script>

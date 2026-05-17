@@ -58,11 +58,25 @@ html {
     color: #7f7f7f;
 }
 
-.flip-counter {
+#flip-counter-wrapper {
+    padding-bottom: 60px;
+}
+
+#flip-counter, .flip-counter {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 20px 0;
+    margin-top: 4px;
+}
+
+.flip-counter-label {
+    text-align: center;
+    font-family: 'Oswald', 'Anton', 'Bangers', monospace;
+    font-size: 14px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0;
 }
 
 .fc-device {
@@ -100,6 +114,10 @@ html {
     right: 0;
     height: 1px;
     background: rgba(0, 0, 0, 0.4);
+}
+
+.tick-flip {
+    font-family: 'Oswald', sans-serif !important;
 }
 
 @media (max-width: 768px) {

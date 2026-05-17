@@ -46,7 +46,10 @@ class ChunkPlayerApp {
             this.setupDebugMode();
             this.setupMorbUnlocks();
             await this.runMainLogic();
-            this.initFlipCounter();
+            this.initFlipCounter(
+                CONFIG.movieData.jokerlessDaysOld || 0,
+                CONFIG.movieData.jokerlessDays || 0
+            );
 
             // Check for Rensday (Wednesday) and trigger effect
             if (this.dateService.isWednesday()) {
@@ -294,6 +297,24 @@ class ChunkPlayerApp {
         this.domService.elements.adminToggleBtn?.addEventListener("click", () => {
             this.domService.elements.adminPanel.classList.toggle('hidden');
             this.domService.elements.adminPassword?.focus();
+
+            // If panel opened and user already has stored clearance, show panels directly
+            if (!this.domService.elements.adminPanel.classList.contains('hidden')) {
+                const level = this.adminService.getClearance();
+                if (level > 0) {
+                    this.domService.elements.adminLogin.classList.add('display-none');
+                    if (level >= 1) {
+                        this.domService.elements.adminLevel1.classList.remove('display-none');
+                    }
+                    if (level >= 2) {
+                        const alreadyVisible = !this.domService.elements.adminLevel2.classList.contains('display-none');
+                        this.domService.elements.adminLevel2.classList.remove('display-none');
+                        if (!alreadyVisible) {
+                            this.initializePointerInputs();
+                        }
+                    }
+                }
+            }
         });
 
         // Admin login
@@ -326,9 +347,20 @@ class ChunkPlayerApp {
         this.domService.elements.stepperMinusBtns.forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const type = e.target.dataset.type;
-                const inputId = type === 'fakeroll' ? 'fake-roll-input' : `${type}-pointer-input`;
+                let inputId;
+                if (type === 'fakeroll') {
+                    inputId = 'fake-roll-input';
+                } else if (type === 'jokerlessdays') {
+                    inputId = 'jokerless-days-input';
+                } else if (type === 'jokerlessdaysold') {
+                    inputId = 'jokerless-days-old-input';
+                } else if (type === 'testflip') {
+                    inputId = 'test-flip-input';
+                } else {
+                    inputId = `${type}-pointer-input`;
+                }
                 const input = document.getElementById(inputId);
-                const min = 1;
+                const min = type.startsWith('jokerless') || type === 'testflip' ? 0 : 1;
                 const currentValue = parseInt(input.value) || 0;
                 input.value = Math.max(currentValue - 1, min);
                 // No API call - only update input value
@@ -339,7 +371,18 @@ class ChunkPlayerApp {
         this.domService.elements.stepperPlusBtns.forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const type = e.target.dataset.type;
-                const inputId = type === 'fakeroll' ? 'fake-roll-input' : `${type}-pointer-input`;
+                let inputId;
+                if (type === 'fakeroll') {
+                    inputId = 'fake-roll-input';
+                } else if (type === 'jokerlessdays') {
+                    inputId = 'jokerless-days-input';
+                } else if (type === 'jokerlessdaysold') {
+                    inputId = 'jokerless-days-old-input';
+                } else if (type === 'testflip') {
+                    inputId = 'test-flip-input';
+                } else {
+                    inputId = `${type}-pointer-input`;
+                }
                 const input = document.getElementById(inputId);
                 const max = type === 'fakeroll' ? 20 : Infinity;
                 const currentValue = parseInt(input.value) || 0;
@@ -352,7 +395,14 @@ class ChunkPlayerApp {
         this.domService.elements.stepperSetBtns.forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const type = e.target.dataset.type;
-                const input = document.getElementById(`${type}-pointer-input`);
+                let input;
+                if (type === 'jokerlessdays') {
+                    input = document.getElementById('jokerless-days-input');
+                } else if (type === 'jokerlessdaysold') {
+                    input = document.getElementById('jokerless-days-old-input');
+                } else {
+                    input = document.getElementById(`${type}-pointer-input`);
+                }
                 const value = parseInt(input.value);
                 this.handlePointerChange(type, value);
             });
@@ -371,6 +421,14 @@ class ChunkPlayerApp {
         // Clear Last Visit button (renamed from Reset Daily State)
         this.domService.elements.adminClearLastVisitBtn?.addEventListener("click", () => {
             this.adminService.clearLastVisitAndReload();
+        });
+
+        // Test Flip Counter button
+        this.domService.elements.adminTestFlipBtn?.addEventListener("click", () => {
+            const targetValue = parseInt(this.domService.elements.adminTestFlipInput.value);
+            if (!isNaN(targetValue) && targetValue >= 0) {
+                this.flipCounterTo(targetValue);
+            }
         });
 
         // Poster upload controls
@@ -456,66 +514,63 @@ class ChunkPlayerApp {
 
     /**
      * Initialize flip counter animation
+     * @param {number} jokerlessDaysOld - Starting value for first visit
+     * @param {number} jokerlessDays - Target value if already rolled
      */
-    initFlipCounter() {
-       if (typeof Flip === 'undefined') {
-            console.warn('Flip library not loaded');
-            return;
-        }
-
+    initFlipCounter(jokerlessDaysOld = 0, jokerlessDays = 0) {
         const counter = document.getElementById('flip-counter');
         if (!counter) return;
 
-        Flip.from(counter, {
-            size: 65,
-            width: 45,
-            height: 90,
-            delay: 75,
-            delayMode: 0,
-            useImage: true,
-            textFont: 'Anton, Bangers, monospace',
-            textSize: 40,
-            textureHorizon: 0,
-            perspective: 800,
-            smoothStart: true,
-            startNumber: 1
-        });
+        // Set label above flip counter
+        const label = document.getElementById('flip-counter-label');
+        if (label && CONFIG.movieData?.punishmentMovie?.name) {
+            label.textContent = `Days since last ${CONFIG.movieData.punishmentMovie.name}`;
+        }
 
-        console.log('%c[Flip] Counter initialized to "001"', 'color: #00ff00; font-weight: bold');
+        // Determine starting value based on whether user has already rolled today
+        const hasRolledToday = !VisitRepository.isFirstVisitToday();
+        const startValue = hasRolledToday ? jokerlessDays : jokerlessDaysOld;
+
+        // Try to find existing tick instance first (may have been created by data-did-init)
+        let tick = Tick.DOM.find(counter);
+
+        // If no tick found, parse the element to create one
+        if (!tick && typeof Tick !== 'undefined') {
+            counter.setAttribute('data-value', startValue);
+            tick = Tick.DOM.parse(counter);
+        } else if (tick) {
+            // Set initial value on existing tick
+            tick.value = startValue;
+        }
+
+        console.log(`%c[Flip] Counter initialized to "${String(startValue).padStart(3, '0')}" (hasRolledToday: ${hasRolledToday}, tick found: ${!!tick})`, 'color: #00ff00; font-weight: bold');
     }
 
     /**
-     * Tick the flip counter up by 1
+     * Flip the counter to a target value
+     * @param {number} targetValue - Value to animate to
      */
-    tickFlipCounter() {
+    flipCounterTo(targetValue) {
         const counter = document.getElementById('flip-counter');
-        if (!counter || typeof Flip === 'undefined') return;
+        if (!counter) return;
 
-        const digits = counter.querySelectorAll('.fc-digit');
-        let currentNum = 0;
-        for (const digit of digits) {
-            currentNum = currentNum * 10 + parseInt(digit.textContent || '0', 10);
+        // Try to find existing tick instance
+        let tick = Tick.DOM.find(counter);
+
+        // Fall back to window.flipTick if available
+        if (!tick && window.flipTick) {
+            tick = window.flipTick;
         }
 
-        const nextNum = currentNum + 1;
+        if (!tick) {
+            console.warn('Flip tick instance not found');
+            return;
+        }
 
-        Flip.to(counter, {
-            size: 65,
-            width: 45,
-            height: 90,
-            delay: 75,
-            delayMode: 0,
-            useImage: true,
-            textFont: 'Anton, Bangers, monospace',
-            textSize: 40,
-            textureHorizon: 0,
-            perspective: 800,
-            smoothStart: true,
-            startNumber: currentNum,
-            endNumber: nextNum
-        });
+        // Update the value - Tick will animate automatically
+        tick.value = targetValue;
 
-        console.log(`%c[Flip] Counter ticked from "${String(currentNum).padStart(3, '0')}" to "${String(nextNum).padStart(3, '0')}"`, 'color: #00ff00; font-weight: bold');
+        console.log(`%c[Flip] Counter animating to "${String(targetValue).padStart(3, '0')}"`, 'color: #00ff00; font-weight: bold');
     }
 
     /**
@@ -768,6 +823,19 @@ class ChunkPlayerApp {
      */
     showAdminSection() {
         this.domService.elements.adminSection.classList.remove('hidden');
+
+        // If user has stored clearance, skip login
+        const level = this.adminService.getClearance();
+        if (level > 0 && this.domService.elements.adminLogin.classList.contains('display-none') === false) {
+            this.domService.elements.adminLogin.classList.add('display-none');
+            if (level >= 1) {
+                this.domService.elements.adminLevel1.classList.remove('display-none');
+            }
+            if (level >= 2) {
+                this.domService.elements.adminLevel2.classList.remove('display-none');
+                this.initializePointerInputs();
+            }
+        }
     }
 
     /**
@@ -776,11 +844,15 @@ class ChunkPlayerApp {
     async initializePointerInputs() {
         try {
             const data = await this.apiService.getDailyData();
+            console.log('Daily data:', data);
 
             this.domService.elements.adminNormalPointerInput.value = data.normalMovie.pointer || 1;
             this.domService.elements.adminPunishmentPointerInput.value = data.punishmentMovie.pointer || 1;
             this.domService.elements.adminRewardPointerInput.value = data.rewardMovie.pointer || 1;
             this.domService.elements.adminFakeRollInput.value = data.roll || 10;
+            this.domService.elements.adminJokerlessDaysInput.value = data.jokerlessDays ?? 0;
+            this.domService.elements.adminJokerlessDaysOldInput.value = data.jokerlessDaysOld ?? 0;
+            this.domService.elements.adminTestFlipInput.value = data.jokerlessDays ?? 0;
         } catch (error) {
             console.error('Failed to load pointer values:', error);
             // Set defaults
@@ -788,6 +860,9 @@ class ChunkPlayerApp {
             this.domService.elements.adminPunishmentPointerInput.value = 1;
             this.domService.elements.adminRewardPointerInput.value = 1;
             this.domService.elements.adminFakeRollInput.value = 10;
+            this.domService.elements.adminJokerlessDaysInput.value = 0;
+            this.domService.elements.adminJokerlessDaysOldInput.value = 0;
+            this.domService.elements.adminTestFlipInput.value = 0;
         }
     }
 
@@ -797,11 +872,19 @@ class ChunkPlayerApp {
      * @param {number} value - New value
      */
     async handlePointerChange(type, value) {
-        if (isNaN(value) || value < 1) {
-            this.adminService.showToast('Invalid pointer value', 'error');
+        if (isNaN(value)) {
+            this.adminService.showToast('Invalid value', 'error');
             return;
         }
-        await this.adminService.updatePointer(type, value);
+        if (type === 'jokerlessdays') {
+            await this.adminService.updateJokerlessDays(value);
+        } else if (type === 'jokerlessdaysold') {
+            await this.adminService.updateJokerlessDaysOld(value);
+        } else if (value < 1) {
+            this.adminService.showToast('Invalid pointer value', 'error');
+        } else {
+            await this.adminService.updatePointer(type, value);
+        }
     }
 }
 

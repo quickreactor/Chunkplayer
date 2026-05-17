@@ -84,6 +84,26 @@ class ApiService {
     }
 
     /**
+     * Set jokerless days
+     * @param {number} value - New jokerless days value
+     * @returns {Promise<Object>} JSON response
+     */
+    async setJokerlessDays(value) {
+        const response = await fetch(`${this.baseUrl}/set-jokerless-days?value=${value}`);
+        return await response.json();
+    }
+
+    /**
+     * Set jokerless days old
+     * @param {number} value - New jokerless days old value
+     * @returns {Promise<Object>} JSON response
+     */
+    async setJokerlessDaysOld(value) {
+        const response = await fetch(`${this.baseUrl}/set-jokerless-days-old?value=${value}`);
+        return await response.json();
+    }
+
+    /**
      * Get daily data (roll value, movie information)
      * @returns {Promise<Object>} Daily data object
      */

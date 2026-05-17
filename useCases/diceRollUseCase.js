@@ -51,11 +51,11 @@ class DiceRollUseCase {
         // Play dice video
         await this.video.playDiceVideo(roll);
 
-        // Tick flip counter
-        this.app.tickFlipCounter();
-
-        // Register visit
+        // Register visit (prevents re-roll on refresh)
         this.visitRepo.registerVisit();
+
+        // Animate flip counter to jokerless days
+        this.app.flipCounterTo(movieData.jokerlessDays);
 
         // Route based on outcome
         const outcome = DiceRollLogic.determineOutcome(roll);
