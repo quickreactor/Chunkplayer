@@ -81,6 +81,12 @@ class DOMService {
             uploadPosterBtn: document.getElementById("upload-poster-btn"),
             posterUploadStatus: document.getElementById("poster-upload-status"),
 
+            // Punishment poster upload controls
+            punishmentPosterFileInput: document.getElementById("punishment-poster-file-input"),
+            selectPunishmentPosterBtn: document.getElementById("select-punishment-poster-btn"),
+            uploadPunishmentPosterBtn: document.getElementById("upload-punishment-poster-btn"),
+            punishmentPosterUploadStatus: document.getElementById("punishment-poster-upload-status"),
+
             stepperMinusBtns: document.querySelectorAll(".stepper-minus"),
             stepperPlusBtns: document.querySelectorAll(".stepper-plus"),
             stepperSetBtns: document.querySelectorAll('.stepper-set-btn'),

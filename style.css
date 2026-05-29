@@ -855,23 +855,23 @@ option {
 }
 
 /* Poster Upload Section */
-#poster-upload-section .poster-upload-controls {
+.poster-upload-section .poster-upload-controls {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-#poster-upload-section .upload-status {
+.poster-upload-section .upload-status {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.7);
     min-height: 16px;
 }
 
-#poster-upload-section .upload-status.error {
+.poster-upload-section .upload-status.error {
     color: #ff6b6b;
 }
 
-#poster-upload-section .upload-status.success {
+.poster-upload-section .upload-status.success {
     color: #4CAF50;
 }
 

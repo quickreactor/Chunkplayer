@@ -268,10 +268,10 @@ class AdminService {
      * Handle poster upload flow
      * @param {File} file - Selected image file
      * @param {HTMLElement} statusEl - Status element for displaying messages
-     * @param {Object} movieData - Movie data from CONFIG
+     * @param {string} movieName - Movie name for path construction
      * @returns {Promise<boolean>} Success status
      */
-    async handlePosterUpload(file, statusEl, movieData) {
+    async handlePosterUpload(file, statusEl, movieName) {
         // 1. Validate file type (JPEG/PNG only)
         const allowedTypes = ['image/jpeg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
@@ -288,8 +288,7 @@ class AdminService {
             return false;
         }
 
-        // 3. Get movie name from CONFIG
-        const movieName = movieData?.normalMovie?.name;
+        // 3. Validate movie name
         if (!movieName) {
             statusEl.textContent = 'Movie name not available.';
             statusEl.className = 'upload-status error';

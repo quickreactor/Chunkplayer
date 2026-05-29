@@ -23,6 +23,7 @@ class ChunkPlayerApp {
         this.urls = {};
         this.chunkArray = [];
         this.titleArray = [];
+        this.selectedPunishmentPosterFile = null;
 
         // Use cases (initialized later)
         this.videoPlaybackUseCase = null;
@@ -446,7 +447,7 @@ class ChunkPlayerApp {
             }
         });
 
-        // Poster upload controls
+        // Normal poster upload controls
         this.domService.elements.selectPosterBtn?.addEventListener("click", () => {
             this.domService.elements.posterFileInput?.click();
         });
@@ -467,7 +468,33 @@ class ChunkPlayerApp {
                 await this.adminService.handlePosterUpload(
                     this.selectedPosterFile,
                     this.domService.elements.posterUploadStatus,
-                    CONFIG.movieData
+                    CONFIG.movieData?.normalMovie?.name
+                );
+            }
+        });
+
+        // Punishment poster upload controls
+        this.domService.elements.selectPunishmentPosterBtn?.addEventListener("click", () => {
+            this.domService.elements.punishmentPosterFileInput?.click();
+        });
+
+        this.domService.elements.punishmentPosterFileInput?.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Show the upload button and filename
+                this.domService.elements.uploadPunishmentPosterBtn.style.display = 'block';
+                this.domService.elements.punishmentPosterUploadStatus.textContent = `Selected: ${file.name}`;
+                this.domService.elements.punishmentPosterUploadStatus.className = 'upload-status';
+                this.selectedPunishmentPosterFile = file;
+            }
+        });
+
+        this.domService.elements.uploadPunishmentPosterBtn?.addEventListener("click", async () => {
+            if (this.selectedPunishmentPosterFile) {
+                await this.adminService.handlePosterUpload(
+                    this.selectedPunishmentPosterFile,
+                    this.domService.elements.punishmentPosterUploadStatus,
+                    CONFIG.movieData?.punishmentMovie?.name
                 );
             }
         });

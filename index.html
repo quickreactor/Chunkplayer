@@ -149,8 +149,8 @@
 
                     <hr class="admin-divider">
 
-                    <!-- Poster Upload Section -->
-                    <div class="admin-pointer-control" id="poster-upload-section">
+                    <!-- Normal Poster Upload Section -->
+                    <div class="admin-pointer-control poster-upload-section">
                         <label>Change Normal Poster</label>
                         <div class="poster-upload-controls">
                             <input type="file" id="poster-file-input" accept="image/jpeg,image/png"
@@ -159,6 +159,19 @@
                             <button id="upload-poster-btn" class="admin-action-btn" style="display:none">Upload
                                 Poster</button>
                             <div id="poster-upload-status" class="upload-status"></div>
+                        </div>
+                    </div>
+
+                    <!-- Punishment Poster Upload Section -->
+                    <div class="admin-pointer-control poster-upload-section">
+                        <label>Change Punishment Poster</label>
+                        <div class="poster-upload-controls">
+                            <input type="file" id="punishment-poster-file-input" accept="image/jpeg,image/png"
+                                style="display:none">
+                            <button id="select-punishment-poster-btn" class="admin-action-btn">Select Image</button>
+                            <button id="upload-punishment-poster-btn" class="admin-action-btn" style="display:none">Upload
+                                Poster</button>
+                            <div id="punishment-poster-upload-status" class="upload-status"></div>
                         </div>
                     </div>
                 </div>
