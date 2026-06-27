@@ -35,7 +35,7 @@ class DrawingService {
      * @param {string} containerId - The ID of the poster container
      * @param {Function} onFinish - Callback when drawing is done (receives serialized data)
      */
-    startDrawing(containerId, onFinish) {
+    startDrawing(containerId, onFinish, onCancel) {
         if (this.isDrawing) return;
 
         const container = document.getElementById(containerId);
@@ -43,6 +43,7 @@ class DrawingService {
 
         this.isDrawing = true;
         this.onFinish = onFinish;
+        this.onCancel = onCancel;
         this.undoStack = [];
 
         // Get the poster image to match canvas dimensions
@@ -114,17 +115,18 @@ class DrawingService {
         this.toolbarElement.className = 'drawing-toolbar';
         this.toolbarElement.innerHTML = `
             <div class="drawing-toolbar-row">
-                <button class="draw-tool-btn active" data-tool="brush" title="Brush">&#9998;</button>
-                <button class="draw-tool-btn" data-tool="eraser" title="Eraser">&#9003;</button>
-                <input type="color" class="draw-color-picker" value="${this.currentColor}" title="Color">
-                <input type="range" class="draw-size-slider" min="1" max="30" value="${this.currentSize}" title="Brush Size">
-                <button class="draw-tool-btn" data-tool="undo" title="Undo">&#8630;</button>
-                <button class="draw-tool-btn" data-tool="clear" title="Clear All">&#10005;</button>
-                <button class="draw-tool-btn draw-done-btn" data-tool="done" title="Done">&#10003;</button>
+                <button class="draw-tool-btn active" data-tool="brush" data-tooltip="Brush">&#9998;</button>
+                <button class="draw-tool-btn" data-tool="eraser" data-tooltip="Eraser">&#9003;</button>
+                <input type="color" class="draw-color-picker" value="${this.currentColor}" data-tooltip="Color">
+                <input type="range" class="draw-size-slider" min="1" max="30" value="${this.currentSize}" data-tooltip="Size">
+                <button class="draw-tool-btn" data-tool="undo" data-tooltip="Undo">&#8630;</button>
+                <button class="draw-tool-btn" data-tool="cancel" data-tooltip="Cancel">&#10005;</button>
+                <button class="draw-tool-btn draw-done-btn" data-tool="done" data-tooltip="Done">&#10003;</button>
             </div>
         `;
 
-        container.appendChild(this.toolbarElement);
+        const videoContainer = container.parentElement;
+        videoContainer.insertBefore(this.toolbarElement, container);
         this.setupToolbarHandlers();
     }
 
@@ -154,8 +156,8 @@ class DrawingService {
                     case 'undo':
                         this.undo();
                         break;
-                    case 'clear':
-                        this.clearCanvas();
+                    case 'cancel':
+                        this.cancelDrawing();
                         break;
                     case 'done':
                         this.finishDrawing();
@@ -178,14 +180,54 @@ class DrawingService {
     }
 
     /**
-     * Toggle eraser mode (draw with background color or white)
+     * Toggle eraser mode - removes paths the cursor touches
      */
     setEraser(eraser) {
         this.isEraser = eraser;
         if (eraser) {
-            this.canvas.freeDrawingBrush.color = '#ffffff';
+            this.canvas.isDrawingMode = false;
+            this.canvas.selection = false;
+            this.canvas.defaultCursor = 'crosshair';
+            this.canvas.hoverCursor = 'crosshair';
+            this._eraserHandler = (opt) => {
+                this._eraseAtPointer(opt.e);
+            };
+            this._eraserMoveHandler = (opt) => {
+                if (opt.e.buttons !== 1 && !opt.e.touches) return;
+                this._eraseAtPointer(opt.e);
+            };
+            this.canvas.on('mouse:down', this._eraserHandler);
+            this.canvas.on('mouse:move', this._eraserMoveHandler);
         } else {
+            if (this._eraserHandler) {
+                this.canvas.off('mouse:down', this._eraserHandler);
+                this.canvas.off('mouse:move', this._eraserMoveHandler);
+                this._eraserHandler = null;
+                this._eraserMoveHandler = null;
+            }
+            this.canvas.isDrawingMode = true;
             this.canvas.freeDrawingBrush.color = this.currentColor;
+        }
+    }
+
+    /**
+     * Erase paths near the given pointer event
+     */
+    _eraseAtPointer(e) {
+        const pointer = this.canvas.getPointer(e);
+        const targets = this.canvas.getObjects().filter(obj => {
+            if (obj.type !== 'path') return false;
+            const bounds = obj.getBoundingRect();
+            const padding = Math.max(this.currentSize, 10);
+            return pointer.x >= bounds.left - padding &&
+                   pointer.x <= bounds.left + bounds.width + padding &&
+                   pointer.y >= bounds.top - padding &&
+                   pointer.y <= bounds.top + bounds.height + padding;
+        });
+        if (targets.length) {
+            targets.forEach(obj => this.canvas.remove(obj));
+            this.canvas.renderAll();
+            this.saveState();
         }
     }
 
@@ -289,6 +331,11 @@ class DrawingService {
 
         this.isDrawing = false;
         this.undoStack = [];
+
+        if (this.onCancel) {
+            this.onCancel();
+            this.onCancel = null;
+        }
         this.onFinish = null;
     }
 

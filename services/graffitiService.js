@@ -474,6 +474,12 @@ class GraffitiService {
             if (this.buttonElement) {
                 this.setupAutoHide();
             }
+        }, () => {
+            // Cancelled - just reset editing state
+            this.isEditing = false;
+            if (this.buttonElement) {
+                this.setupAutoHide();
+            }
         });
     }
 

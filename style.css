@@ -195,6 +195,7 @@ h1 {
 #video-frame {
     z-index: 500;
     width: 70vw;
+    margin-bottom: 35px;
 }
 
 h1 {
@@ -422,7 +423,6 @@ option {
 }
 
 #todays-poster-container {
-    margin-top: 35px;
     width: 70vw;
     position: relative;
     overflow: hidden;
@@ -1468,7 +1468,7 @@ option {
     font-weight: 700;
     color: white;
     margin-bottom: 12px;
-    font-family: 'Gothic-Dice', 'Anton', 'Bangers', monospace;
+    font-family: Arial, sans-serif;
 }
 
 .graffiti-mode-buttons {
@@ -1529,15 +1529,13 @@ option {
 /* ==================== */
 
 .drawing-toolbar {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 95;
+    margin-bottom: 8px;
     background: rgba(0, 0, 0, 0.85);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 8px 12px;
+    position: relative;
+    z-index: 95;
 }
 
 .drawing-toolbar-row {
@@ -1602,6 +1600,35 @@ option {
     width: 80px;
     accent-color: white;
     cursor: pointer;
+}
+
+/* Drawing tooltips */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    white-space: nowrap;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
 }
 
 /* Drawing overlay image on poster */
@@ -1692,7 +1719,7 @@ option {
     }
 
     .drawing-toolbar {
-        bottom: 8px;
+        margin-bottom: 6px;
         padding: 6px 10px;
     }
 
@@ -1753,7 +1780,7 @@ option {
     }
 
     .drawing-toolbar {
-        bottom: 6px;
+        margin-bottom: 5px;
         padding: 5px 8px;
     }
 
