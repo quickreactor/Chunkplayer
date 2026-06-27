@@ -37,7 +37,7 @@ class DiceRollUseCase {
             this.audio.playDiceSound();
         });
 
-        this.dom.addClass('rollButton', 'rolled');
+        this.dom.addClass('diceAndTextContainer', 'rolled');
 
         // Get effective roll (accounting for debug and special days)
         const roll = DiceRollLogic.getEffectiveRoll(

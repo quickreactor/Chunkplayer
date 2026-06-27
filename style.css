@@ -48,6 +48,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Gothic-Dice';
+    src: url('fonts/Darksad-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 body,
 html {
     margin: 0;
@@ -350,17 +358,39 @@ option {
 }
 
 #roll-button {
-    background: url(images/d20.png);
+    /* background: url(images/die-eye.gif); */
     background-size: contain;
-    width: 4vw;
-    height: 4vw;
+    width: 6vw;
+    height: 6vw;
     font-size: 0.9vw;
     font-weight: 900;
     text-align: center;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: default;
+}
+
+#dice-and-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#roll-text {
+    font-size: 3vw;
+    font-weight: 900;
+    text-align: center;
+    margin-top: 4px;
+    font-family: 'Gothic-Dice', 'Anton', 'Bangers', monospace;
+}
+
+#deye {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 #flip-button {
@@ -994,17 +1024,20 @@ option {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+#graffiti-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 #graffiti-btn:hover {
     background: rgba(0, 0, 0, 0.8);
     border-color: rgba(255, 255, 255, 0.8);
     transform: scale(1.1);
-}
-
-#graffiti-btn.graffiti-locked {
-    background: rgba(100, 100, 255, 0.6);
 }
 
 /* Graffiti Overlay - displayed on poster */

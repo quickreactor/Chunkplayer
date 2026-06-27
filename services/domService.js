@@ -29,6 +29,7 @@ class DOMService {
             poster2: document.getElementById("poster-image-2"),
             todaysPoster: document.querySelector("#todays-poster"),
             rollButton: document.getElementById("roll-button"),
+            diceAndTextContainer: document.getElementById("dice-and-text-container"),
             flipButton: document.getElementById("flip-button"),
             chunkSelector: document.getElementById("chunkSelector"),
             archiveButton: document.querySelector(".archive-button"),

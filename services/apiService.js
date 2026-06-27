@@ -178,8 +178,8 @@ class ApiService {
     }
 
     /**
-     * Get today's graffiti
-     * @returns {Promise<Object>} Graffiti data { locked, text, x, y, fontSize, rotation }
+     * Get all graffiti entries
+     * @returns {Promise<Array>} Array of graffiti objects
      */
     async getGraffiti() {
         try {
@@ -187,7 +187,7 @@ class ApiService {
             return await response.json();
         } catch (error) {
             ErrorHandler.handle(error, 'ApiService.getGraffiti');
-            return { locked: false, text: null };
+            return [];
         }
     }
 

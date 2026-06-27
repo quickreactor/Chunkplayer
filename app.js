@@ -708,7 +708,7 @@ class ChunkPlayerApp {
 
         // Show ROLL button, hide FLIP button
         this.domService.elements.rollButton.style.display = 'flex';
-        this.domService.elements.rollButton.classList.remove('rolled');
+        this.domService.elements.diceAndTextContainer.classList.remove('rolled');
         this.domService.elements.flipButton.style.display = 'none';
 
         // Reset roll button click handler

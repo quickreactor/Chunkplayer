@@ -48,8 +48,9 @@ class DateHelpers {
      * @param {Date} date - Date to base randomness on (defaults to today)
      * @returns {number} Random index based on date
      */
-    static getDateBasedRandomIndex(length, date = new Date()) {
-        const seed = this.getDateSeed(date);
+    static getDateBasedRandomIndex(length, dateStr = null) {
+        const dateKey = dateStr || DateHelpers.getNZFormattedDate();
+        const seed = parseInt(dateKey, 10);
         const random = Math.sin(seed) * 10000;
         return Math.floor(Math.abs(random) % length);
     }

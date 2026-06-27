@@ -5,16 +5,17 @@
 /**
  * Handles graffiti functionality - display, creation, and submission
  * Live preview version - edits appear directly on the poster
+ * Supports multiple graffiti layers per week (resets Sundays NZ time)
  */
 class GraffitiService {
     constructor(apiService, domService) {
         this.apiService = apiService;
         this.domService = domService;
-        this.graffiti = null;
+        this.graffitiEntries = [];
         this.controlsElement = null;
         this.buttonElement = null;
-        this.overlayElement = null;
-        this.prerollOverlayElement = null;
+        this.overlayElements = [];
+        this.prerollOverlayElements = [];
         this.liveElement = null;
         this.pickr = null;
         this.initialized = false;
@@ -32,16 +33,22 @@ class GraffitiService {
             shadowBlur: 4,
             shadowOpacity: 0.8
         };
+
+        // Auto-hide pencil state
+        this.pencilFadeTimer = null;
+        this.pencilHideTimer = null;
+        this.posterMouseHandler = null;
+        this.posterTouchHandler = null;
     }
 
     /**
      * Fetch graffiti data if not already loaded
      */
     async fetchData() {
-        if (this.graffiti) return;
+        if (this.graffitiEntries.length > 0) return;
         try {
-            this.graffiti = await this.apiService.getGraffiti();
-            console.log('🎨 Graffiti loaded:', this.graffiti);
+            this.graffitiEntries = await this.apiService.getGraffiti();
+            console.log('🎨 Graffiti loaded:', this.graffitiEntries);
         } catch (error) {
             console.error('Failed to fetch graffiti:', error);
             ErrorHandler.handle(error, 'GraffitiService.fetchData');
@@ -49,50 +56,44 @@ class GraffitiService {
     }
 
     /**
-     * Render graffiti overlay on the pre-roll poster (poster-container-1)
+     * Render graffiti overlays on the pre-roll poster (poster-container-1)
      * Called early so graffiti appears before the user clicks ROLL
      */
     async renderPrerollOverlay() {
         await this.fetchData();
 
-        if (this.prerollOverlayElement) {
-            this.prerollOverlayElement.remove();
-            this.prerollOverlayElement = null;
-        }
+        this.clearPrerollOverlays();
 
-        if (!this.graffiti || !this.graffiti.text) return;
+        if (!this.graffitiEntries.length) return;
 
         const prerollContainer = document.getElementById('poster-container-1');
         const posterImage = document.getElementById('poster-image-1');
         if (!prerollContainer || !posterImage) return;
 
-        // Wait for image to load so we get accurate dimensions
         await new Promise(resolve => {
             if (posterImage.complete) return resolve();
             posterImage.addEventListener('load', resolve, { once: true });
             posterImage.addEventListener('error', resolve, { once: true });
         });
 
-        // Scale graffiti to match: pre-roll image width vs today's poster (70vw)
         const imageWidth = posterImage.offsetWidth;
         const imageHeight = posterImage.offsetHeight;
         const todaysWidth = window.innerWidth * 0.7;
         const scale = imageWidth / todaysWidth;
 
-        this.prerollOverlayElement = this.createOverlayElement(scale);
-
-        // Position relative to the actual image area within the container,
-        // not the container itself (which includes image margins)
-        const pxX = posterImage.offsetLeft + (this.graffiti.x / 100) * imageWidth;
-        const pxY = posterImage.offsetTop + (this.graffiti.y / 100) * imageHeight;
-        this.prerollOverlayElement.style.left = `${pxX}px`;
-        this.prerollOverlayElement.style.top = `${pxY}px`;
-
-        prerollContainer.appendChild(this.prerollOverlayElement);
+        this.graffitiEntries.forEach(entry => {
+            const el = this.createOverlayElement(entry, scale);
+            const pxX = posterImage.offsetLeft + (entry.x / 100) * imageWidth;
+            const pxY = posterImage.offsetTop + (entry.y / 100) * imageHeight;
+            el.style.left = `${pxX}px`;
+            el.style.top = `${pxY}px`;
+            prerollContainer.appendChild(el);
+            this.prerollOverlayElements.push(el);
+        });
     }
 
     /**
-     * Initialize graffiti - fetch from API and render button/overlay
+     * Initialize graffiti - fetch from API and render button/overlays
      */
     async init() {
         if (this.initialized) return;
@@ -101,7 +102,7 @@ class GraffitiService {
             await this.fetchData();
 
             this.renderButton();
-            if (this.graffiti && this.graffiti.text) {
+            if (this.graffitiEntries.length) {
                 this.renderOverlay();
             }
 
@@ -113,84 +114,148 @@ class GraffitiService {
     }
 
     /**
-     * Render the graffiti button on the poster container
-     * Only shows pencil icon when graffiti hasn't been applied yet
-     * Shows nothing when graffiti has been applied for the day
+     * Render the graffiti pencil button on the poster container
+     * Always renders - auto-hides via mouse/touch events on poster
      */
     renderButton() {
-        // Remove existing button if any
         if (this.buttonElement) {
             this.buttonElement.remove();
             this.buttonElement = null;
         }
 
-        // If graffiti is locked (already applied), don't show any button
-        if (this.graffiti?.locked) {
-            return;
-        }
-
         const posterContainer = document.getElementById('todays-poster-container');
         if (!posterContainer) return;
 
-        // Create button with pencil icon - can create graffiti
         this.buttonElement = document.createElement('button');
         this.buttonElement.id = 'graffiti-btn';
-        this.buttonElement.title = 'Create today\'s graffiti';
+        this.buttonElement.title = 'Add graffiti';
         this.buttonElement.innerHTML = '&#9998;';
         this.buttonElement.addEventListener('click', () => this.startEditing());
 
         posterContainer.appendChild(this.buttonElement);
+        this.setupAutoHide();
     }
 
     /**
-     * Render the graffiti overlay on the poster
+     * Setup auto-hide behavior on the poster container
+     * Pencil fades in on mouseenter/touch, fades out after delay or on mouseleave
+     */
+    setupAutoHide() {
+        const posterContainer = document.getElementById('todays-poster-container');
+        if (!posterContainer || !this.buttonElement) return;
+
+        this.clearAutoHideTimers();
+
+        const showPencil = () => {
+            if (this.isEditing) return;
+            this.clearAutoHideTimers();
+            this.buttonElement.classList.add('visible');
+            this.pencilHideTimer = setTimeout(() => this.hidePencil(), 5000);
+        };
+
+        const hidePencil = () => {
+            if (this.isEditing) return;
+            this.clearAutoHideTimers();
+            this.buttonElement.classList.remove('visible');
+        };
+
+        this.hidePencil = hidePencil;
+
+        this.posterMouseHandler = () => showPencil();
+        this.posterTouchHandler = (e) => {
+            if (e.target === this.buttonElement) return;
+            showPencil();
+        };
+
+        posterContainer.addEventListener('mouseenter', this.posterMouseHandler);
+        posterContainer.addEventListener('mouseleave', () => {
+            this.clearAutoHideTimers();
+            this.pencilFadeTimer = setTimeout(() => hidePencil(), 1000);
+        });
+        posterContainer.addEventListener('touchstart', this.posterTouchHandler, { passive: true });
+    }
+
+    /**
+     * Clear all auto-hide timers
+     */
+    clearAutoHideTimers() {
+        if (this.pencilFadeTimer) {
+            clearTimeout(this.pencilFadeTimer);
+            this.pencilFadeTimer = null;
+        }
+        if (this.pencilHideTimer) {
+            clearTimeout(this.pencilHideTimer);
+            this.pencilHideTimer = null;
+        }
+    }
+
+    /**
+     * Remove auto-hide event listeners from poster container
+     */
+    removeAutoHide() {
+        this.clearAutoHideTimers();
+        const posterContainer = document.getElementById('todays-poster-container');
+        if (posterContainer) {
+            if (this.posterMouseHandler) {
+                posterContainer.removeEventListener('mouseenter', this.posterMouseHandler);
+            }
+            if (this.posterTouchHandler) {
+                posterContainer.removeEventListener('touchstart', this.posterTouchHandler);
+            }
+        }
+        this.posterMouseHandler = null;
+        this.posterTouchHandler = null;
+        if (this.buttonElement) {
+            this.buttonElement.classList.remove('visible');
+        }
+    }
+
+    /**
+     * Render graffiti overlays on today's poster
      */
     renderOverlay() {
-        // Remove existing overlay if any
-        if (this.overlayElement) {
-            this.overlayElement.remove();
-        }
+        this.clearOverlays();
 
-        if (!this.graffiti || !this.graffiti.text) return;
+        if (!this.graffitiEntries.length) return;
 
         const posterContainer = document.getElementById('todays-poster-container');
         if (!posterContainer) return;
 
-        // Create overlay for today's poster
-        this.overlayElement = this.createOverlayElement();
-        posterContainer.appendChild(this.overlayElement);
+        this.graffitiEntries.forEach(entry => {
+            const el = this.createOverlayElement(entry);
+            posterContainer.appendChild(el);
+            this.overlayElements.push(el);
+        });
     }
 
     /**
-     * Create a graffiti overlay DOM element
+     * Create a graffiti overlay DOM element for a single entry
+     * @param {Object} entry - Single graffiti object
+     * @param {number} scale - Scale factor (for pre-roll poster)
      */
-    createOverlayElement(scale = 1) {
+    createOverlayElement(entry, scale = 1) {
         const el = document.createElement('div');
         el.className = 'graffiti-overlay';
-        el.textContent = this.graffiti.text;
-        el.style.left = `${this.graffiti.x}%`;
-        el.style.top = `${this.graffiti.y}%`;
-        // Use responsive vw units for new graffiti, px for old (backward compatibility)
-        // Old graffiti stored fontSize as px (16-72 range), new is vw (2-30 range)
-        const isOldFormat = this.graffiti.fontSize > 30;
+        el.textContent = entry.text;
+        el.style.left = `${entry.x}%`;
+        el.style.top = `${entry.y}%`;
+        const isOldFormat = entry.fontSize > 30;
         el.style.fontSize = isOldFormat
-            ? `${this.graffiti.fontSize * scale}px`
-            : `${this.graffiti.fontSize * scale}vw`;
-        el.style.transform = `translate(-50%, -50%) rotate(${this.graffiti.rotation}deg)`;
+            ? `${entry.fontSize * scale}px`
+            : `${entry.fontSize * scale}vw`;
+        el.style.transform = `translate(-50%, -50%) rotate(${entry.rotation}deg)`;
 
-  // Apply color and font if they exist
-        if (this.graffiti.color) {
-            el.style.color = this.graffiti.color;
+        if (entry.color) {
+            el.style.color = entry.color;
         }
-        if (this.graffiti.font) {
-            el.style.fontFamily = this.getFontFamily(this.graffiti.font);
+        if (entry.font) {
+            el.style.fontFamily = this.getFontFamily(entry.font);
         }
 
-        // Apply shadow if enabled in stored data
-        if (this.graffiti.shadowEnabled) {
-            const offset = this.graffiti.shadowOffset || 2;
-            const blur = this.graffiti.shadowBlur || 4;
-            const opacity = this.graffiti.shadowOpacity || 0.8;
+        if (entry.shadowEnabled) {
+            const offset = entry.shadowOffset || 2;
+            const blur = entry.shadowBlur || 4;
+            const opacity = entry.shadowOpacity || 0.8;
             const rgba = `rgba(0, 0, 0, ${opacity})`;
             el.style.textShadow = `${offset}px ${offset}px ${blur}px ${rgba}`;
         } else {
@@ -213,7 +278,6 @@ class GraffitiService {
             'system-ui': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             'rounded': "'Varela Round', 'Quicksand', 'Nunito', sans-serif",
             'typewriter': "'Special Elite', 'Courier Prime', 'Courier New', monospace",
-            // Google Fonts graffiti
             'graffiti-marker': "'Permanent Marker', cursive",
             'graffiti-messy': "'Rock Salt', cursive",
             'graffiti-bubble': "'Knewave', display",
@@ -221,7 +285,6 @@ class GraffitiService {
             'graffiti-spray': "'Rubik Marker Hatch', cursive",
             'graffiti-comic': "'Bangers', cursive",
             'graffiti-fast': "'Faster One', cursive",
-            // Custom TTF fonts
             'graffiti-street2': "'Street2Art', sans-serif",
             'graffiti-fromstreet': "'FromStreetArt', sans-serif",
             'graffiti-popstar': "'SuperPopstar', cursive",
@@ -244,7 +307,6 @@ class GraffitiService {
             'system-ui': 'Modern',
             'rounded': 'Round',
             'typewriter': 'Type',
-            // Google Fonts graffiti
             'graffiti-marker': 'Marker',
             'graffiti-messy': 'Messy',
             'graffiti-bubble': 'Bubble',
@@ -252,7 +314,6 @@ class GraffitiService {
             'graffiti-spray': 'Spray',
             'graffiti-comic': 'Comic',
             'graffiti-fast': 'Fast',
-            // Custom TTF fonts
             'graffiti-street2': 'Street2',
             'graffiti-fromstreet': 'FromStreet',
             'graffiti-popstar': 'Popstar',
@@ -267,7 +328,6 @@ class GraffitiService {
      */
     getFontOptions() {
         return [
-            // Basic fonts
             { id: 'sans-serif', name: 'Sans', family: "'Segoe UI', sans-serif", category: 'basic' },
             { id: 'serif', name: 'Serif', family: 'Georgia, serif', category: 'basic' },
             { id: 'monospace', name: 'Mono', family: "'Courier New', monospace", category: 'basic' },
@@ -276,7 +336,6 @@ class GraffitiService {
             { id: 'system-ui', name: 'Modern', family: 'system-ui', category: 'basic' },
             { id: 'rounded', name: 'Round', family: 'sans-serif', category: 'basic' },
             { id: 'typewriter', name: 'Type', family: "'Courier New', monospace", category: 'basic' },
-            // Google Fonts graffiti
             { id: 'graffiti-marker', name: 'Marker', family: "'Permanent Marker', cursive", category: 'graffiti' },
             { id: 'graffiti-messy', name: 'Messy', family: "'Rock Salt', cursive", category: 'graffiti' },
             { id: 'graffiti-bubble', name: 'Bubble', family: "'Knewave', display", category: 'graffiti' },
@@ -284,7 +343,6 @@ class GraffitiService {
             { id: 'graffiti-spray', name: 'Spray', family: "'Rubik Marker Hatch', cursive", category: 'graffiti' },
             { id: 'graffiti-comic', name: 'Comic', family: "'Bangers', cursive", category: 'graffiti' },
             { id: 'graffiti-fast', name: 'Fast', family: "'Faster One', cursive", category: 'graffiti' },
-            // Custom TTF fonts
             { id: 'graffiti-street2', name: 'Street2', family: "'Street2Art', sans-serif", category: 'custom' },
             { id: 'graffiti-fromstreet', name: 'FromStreet', family: "'FromStreetArt', sans-serif", category: 'custom' },
             { id: 'graffiti-popstar', name: 'Popstar', family: "'SuperPopstar', cursive", category: 'custom' },
@@ -294,13 +352,16 @@ class GraffitiService {
     }
 
     /**
-     * Show info about existing graffiti (when locked)
+     * Show info about all graffiti entries
      */
     showGraffitiInfo() {
-        if (!this.graffiti || !this.graffiti.text) return;
+        if (!this.graffitiEntries.length) return;
 
-        const time = new Date(this.graffiti.timestamp).toLocaleTimeString();
-        alert(`Today's graffiti: "${this.graffiti.text}"\n\nSubmitted at ${time}`);
+        const lines = this.graffitiEntries.map((entry, i) => {
+            const time = new Date(entry.timestamp).toLocaleTimeString();
+            return `${i + 1}. "${entry.text}" (${time})`;
+        });
+        alert(`This week's graffiti (${this.graffitiEntries.length}):\n\n${lines.join('\n')}`);
     }
 
     /**
@@ -310,16 +371,16 @@ class GraffitiService {
         if (this.isEditing) return;
         this.isEditing = true;
 
+        // Hide pencil while editing
+        this.clearAutoHideTimers();
+        if (this.buttonElement) {
+            this.buttonElement.classList.remove('visible');
+        }
+
         const posterContainer = document.getElementById('todays-poster-container');
         const videoContainer = document.querySelector('.videoContainer');
         if (!posterContainer || !videoContainer) return;
 
-        // Hide button while editing
-        if (this.buttonElement) {
-            this.buttonElement.style.display = 'none';
-        }
-
-        // Create controls panel - place it BEFORE the poster container
         this.controlsElement = document.createElement('div');
         this.controlsElement.className = 'graffiti-controls-panel';
         this.controlsElement.innerHTML = `
@@ -373,10 +434,8 @@ class GraffitiService {
             </div>
         `;
 
-        // Insert controls panel before the poster container
         videoContainer.insertBefore(this.controlsElement, posterContainer);
 
-        // Create live element on poster
         this.liveElement = document.createElement('div');
         this.liveElement.className = 'graffiti-live';
         this.liveElement.textContent = 'Your text here';
@@ -384,14 +443,13 @@ class GraffitiService {
         this.liveElement.style.top = '50%';
         this.liveElement.style.width = 'max-content';
         this.liveElement.style.maxWidth = '90%';
-        this.liveElement.style.fontSize = '4vw';  // Responsive size
+        this.liveElement.style.fontSize = '4vw';
         this.liveElement.style.color = '#ffffff';
         this.liveElement.style.fontFamily = this.getFontFamily('sans-serif');
         this.liveElement.style.transform = 'translate(-50%, -50%) rotate(0deg)';
 
         posterContainer.appendChild(this.liveElement);
 
-        // Reset current edit state
         this.currentEdit = {
             text: '',
             x: 50,
@@ -407,11 +465,7 @@ class GraffitiService {
         };
 
         this.applyShadow();
-
-        // Build the custom font dropdown
         this.buildFontDropdown();
-
-        // Setup event handlers
         this.setupControlHandlers();
         this.setupDraggable(this.liveElement, posterContainer);
     }
@@ -428,7 +482,6 @@ class GraffitiService {
         let currentCategory = null;
 
         fontOptions.forEach(option => {
-            // Add separator if category changed
             if (option.category !== currentCategory) {
                 if (currentCategory !== null) {
                     const separator = document.createElement('div');
@@ -453,34 +506,25 @@ class GraffitiService {
             }
 
             optionEl.addEventListener('click', () => {
-                // Update selection
                 this.currentEdit.font = option.id;
                 this.liveElement.style.fontFamily = this.getFontFamily(option.id);
-
-                // Update trigger
                 trigger.textContent = option.name;
                 trigger.style.fontFamily = option.family;
-
-                // Update selected class
                 menu.querySelectorAll('.font-dropdown-option').forEach(el => {
                     el.classList.remove('selected');
                 });
                 optionEl.classList.add('selected');
-
-                // Close dropdown
                 menu.classList.remove('open');
             });
 
             menu.appendChild(optionEl);
         });
 
-        // Toggle dropdown on trigger click
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
             menu.classList.toggle('open');
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.custom-font-dropdown')) {
                 menu.classList.remove('open');
@@ -495,7 +539,6 @@ class GraffitiService {
         const colorPickerContainer = document.getElementById('graffiti-color-picker');
         if (!colorPickerContainer) return;
 
-        // Define swatches
         const swatches = [
             '#FFFFFF', '#000000', '#FF0000', '#FF4500',
             '#FFA500', '#FFFF00', '#00FF00', '#00FFFF',
@@ -503,7 +546,6 @@ class GraffitiService {
             '#FFD700', '#C0C0C0', '#808080', '#8B4513'
         ];
 
-        // Create the pickr instance
         this.pickr = Pickr.create({
             el: colorPickerContainer,
             theme: 'nano',
@@ -529,25 +571,22 @@ class GraffitiService {
             }
         });
 
-        // Handle color changes
         this.pickr.on('change', (color) => {
             this.currentEdit.color = color.toHEXA().toString();
             this.liveElement.style.color = this.currentEdit.color;
         });
 
-        // Handle swatch select - sync immediately
         this.pickr.on('swatchselect', (color) => {
             this.currentEdit.color = color.toHEXA().toString();
             this.liveElement.style.color = this.currentEdit.color;
         });
 
-        // Handle init (set initial color)
         this.pickr.on('init', (instance) => {
             this.liveElement.style.color = this.currentEdit.color;
         });
     }
 
-   /**
+    /**
      * Setup control panel event handlers
      */
     setupControlHandlers() {
@@ -559,25 +598,21 @@ class GraffitiService {
         const cancelBtn = document.getElementById('graffiti-cancel');
         const submitBtn = document.getElementById('graffiti-submit');
 
-        // Text input handler
         textInput.addEventListener('input', () => {
             this.currentEdit.text = textInput.value;
             this.liveElement.textContent = textInput.value || 'Your text here';
         });
 
-        // Size slider handler
         sizeSlider.addEventListener('input', () => {
             this.currentEdit.fontSize = parseFloat(sizeSlider.value);
             this.liveElement.style.fontSize = `${this.currentEdit.fontSize}vw`;
         });
 
-        // Rotation slider handler
         rotationSlider.addEventListener('input', () => {
             this.currentEdit.rotation = parseInt(rotationSlider.value);
             this.liveElement.style.transform = `translate(-50%, -50%) rotate(${this.currentEdit.rotation}deg)`;
         });
 
-        // Shadow toggle handler
         if (shadowToggle) {
             shadowToggle.addEventListener('change', () => {
                 this.currentEdit.shadowEnabled = shadowToggle.checked;
@@ -585,7 +620,6 @@ class GraffitiService {
             });
         }
 
-        // Shadow offset slider handler
         if (shadowOffsetSlider) {
             shadowOffsetSlider.addEventListener('input', () => {
                 this.currentEdit.shadowOffset = parseInt(shadowOffsetSlider.value);
@@ -593,7 +627,6 @@ class GraffitiService {
             });
         }
 
-        // Shadow blur slider handler
         const shadowBlurSlider = document.getElementById('graffiti-shadow-blur');
         if (shadowBlurSlider) {
             shadowBlurSlider.addEventListener('input', () => {
@@ -602,7 +635,6 @@ class GraffitiService {
             });
         }
 
-        // Shadow opacity slider handler
         const shadowOpacitySlider = document.getElementById('graffiti-shadow-opacity');
         if (shadowOpacitySlider) {
             shadowOpacitySlider.addEventListener('input', () => {
@@ -611,17 +643,12 @@ class GraffitiService {
             });
         }
 
-        // Initialize Pickr color picker
         this.initializePickr();
 
-        // Font dropdown is handled in buildFontDropdown()
-
-        // Cancel button
         cancelBtn.addEventListener('click', () => {
             this.stopEditing(false);
         });
 
-        // Submit button
         submitBtn.addEventListener('click', async () => {
             const text = textInput.value.trim();
             if (!text) {
@@ -633,7 +660,7 @@ class GraffitiService {
             submitBtn.textContent = 'Submitting...';
 
             try {
-          const graffitiData = {
+                const graffitiData = {
                     text: text,
                     x: this.currentEdit.x,
                     y: this.currentEdit.y,
@@ -650,9 +677,8 @@ class GraffitiService {
                 const result = await this.apiService.submitGraffiti(graffitiData);
 
                 if (result.success) {
-                    this.graffiti = result.graffiti;
+                    this.graffitiEntries = result.all || [...this.graffitiEntries, result.graffiti];
                     this.stopEditing(true);
-                    this.renderButton();
                     this.renderOverlay();
                 } else {
                     alert(result.error || 'Failed to submit graffiti');
@@ -661,7 +687,7 @@ class GraffitiService {
                 }
             } catch (error) {
                 console.error('Failed to submit graffiti:', error);
-                alert('Failed to submit graffiti. Someone else may have submitted first!');
+                alert('Failed to submit graffiti.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Submit';
             }
@@ -691,28 +717,41 @@ class GraffitiService {
     stopEditing(submitted) {
         this.isEditing = false;
 
-        // Destroy Pickr instance
         if (this.pickr) {
             this.pickr.destroyAndRemove();
             this.pickr = null;
         }
 
-        // Remove controls panel
         if (this.controlsElement) {
             this.controlsElement.remove();
             this.controlsElement = null;
         }
 
-        // Remove live element
         if (this.liveElement) {
             this.liveElement.remove();
             this.liveElement = null;
         }
 
-        // Show button again
+        // Re-enable auto-hide pencil
         if (this.buttonElement) {
-            this.buttonElement.style.display = '';
+            this.setupAutoHide();
         }
+    }
+
+    /**
+     * Clear all overlay elements from today's poster
+     */
+    clearOverlays() {
+        this.overlayElements.forEach(el => el.remove());
+        this.overlayElements = [];
+    }
+
+    /**
+     * Clear all pre-roll overlay elements
+     */
+    clearPrerollOverlays() {
+        this.prerollOverlayElements.forEach(el => el.remove());
+        this.prerollOverlayElements = [];
     }
 
     /**
@@ -764,12 +803,10 @@ class GraffitiService {
             element.style.cursor = 'move';
         };
 
-        // Mouse events
         element.addEventListener('mousedown', onStart);
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onEnd);
 
-        // Touch events
         element.addEventListener('touchstart', onStart, { passive: false });
         document.addEventListener('touchmove', onMove, { passive: false });
         document.addEventListener('touchend', onEnd);
@@ -783,18 +820,13 @@ class GraffitiService {
             this.pickr.destroyAndRemove();
             this.pickr = null;
         }
+        this.removeAutoHide();
         if (this.buttonElement) {
             this.buttonElement.remove();
             this.buttonElement = null;
         }
-        if (this.overlayElement) {
-            this.overlayElement.remove();
-            this.overlayElement = null;
-        }
-        if (this.prerollOverlayElement) {
-            this.prerollOverlayElement.remove();
-            this.prerollOverlayElement = null;
-        }
+        this.clearOverlays();
+        this.clearPrerollOverlays();
         if (this.controlsElement) {
             this.controlsElement.remove();
             this.controlsElement = null;
