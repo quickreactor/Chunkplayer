@@ -1456,6 +1456,167 @@ option {
 }
 
 /* ==================== */
+/* MODE SELECTOR        */
+/* ==================== */
+
+.graffiti-mode-selector {
+    text-align: center;
+}
+
+.graffiti-mode-title {
+    font-size: 1.2vw;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    font-family: 'Gothic-Dice', 'Anton', 'Bangers', monospace;
+}
+
+.graffiti-mode-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.graffiti-mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.graffiti-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.mode-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.mode-label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.graffiti-cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.graffiti-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ==================== */
+/* DRAWING TOOLBAR      */
+/* ==================== */
+
+.drawing-toolbar {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 95;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+}
+
+.drawing-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.draw-tool-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.draw-tool-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.draw-tool-btn.active {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.draw-done-btn {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.draw-done-btn:hover {
+    background: #45a049;
+}
+
+.draw-color-picker {
+    width: 36px;
+    height: 36px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+}
+
+.draw-color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.draw-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.draw-size-slider {
+    width: 80px;
+    accent-color: white;
+    cursor: pointer;
+}
+
+/* Drawing overlay image on poster */
+.graffiti-drawing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 50;
+}
+
+/* ==================== */
 /* MOBILE RESPONSIVE     */
 /* ==================== */
 
@@ -1513,6 +1674,37 @@ option {
         font-size: 13px;
         padding: 8px;
     }
+
+    .graffiti-mode-title {
+        font-size: 14px;
+    }
+
+    .graffiti-mode-btn {
+        padding: 10px 16px;
+    }
+
+    .mode-icon {
+        font-size: 20px;
+    }
+
+    .mode-label {
+        font-size: 11px;
+    }
+
+    .drawing-toolbar {
+        bottom: 8px;
+        padding: 6px 10px;
+    }
+
+    .draw-tool-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .draw-size-slider {
+        width: 60px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1558,5 +1750,33 @@ option {
 
     .custom-font-dropdown-trigger {
         font-size: 13px;
+    }
+
+    .drawing-toolbar {
+        bottom: 6px;
+        padding: 5px 8px;
+    }
+
+    .draw-tool-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    .draw-color-picker {
+        width: 28px;
+        height: 28px;
+    }
+
+    .draw-size-slider {
+        width: 50px;
+    }
+
+    .graffiti-mode-btn {
+        padding: 8px 14px;
+    }
+
+    .mode-icon {
+        font-size: 18px;
     }
 }

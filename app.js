@@ -201,8 +201,10 @@ class ChunkPlayerApp {
     setupServices() {
         // Initialize admin service after DOM service is ready
         this.adminService = new AdminService(this.apiService, this.domService);
+        // Initialize drawing service
+        this.drawingService = new DrawingService(this.apiService, this.domService);
         // Initialize graffiti service
-        this.graffitiService = new GraffitiService(this.apiService, this.domService);
+        this.graffitiService = new GraffitiService(this.apiService, this.domService, this.drawingService);
     }
 
     /**

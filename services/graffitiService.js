@@ -8,9 +8,10 @@
  * Supports multiple graffiti layers per week (resets Sundays NZ time)
  */
 class GraffitiService {
-    constructor(apiService, domService) {
+    constructor(apiService, domService, drawingService) {
         this.apiService = apiService;
         this.domService = domService;
+        this.drawingService = drawingService;
         this.graffitiEntries = [];
         this.controlsElement = null;
         this.buttonElement = null;
@@ -82,13 +83,19 @@ class GraffitiService {
         const scale = imageWidth / todaysWidth;
 
         this.graffitiEntries.forEach(entry => {
-            const el = this.createOverlayElement(entry, scale);
-            const pxX = posterImage.offsetLeft + (entry.x / 100) * imageWidth;
-            const pxY = posterImage.offsetTop + (entry.y / 100) * imageHeight;
-            el.style.left = `${pxX}px`;
-            el.style.top = `${pxY}px`;
-            prerollContainer.appendChild(el);
-            this.prerollOverlayElements.push(el);
+            if (entry.type === 'drawing' && entry.image) {
+                const img = this.drawingService.renderDrawingAsImage(entry, scale);
+                prerollContainer.appendChild(img);
+                this.prerollOverlayElements.push(img);
+            } else if (entry.type !== 'drawing') {
+                const el = this.createOverlayElement(entry, scale);
+                const pxX = posterImage.offsetLeft + (entry.x / 100) * imageWidth;
+                const pxY = posterImage.offsetTop + (entry.y / 100) * imageHeight;
+                el.style.left = `${pxX}px`;
+                el.style.top = `${pxY}px`;
+                prerollContainer.appendChild(el);
+                this.prerollOverlayElements.push(el);
+            }
         });
     }
 
@@ -222,9 +229,15 @@ class GraffitiService {
         if (!posterContainer) return;
 
         this.graffitiEntries.forEach(entry => {
-            const el = this.createOverlayElement(entry);
-            posterContainer.appendChild(el);
-            this.overlayElements.push(el);
+            if (entry.type === 'drawing' && entry.image) {
+                const img = this.drawingService.renderDrawingAsImage(entry);
+                posterContainer.appendChild(img);
+                this.overlayElements.push(img);
+            } else if (entry.type !== 'drawing') {
+                const el = this.createOverlayElement(entry);
+                posterContainer.appendChild(el);
+                this.overlayElements.push(el);
+            }
         });
     }
 
@@ -359,13 +372,16 @@ class GraffitiService {
 
         const lines = this.graffitiEntries.map((entry, i) => {
             const time = new Date(entry.timestamp).toLocaleTimeString();
+            if (entry.type === 'drawing') {
+                return `${i + 1}. Drawing (${time})`;
+            }
             return `${i + 1}. "${entry.text}" (${time})`;
         });
         alert(`This week's graffiti (${this.graffitiEntries.length}):\n\n${lines.join('\n')}`);
     }
 
     /**
-     * Start editing mode - show controls panel and live preview on poster
+     * Start editing mode - show mode selector (Text or Draw)
      */
     startEditing() {
         if (this.isEditing) return;
@@ -380,6 +396,94 @@ class GraffitiService {
         const posterContainer = document.getElementById('todays-poster-container');
         const videoContainer = document.querySelector('.videoContainer');
         if (!posterContainer || !videoContainer) return;
+
+        // Create mode selector
+        this.controlsElement = document.createElement('div');
+        this.controlsElement.className = 'graffiti-controls-panel graffiti-mode-selector';
+        this.controlsElement.innerHTML = `
+            <div class="graffiti-mode-title">Add Graffiti</div>
+            <div class="graffiti-mode-buttons">
+                <button class="graffiti-mode-btn" data-mode="text">
+                    <span class="mode-icon">T</span>
+                    <span class="mode-label">Text</span>
+                </button>
+                <button class="graffiti-mode-btn" data-mode="draw">
+                    <span class="mode-icon">&#9998;</span>
+                    <span class="mode-label">Draw</span>
+                </button>
+            </div>
+            <button id="graffiti-cancel-mode" class="graffiti-cancel-btn">Cancel</button>
+        `;
+
+        videoContainer.insertBefore(this.controlsElement, posterContainer);
+
+        // Mode button handlers
+        this.controlsElement.querySelectorAll('.graffiti-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+                this.removeControlsElement();
+                if (mode === 'text') {
+                    this.startTextEditing();
+                } else if (mode === 'draw') {
+                    this.startDrawMode();
+                }
+            });
+        });
+
+        this.controlsElement.querySelector('#graffiti-cancel-mode').addEventListener('click', () => {
+            this.stopEditing(false);
+        });
+    }
+
+    /**
+     * Remove the controls element if it exists
+     */
+    removeControlsElement() {
+        if (this.controlsElement) {
+            this.controlsElement.remove();
+            this.controlsElement = null;
+        }
+    }
+
+    /**
+     * Start draw mode using DrawingService
+     */
+    startDrawMode() {
+        this.drawingService.startDrawing('todays-poster-container', async (result) => {
+            // Drawing finished - submit to API
+            const drawingData = {
+                type: 'drawing',
+                data: result.data,
+                image: result.image
+            };
+
+            try {
+                const apiResult = await this.apiService.submitGraffiti(drawingData);
+                if (apiResult.success) {
+                    this.graffitiEntries = apiResult.all || [...this.graffitiEntries, apiResult.graffiti];
+                    this.renderOverlay();
+                } else {
+                    alert(apiResult.error || 'Failed to save drawing');
+                }
+            } catch (error) {
+                console.error('Failed to submit drawing:', error);
+                alert('Failed to save drawing.');
+            }
+
+            this.isEditing = false;
+            if (this.buttonElement) {
+                this.setupAutoHide();
+            }
+        });
+    }
+
+    /**
+     * Start text editing mode (existing functionality)
+     */
+    startTextEditing() {
+        const posterContainer = document.getElementById('todays-poster-container');
+        const videoContainer = document.querySelector('.videoContainer');
+        if (!posterContainer || !videoContainer) { this.isEditing = false; return; }
 
         this.controlsElement = document.createElement('div');
         this.controlsElement.className = 'graffiti-controls-panel';
@@ -819,6 +923,9 @@ class GraffitiService {
         if (this.pickr) {
             this.pickr.destroyAndRemove();
             this.pickr = null;
+        }
+        if (this.drawingService && this.drawingService.isDrawing) {
+            this.drawingService.cancelDrawing();
         }
         this.removeAutoHide();
         if (this.buttonElement) {
