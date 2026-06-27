@@ -83,10 +83,10 @@ class GraffitiService {
         const scale = imageWidth / todaysWidth;
 
         this.graffitiEntries.forEach(entry => {
-            if (entry.type === 'drawing' && entry.image) {
-                const img = this.drawingService.renderDrawingAsImage(entry, scale);
-                prerollContainer.appendChild(img);
-                this.prerollOverlayElements.push(img);
+            if (entry.type === 'drawing' && entry.data) {
+                const el = this.drawingService.renderDrawingOverlay(entry, scale);
+                prerollContainer.appendChild(el);
+                this.prerollOverlayElements.push(el);
             } else if (entry.type !== 'drawing') {
                 const el = this.createOverlayElement(entry, scale);
                 const pxX = posterImage.offsetLeft + (entry.x / 100) * imageWidth;
@@ -229,10 +229,10 @@ class GraffitiService {
         if (!posterContainer) return;
 
         this.graffitiEntries.forEach(entry => {
-            if (entry.type === 'drawing' && entry.image) {
-                const img = this.drawingService.renderDrawingAsImage(entry);
-                posterContainer.appendChild(img);
-                this.overlayElements.push(img);
+            if (entry.type === 'drawing' && entry.data) {
+                const el = this.drawingService.renderDrawingOverlay(entry);
+                posterContainer.appendChild(el);
+                this.overlayElements.push(el);
             } else if (entry.type !== 'drawing') {
                 const el = this.createOverlayElement(entry);
                 posterContainer.appendChild(el);
@@ -454,7 +454,8 @@ class GraffitiService {
             const drawingData = {
                 type: 'drawing',
                 data: result.data,
-                image: result.image
+                width: result.width,
+                height: result.height
             };
 
             try {
@@ -949,6 +950,7 @@ class GraffitiService {
             this.liveElement = null;
         }
         this.isEditing = false;
+        this.graffitiEntries = [];
         this.initialized = false;
     }
 }

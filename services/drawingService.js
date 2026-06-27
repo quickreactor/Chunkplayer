@@ -281,7 +281,8 @@ class DrawingService {
         if (!this.canvas) return;
 
         const canvasData = this.canvas.toJSON();
-        const dataURL = this.canvas.toDataURL({ format: 'png', multiplier: 2 });
+        const width = this.canvas.width;
+        const height = this.canvas.height;
 
         // Cleanup
         this.canvas.dispose();
@@ -300,11 +301,11 @@ class DrawingService {
         this.isDrawing = false;
         this.undoStack = [];
 
-        // Return both serialized JSON (for re-editing) and image (for display)
         if (this.onFinish) {
             this.onFinish({
                 data: canvasData,
-                image: dataURL
+                width: width,
+                height: height
             });
             this.onFinish = null;
         }
@@ -340,26 +341,46 @@ class DrawingService {
     }
 
     /**
-     * Render a drawing entry as an image element for display (pre-roll or static overlay)
-     * @param {Object} drawingEntry - { type: 'drawing', data: FabricJSON, image: 'dataURL' }
+     * Render a drawing entry as a canvas element overlay using Fabric StaticCanvas
+     * @param {Object} drawingEntry - { type: 'drawing', data: FabricJSON, width, height }
      * @param {number} scale - Scale factor for pre-roll poster
-     * @returns {HTMLImageElement}
+     * @returns {HTMLCanvasElement}
      */
-    renderDrawingAsImage(drawingEntry, scale = 1) {
-        const img = document.createElement('img');
-        img.className = 'graffiti-drawing-overlay';
-        img.src = drawingEntry.image;
-        img.style.cssText = `
+    renderDrawingOverlay(drawingEntry, scale = 1) {
+        const canvasEl = document.createElement('canvas');
+        canvasEl.className = 'graffiti-drawing-overlay';
+        const w = Math.round(drawingEntry.width * scale);
+        const h = Math.round(drawingEntry.height * scale);
+        canvasEl.width = w;
+        canvasEl.height = h;
+        canvasEl.style.cssText = `
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain;
             pointer-events: none;
             z-index: 50;
         `;
-        return img;
+
+        // Create a temporary hidden canvas for Fabric to render onto
+        const tmpId = 'draw-render-' + Date.now();
+        const tmpEl = document.createElement('canvas');
+        tmpEl.id = tmpId;
+        tmpEl.style.display = 'none';
+        document.body.appendChild(tmpEl);
+
+        const staticCanvas = new fabric.StaticCanvas(tmpId, { width: w, height: h });
+        staticCanvas.loadFromJSON(drawingEntry.data, () => {
+            staticCanvas.renderAll();
+            // Copy rendered pixels to the display canvas
+            const ctx = canvasEl.getContext('2d');
+            ctx.drawImage(staticCanvas.lowerCanvasEl, 0, 0, w, h);
+            staticCanvas.dispose();
+            tmpEl.remove();
+        });
+
+        return canvasEl;
     }
 
     /**
