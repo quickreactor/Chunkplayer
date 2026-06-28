@@ -70,7 +70,8 @@ html {
     padding-bottom: 60px;
 }
 
-#flip-counter, .flip-counter {
+#flip-counter,
+.flip-counter {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -370,7 +371,12 @@ option {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    cursor:pointer;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+#roll-button:hover {
+    transform: scale(1.02);
 }
 
 #dice-and-text-container {
@@ -579,6 +585,7 @@ option {
         transform: translate(-50%, -50%) scale(1);
         text-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b, 0 0 60px #ff6b6b;
     }
+
     to {
         transform: translate(-50%, -50%) scale(1.05);
         text-shadow: 0 0 30px #ff6b6b, 0 0 50px #ff6b6b, 0 0 70px #ff6b6b;
@@ -620,6 +627,7 @@ option {
     align-items: center;
     margin-top: 10px;
 }
+
 .animate {
     animation: slide 10s linear forwards;
 }
@@ -1147,16 +1155,16 @@ option {
     transition: 0.3s;
 }
 
-.toggle-switch input:checked + .toggle-slider {
+.toggle-switch input:checked+.toggle-slider {
     background-color: #0078ff;
     border-color: #0078ff;
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
+.toggle-switch input:checked+.toggle-slider:before {
     transform: translateX(20px);
 }
 
-.toggle-switch input:focus + .toggle-slider {
+.toggle-switch input:focus+.toggle-slider {
     box-shadow: 0 0 1px #0078ff;
 }
 
@@ -1190,23 +1198,67 @@ option {
 }
 
 /* Basic fonts */
-.font-preview-select option[value="sans-serif"] { font-family: 'Segoe UI', sans-serif !important; }
-.font-preview-select option[value="serif"] { font-family: Georgia, serif !important; }
-.font-preview-select option[value="monospace"] { font-family: 'Courier New', monospace !important; }
-.font-preview-select option[value="cursive"] { font-family: 'Comic Sans MS', cursive !important; }
-.font-preview-select option[value="fantasy"] { font-family: 'Anton', Impact, sans-serif !important; }
-.font-preview-select option[value="system-ui"] { font-family: system-ui !important; }
-.font-preview-select option[value="rounded"] { font-family: sans-serif !important; font-weight: 500; }
-.font-preview-select option[value="typewriter"] { font-family: 'Courier New', monospace !important; }
+.font-preview-select option[value="sans-serif"] {
+    font-family: 'Segoe UI', sans-serif !important;
+}
+
+.font-preview-select option[value="serif"] {
+    font-family: Georgia, serif !important;
+}
+
+.font-preview-select option[value="monospace"] {
+    font-family: 'Courier New', monospace !important;
+}
+
+.font-preview-select option[value="cursive"] {
+    font-family: 'Comic Sans MS', cursive !important;
+}
+
+.font-preview-select option[value="fantasy"] {
+    font-family: 'Anton', Impact, sans-serif !important;
+}
+
+.font-preview-select option[value="system-ui"] {
+    font-family: system-ui !important;
+}
+
+.font-preview-select option[value="rounded"] {
+    font-family: sans-serif !important;
+    font-weight: 500;
+}
+
+.font-preview-select option[value="typewriter"] {
+    font-family: 'Courier New', monospace !important;
+}
 
 /* Graffiti fonts */
-.font-preview-select option[value="graffiti-marker"] { font-family: 'Permanent Marker', cursive !important; }
-.font-preview-select option[value="graffiti-messy"] { font-family: 'Rock Salt', cursive !important; }
-.font-preview-select option[value="graffiti-bubble"] { font-family: 'Knewave', display !important; }
-.font-preview-select option[value="graffiti-outline"] { font-family: 'Monoton', cursive !important; }
-.font-preview-select option[value="graffiti-spray"] { font-family: 'Rubik Marker Hatch', cursive !important; }
-.font-preview-select option[value="graffiti-comic"] { font-family: 'Bangers', cursive !important; }
-.font-preview-select option[value="graffiti-fast"] { font-family: 'Faster One', cursive !important; }
+.font-preview-select option[value="graffiti-marker"] {
+    font-family: 'Permanent Marker', cursive !important;
+}
+
+.font-preview-select option[value="graffiti-messy"] {
+    font-family: 'Rock Salt', cursive !important;
+}
+
+.font-preview-select option[value="graffiti-bubble"] {
+    font-family: 'Knewave', display !important;
+}
+
+.font-preview-select option[value="graffiti-outline"] {
+    font-family: 'Monoton', cursive !important;
+}
+
+.font-preview-select option[value="graffiti-spray"] {
+    font-family: 'Rubik Marker Hatch', cursive !important;
+}
+
+.font-preview-select option[value="graffiti-comic"] {
+    font-family: 'Bangers', cursive !important;
+}
+
+.font-preview-select option[value="graffiti-fast"] {
+    font-family: 'Faster One', cursive !important;
+}
 
 /* ==================== */
 /* CUSTOM FONT DROPDOWN  */
