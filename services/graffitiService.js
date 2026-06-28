@@ -70,9 +70,8 @@ class GraffitiService {
      * @returns {{ targetWidth: number, targetHeight: number }}
      */
     _getDrawingTargetDimensions(drawingEntry) {
-        const aspectRatio = drawingEntry.width / drawingEntry.height;
         const targetWidth = GRAFFITI_CEILING_WIDTH;
-        const targetHeight = Math.round(GRAFFITI_CEILING_WIDTH / aspectRatio);
+        const targetHeight = Math.round(GRAFFITI_CEILING_WIDTH * drawingEntry.height / drawingEntry.width);
         return { targetWidth, targetHeight };
     }
 
@@ -156,16 +155,23 @@ class GraffitiService {
         const todaysWidth = window.innerWidth * 0.7;
         const scale = imageWidth / todaysWidth;
 
+        const imgLeft = posterImage.offsetLeft;
+        const imgTop = posterImage.offsetTop;
+
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
                 const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
                 const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
+                el.style.left = `${imgLeft}px`;
+                el.style.top = `${imgTop}px`;
+                el.style.width = `${imageWidth}px`;
+                el.style.height = `${imageHeight}px`;
                 prerollContainer.appendChild(el);
                 this.prerollOverlayElements.push(el);
             } else if (entry.type !== 'drawing') {
                 const el = this.createOverlayElement(entry, scale);
-                const pxX = posterImage.offsetLeft + (entry.x / 100) * imageWidth;
-                const pxY = posterImage.offsetTop + (entry.y / 100) * imageHeight;
+                const pxX = imgLeft + (entry.x / 100) * imageWidth;
+                const pxY = imgTop + (entry.y / 100) * imageHeight;
                 el.style.left = `${pxX}px`;
                 el.style.top = `${pxY}px`;
                 prerollContainer.appendChild(el);
@@ -315,8 +321,6 @@ class GraffitiService {
                 this.overlayElements.push(el);
             }
         });
-
-        this._setupResizeObserver();
     }
 
     /**

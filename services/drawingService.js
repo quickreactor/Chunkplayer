@@ -353,7 +353,6 @@ class DrawingService {
         canvasEl.className = 'graffiti-drawing-overlay';
         canvasEl.width = targetWidth;
         canvasEl.height = targetHeight;
-        canvasEl.style.aspectRatio = `${targetWidth} / ${targetHeight}`;
 
         // Create a temporary hidden canvas for Fabric to render onto
         const tmpId = 'draw-render-' + Date.now();
@@ -362,12 +361,12 @@ class DrawingService {
         tmpEl.style.display = 'none';
         document.body.appendChild(tmpEl);
 
-        const staticCanvas = new fabric.StaticCanvas(tmpId, { width: targetWidth, height: targetHeight });
+        // Create at original drawing dimensions so content fills the bitmap exactly
+        const staticCanvas = new fabric.StaticCanvas(tmpId, { width: drawingEntry.width, height: drawingEntry.height });
         staticCanvas.loadFromJSON(drawingEntry.data, () => {
-            // loadFromJSON restores the canvas to the original drawing dimensions.
-            // ctx.drawImage scales from original bitmap to target bitmap, preserving positions.
             staticCanvas.renderAll();
             const ctx = canvasEl.getContext('2d');
+            // Scale from original bitmap to target bitmap
             ctx.drawImage(staticCanvas.lowerCanvasEl, 0, 0, targetWidth, targetHeight);
             staticCanvas.dispose();
             tmpEl.remove();
