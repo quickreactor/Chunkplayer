@@ -364,21 +364,9 @@ class DrawingService {
 
         const staticCanvas = new fabric.StaticCanvas(tmpId, { width: targetWidth, height: targetHeight });
         staticCanvas.loadFromJSON(drawingEntry.data, () => {
-            // After loading, canvas dimensions are restored to original drawing size.
-            // Save originals, then resize to target and scale content to fit.
-            const origW = staticCanvas.width;
-            const origH = staticCanvas.height;
-
-            staticCanvas.setDimensions({ width: targetWidth, height: targetHeight });
-
-            const scaleX = targetWidth / origW;
-            const scaleY = targetHeight / origH;
-            const fitScale = Math.min(scaleX, scaleY);
-
-            staticCanvas.setZoom(fitScale);
+            // loadFromJSON restores the canvas to the original drawing dimensions.
+            // ctx.drawImage scales from original bitmap to target bitmap, preserving positions.
             staticCanvas.renderAll();
-
-            // Copy scaled pixels to the display canvas
             const ctx = canvasEl.getContext('2d');
             ctx.drawImage(staticCanvas.lowerCanvasEl, 0, 0, targetWidth, targetHeight);
             staticCanvas.dispose();
