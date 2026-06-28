@@ -370,7 +370,7 @@ option {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    cursor: default;
+    cursor:pointer;
 }
 
 #dice-and-text-container {
