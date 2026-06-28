@@ -341,27 +341,19 @@ class DrawingService {
     }
 
     /**
-     * Render a drawing entry as a canvas element overlay using Fabric StaticCanvas
+     * Render a drawing entry as a canvas element overlay using Fabric StaticCanvas.
+     * Renders at a high-resolution bitmap so CSS can scale it down/up without quality loss.
      * @param {Object} drawingEntry - { type: 'drawing', data: FabricJSON, width, height }
-     * @param {number} scale - Scale factor for pre-roll poster
+     * @param {number} targetWidth - Target bitmap width in pixels
+     * @param {number} targetHeight - Target bitmap height in pixels
      * @returns {HTMLCanvasElement}
      */
-    renderDrawingOverlay(drawingEntry, scale = 1) {
+    renderDrawingOverlay(drawingEntry, targetWidth, targetHeight) {
         const canvasEl = document.createElement('canvas');
         canvasEl.className = 'graffiti-drawing-overlay';
-        const w = Math.round(drawingEntry.width * scale);
-        const h = Math.round(drawingEntry.height * scale);
-        canvasEl.width = w;
-        canvasEl.height = h;
-        canvasEl.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 50;
-        `;
+        canvasEl.width = targetWidth;
+        canvasEl.height = targetHeight;
+        canvasEl.style.aspectRatio = `${targetWidth} / ${targetHeight}`;
 
         // Create a temporary hidden canvas for Fabric to render onto
         const tmpId = 'draw-render-' + Date.now();
@@ -370,12 +362,25 @@ class DrawingService {
         tmpEl.style.display = 'none';
         document.body.appendChild(tmpEl);
 
-        const staticCanvas = new fabric.StaticCanvas(tmpId, { width: w, height: h });
+        const staticCanvas = new fabric.StaticCanvas(tmpId, { width: targetWidth, height: targetHeight });
         staticCanvas.loadFromJSON(drawingEntry.data, () => {
+            // After loading, canvas dimensions are restored to original drawing size.
+            // Save originals, then resize to target and scale content to fit.
+            const origW = staticCanvas.width;
+            const origH = staticCanvas.height;
+
+            staticCanvas.setDimensions({ width: targetWidth, height: targetHeight });
+
+            const scaleX = targetWidth / origW;
+            const scaleY = targetHeight / origH;
+            const fitScale = Math.min(scaleX, scaleY);
+
+            staticCanvas.setZoom(fitScale);
             staticCanvas.renderAll();
-            // Copy rendered pixels to the display canvas
+
+            // Copy scaled pixels to the display canvas
             const ctx = canvasEl.getContext('2d');
-            ctx.drawImage(staticCanvas.lowerCanvasEl, 0, 0, w, h);
+            ctx.drawImage(staticCanvas.lowerCanvasEl, 0, 0, targetWidth, targetHeight);
             staticCanvas.dispose();
             tmpEl.remove();
         });

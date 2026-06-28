@@ -7,6 +7,9 @@
  * Live preview version - edits appear directly on the poster
  * Supports multiple graffiti layers per week (resets Sundays NZ time)
  */
+
+const GRAFFITI_CEILING_WIDTH = 1400;
+
 class GraffitiService {
     constructor(apiService, domService, drawingService) {
         this.apiService = apiService;
@@ -40,6 +43,10 @@ class GraffitiService {
         this.pencilHideTimer = null;
         this.posterMouseHandler = null;
         this.posterTouchHandler = null;
+
+        // Resize observer for drawing overlay re-rendering
+        this._resizeObserver = null;
+        this._resizeDebounce = null;
     }
 
     /**
@@ -54,6 +61,73 @@ class GraffitiService {
             console.error('Failed to fetch graffiti:', error);
             ErrorHandler.handle(error, 'GraffitiService.fetchData');
         }
+    }
+
+    /**
+     * Compute high-resolution target dimensions for a drawing overlay.
+     * Uses a fixed ceiling width and derives height from the drawing's aspect ratio.
+     * @param {Object} drawingEntry - { width, height } of the original drawing
+     * @returns {{ targetWidth: number, targetHeight: number }}
+     */
+    _getDrawingTargetDimensions(drawingEntry) {
+        const aspectRatio = drawingEntry.width / drawingEntry.height;
+        const targetWidth = GRAFFITI_CEILING_WIDTH;
+        const targetHeight = Math.round(GRAFFITI_CEILING_WIDTH / aspectRatio);
+        return { targetWidth, targetHeight };
+    }
+
+    /**
+     * Set up a ResizeObserver on the today's poster container.
+     * Re-renders drawing overlays if the container exceeds the ceiling width,
+     * so the bitmap is always at least as large as the display area.
+     */
+    _setupResizeObserver() {
+        this._clearResizeObserver();
+
+        const posterContainer = document.getElementById('todays-poster-container');
+        if (!posterContainer) return;
+
+        this._resizeObserver = new ResizeObserver(() => {
+            clearTimeout(this._resizeDebounce);
+            this._resizeDebounce = setTimeout(() => {
+                const containerWidth = posterContainer.offsetWidth;
+                if (containerWidth > GRAFFITI_CEILING_WIDTH) {
+                    this._rerenderDrawingOverlays(posterContainer);
+                }
+            }, 200);
+        });
+
+        this._resizeObserver.observe(posterContainer);
+    }
+
+    /**
+     * Re-render only drawing overlays at updated target dimensions.
+     * Text overlays are untouched (they scale via CSS vw/%).
+     */
+    _rerenderDrawingOverlays(container) {
+        const drawingOverlays = this.overlayElements.filter(el => el.classList.contains('graffiti-drawing-overlay'));
+        drawingOverlays.forEach(el => el.remove());
+        this.overlayElements = this.overlayElements.filter(el => !el.classList.contains('graffiti-drawing-overlay'));
+
+        this.graffitiEntries.forEach(entry => {
+            if (entry.type === 'drawing' && entry.data) {
+                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
+                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
+                container.appendChild(el);
+                this.overlayElements.push(el);
+            }
+        });
+    }
+
+    /**
+     * Clean up the resize observer
+     */
+    _clearResizeObserver() {
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        clearTimeout(this._resizeDebounce);
     }
 
     /**
@@ -84,7 +158,8 @@ class GraffitiService {
 
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
-                const el = this.drawingService.renderDrawingOverlay(entry, scale);
+                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
+                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
                 prerollContainer.appendChild(el);
                 this.prerollOverlayElements.push(el);
             } else if (entry.type !== 'drawing') {
@@ -230,7 +305,8 @@ class GraffitiService {
 
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
-                const el = this.drawingService.renderDrawingOverlay(entry);
+                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
+                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
                 posterContainer.appendChild(el);
                 this.overlayElements.push(el);
             } else if (entry.type !== 'drawing') {
@@ -239,6 +315,8 @@ class GraffitiService {
                 this.overlayElements.push(el);
             }
         });
+
+        this._setupResizeObserver();
     }
 
     /**
@@ -853,6 +931,7 @@ class GraffitiService {
      * Clear all overlay elements from today's poster
      */
     clearOverlays() {
+        this._clearResizeObserver();
         this.overlayElements.forEach(el => el.remove());
         this.overlayElements = [];
     }
