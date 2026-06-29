@@ -523,6 +523,7 @@ class ChunkPlayerApp {
         let firstTapTime = 0;
         document.body.addEventListener("click", () => {
             const currentTime = new Date().getTime();
+            if (this.graffitiService?.isEditing) return;
 
             if (tapCount === 0) {
                 firstTapTime = currentTime;
