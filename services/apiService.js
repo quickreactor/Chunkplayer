@@ -211,6 +211,26 @@ class ApiService {
     }
 
     /**
+     * Update a graffiti entry by index
+     * @param {number} index - Array index of the entry to update
+     * @param {Object} data - The full updated entry object
+     * @returns {Promise<Object>} Response with success status
+     */
+    async updateGraffiti(index, data) {
+        try {
+            const response = await fetch(`${this.baseUrl}/update-graffiti`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index, data })
+            });
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.updateGraffiti');
+            throw error;
+        }
+    }
+
+    /**
      * Clear graffiti (admin/debug function)
      * @returns {Promise<Object>} Response with success status
      */

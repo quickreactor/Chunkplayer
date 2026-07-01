@@ -1134,5 +1134,78 @@ window.Debug = {
         } catch (error) {
             console.error('%c[Debug] Error clearing graffiti:', 'color: #ff0000; font-weight: bold', error);
         }
+    },
+
+    /**
+     * List all graffiti entries with their array indices
+     */
+    listDrawings() {
+        const entries = window.chunkPlayerApp?.graffitiService?.graffitiEntries || [];
+        if (!entries.length) {
+            console.log('%c[Debug] No graffiti entries found', 'color: #ff9900; font-weight: bold');
+            return;
+        }
+        console.log('%c[Debug] Graffiti entries:', 'color: #00ff00; font-weight: bold');
+        entries.forEach((e, i) => {
+            if (e.type === 'drawing') {
+                const objCount = e.data?.objects?.length || 0;
+                console.log(`  [${i}] Drawing (${e.width}x${e.height}, ${objCount} objects) — id: ${e.id}`);
+            } else {
+                console.log(`  [${i}] "${e.text}" — id: ${e.id}`);
+            }
+        });
+    },
+
+    /**
+     * Shift all coordinates in a drawing entry by pixel offsets
+     * @param {number} index - Array index of the drawing (use Debug.listDrawings() to find)
+     * @param {number} offsetX - Pixels to shift horizontally (positive = right)
+     * @param {number} offsetY - Pixels to shift vertically (positive = down)
+     * @example Debug.shiftDrawing(2, 50, -30)  // shift 3rd entry right 50px, up 30px
+     */
+    async shiftDrawing(index, offsetX, offsetY) {
+        const gs = window.chunkPlayerApp?.graffitiService;
+        if (!gs?.graffitiEntries?.length) {
+            console.error('%c[Debug] No graffiti entries loaded', 'color: #ff0000; font-weight: bold');
+            return;
+        }
+
+        const entry = gs.graffitiEntries[index];
+        if (!entry) {
+            console.error(`%c[Debug] Invalid index ${index} (have ${gs.graffitiEntries.length} entries)`, 'color: #ff0000; font-weight: bold');
+            return;
+        }
+        if (entry.type !== 'drawing' || !entry.data?.objects?.length) {
+            console.error(`%c[Debug] Entry ${index} is not a drawing`, 'color: #ff0000; font-weight: bold');
+            return;
+        }
+
+        console.log(`%c[Debug] Shifting drawing ${index} by (${offsetX}, ${offsetY})...`, 'color: #ffaa00; font-weight: bold');
+
+        entry.data.objects.forEach(obj => {
+            obj.left = (obj.left || 0) + offsetX;
+            obj.top = (obj.top || 0) + offsetY;
+
+            if (obj.path) {
+                obj.path.forEach(cmd => {
+                    for (let i = 1; i < cmd.length; i += 2) {
+                        if (typeof cmd[i] === 'number') cmd[i] += offsetX;
+                        if (typeof cmd[i + 1] === 'number') cmd[i + 1] += offsetY;
+                    }
+                });
+            }
+        });
+
+        try {
+            const result = await window.chunkPlayerApp.apiService.updateGraffiti(index, entry);
+            if (result.success) {
+                gs.renderOverlay();
+                console.log(`%c[Debug] Drawing ${index} shifted and saved!`, 'color: #00ff00; font-weight: bold');
+            } else {
+                console.error(`%c[Debug] Failed to save:`, 'color: #ff0000; font-weight: bold', result);
+            }
+        } catch (error) {
+            console.error(`%c[Debug] Error saving:`, 'color: #ff0000; font-weight: bold', error);
+        }
     }
 };
