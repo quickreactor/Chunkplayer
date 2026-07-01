@@ -583,25 +583,18 @@ class ChunkPlayerApp {
     }
 
     /**
-     * Initialize flip counter animation
+     * Initialize flip counter and joker images
      * @param {number} jokerlessDaysOld - Starting value for first visit
      * @param {number} jokerlessDays - Target value if already rolled
      */
     initFlipCounter(jokerlessDaysOld = 0, jokerlessDays = 0) {
-        const counter = document.getElementById('flip-counter');
-        if (!counter) return;
-
-        // Set label above flip counter
-        const label = document.getElementById('flip-counter-label');
-        if (label && CONFIG.movieData?.punishmentMovie?.name) {
-            label.textContent = `Days since last ${CONFIG.movieData.punishmentMovie.name}`;
-        }
-
-        // Determine starting value based on whether user has already rolled today
         const hasRolledToday = !VisitRepository.isFirstVisitToday();
         const startValue = hasRolledToday ? jokerlessDays : jokerlessDaysOld;
 
-        // Set initial data-value before parsing to avoid animation from 0
+        this.renderJokerImages(startValue);
+
+        const counter = document.getElementById('flip-counter');
+        if (!counter) return;
         if (typeof Tick !== 'undefined') {
             counter.setAttribute('data-value', startValue);
             Tick.DOM.parse(counter);
@@ -611,25 +604,53 @@ class ChunkPlayerApp {
     }
 
     /**
-     * Flip the counter to a target value
+     * Flip the counter to a target value and update joker images
      * @param {number} targetValue - Value to animate to
      */
     flipCounterTo(targetValue) {
+        this.renderJokerImages(targetValue);
+
         const counter = document.getElementById('flip-counter');
         if (!counter) return;
 
-        // Find existing tick instance created by initFlipCounter
         const tick = Tick.DOM.find(counter);
-
         if (!tick) {
             console.warn('Flip tick instance not found');
             return;
         }
 
-        // Update the value - Tick will animate automatically
         tick.value = targetValue;
-
         console.log(`%c[Flip] Counter animating to "${String(targetValue).padStart(3, '0')}"`, 'color: #00ff00; font-weight: bold');
+    }
+
+    /**
+     * Render joker images in the image row
+     * @param {number} count - Number of images to display
+     */
+    renderJokerImages(count) {
+        const container = document.getElementById('joker-image-row');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const jokerImages = [
+            'images/jokers/jokerhammil.jpg',
+            'images/jokers/jokerheath.jpg',
+            'images/jokers/jokerjack.jpg',
+            'images/jokers/jokerleto.jpg',
+            'images/jokers/jokermorag.jpg',
+            'images/jokers/jokeromero.jpg',
+            'images/jokers/jokerphoenix.jpg'
+        ];
+
+        for (let i = 0; i < count; i++) {
+            const img = document.createElement('img');
+            img.src = jokerImages[Math.floor(Math.random() * jokerImages.length)];
+            img.alt = 'Joker';
+            const rotation = Math.random() * 360;
+            img.style.setProperty('--rotation', `${rotation}deg`);
+            img.style.animationDelay = `${i * 0.05}s`;
+            container.appendChild(img);
+        }
     }
 
     /**
