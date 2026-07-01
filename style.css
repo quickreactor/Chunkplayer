@@ -361,6 +361,7 @@ option {
 
 #roll-button {
     /* background: url(images/die-eye.gif); */
+    position: relative;
     background-size: contain;
     width: 6vw;
     height: 6vw;
@@ -373,6 +374,19 @@ option {
     align-items: center;
     cursor: pointer;
     transition: transform 0.1s ease;
+}
+
+#roll-button video {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    inset: 0;
+}
+
+#roll-button video#deye-hover {
+    opacity: 0;
+    pointer-events: none;
 }
 
 #roll-button:hover {

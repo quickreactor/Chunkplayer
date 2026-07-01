@@ -273,7 +273,7 @@ class ChunkPlayerApp {
             if (this.dateService.isWednesday()) {
                 const audio = document.getElementById('renner-audio');
                 if (audio) {
-                    audio.play().then(() => audio.pause()).catch(() => {});
+                    audio.play().then(() => audio.pause()).catch(() => { });
                 }
             }
             this.diceRollUseCase.execute(
@@ -295,6 +295,31 @@ class ChunkPlayerApp {
         this.domService.elements.epTitle.addEventListener("click", () => {
             this.videoService.playDiceVideo(Math.floor(Math.random() * 20 + 1));
         });
+
+        const rollButton = document.getElementById("roll-button");
+        const deyeIdle = document.getElementById("deye-idle");
+        const deyeHover = document.getElementById("deye-hover");
+        if (rollButton) {
+            rollButton.addEventListener("mouseenter", () => {
+                deyeIdle.pause();
+
+                deyeHover.currentTime = 0;
+                deyeHover.style.opacity = 1;
+                deyeHover.play();
+            });
+
+            deyeHover.addEventListener("ended", () => {
+                deyeHover.pause(); // freezes on last frame
+            });
+
+            rollButton.addEventListener("mouseleave", () => {
+                deyeHover.pause();
+                deyeHover.currentTime = 0;
+                deyeHover.style.opacity = 0;
+
+                deyeIdle.play();
+            });
+        }
 
         // Admin toggle button
         this.domService.elements.adminToggleBtn?.addEventListener("click", () => {
@@ -720,7 +745,7 @@ class ChunkPlayerApp {
             if (this.dateService.isWednesday()) {
                 const audio = document.getElementById('renner-audio');
                 if (audio) {
-                    audio.play().then(() => audio.pause()).catch(() => {});
+                    audio.play().then(() => audio.pause()).catch(() => { });
                 }
             }
             this.diceRollUseCase.execute(

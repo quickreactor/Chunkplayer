@@ -29,6 +29,8 @@ class DOMService {
             poster2: document.getElementById("poster-image-2"),
             todaysPoster: document.querySelector("#todays-poster"),
             rollButton: document.getElementById("roll-button"),
+            deyeIdleVideo: document.getElementById("deye-idle"),
+            deyeHoverVideo: document.getElementById("deye-hover"),
             diceAndTextContainer: document.getElementById("dice-and-text-container"),
             flipButton: document.getElementById("flip-button"),
             chunkSelector: document.getElementById("chunkSelector"),

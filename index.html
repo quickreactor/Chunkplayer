@@ -92,7 +92,13 @@
                 alt=""></div>
         <div id="dice-and-text-container">
             <div id="roll-button">
-                <img src="images/deye.gif" alt="" id="deye">
+                <video id="deye-idle" autoplay loop muted playsinline>
+                    <source src="images/deye.mp4" type="video/mp4" class="deye-video">
+                </video>
+
+                <video id="deye-hover" muted playsinline preload="auto">
+                    <source src="images/deye-hover.mp4" type="video/mp4" class="deye-video">
+                </video>
             </div>
         </div>
         <div id="flip-button" style="display: none;">FLIP</div>
