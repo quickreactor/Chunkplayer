@@ -90,7 +90,7 @@ html {
 .joker-image-row img {
     flex: 0 1 60px;
     min-width: 0;
-    height: 60px;
+    aspect-ratio: 1;
     object-fit: cover;
     opacity: 0;
     animation: jokerFadeIn 0.5s ease forwards;
