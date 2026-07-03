@@ -299,9 +299,14 @@ class ChunkPlayerApp {
         const rollButton = document.getElementById("roll-button");
         const deyeIdle = document.getElementById("deye-idle");
         const deyeHover = document.getElementById("deye-hover");
+        const deyeHoverReverse = document.getElementById("deye-hover-reverse");
         if (rollButton) {
             rollButton.addEventListener("mouseenter", () => {
                 deyeIdle.pause();
+
+                deyeHoverReverse.pause();
+                deyeHoverReverse.currentTime = 0;
+                deyeHoverReverse.style.opacity = 0;
 
                 deyeHover.currentTime = 0;
                 deyeHover.style.opacity = 1;
@@ -313,9 +318,21 @@ class ChunkPlayerApp {
             });
 
             rollButton.addEventListener("mouseleave", () => {
+                const hoverDuration = deyeHover.duration;
+                const hoverTime = deyeHover.currentTime;
+
                 deyeHover.pause();
-                deyeHover.currentTime = 0;
                 deyeHover.style.opacity = 0;
+
+                deyeHoverReverse.currentTime = hoverDuration - hoverTime;
+                deyeHoverReverse.style.opacity = 1;
+                deyeHoverReverse.play();
+            });
+
+            deyeHoverReverse.addEventListener("ended", () => {
+                deyeHoverReverse.pause();
+                deyeHoverReverse.currentTime = 0;
+                deyeHoverReverse.style.opacity = 0;
 
                 deyeIdle.play();
             });

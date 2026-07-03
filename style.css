@@ -408,8 +408,9 @@ option {
     pointer-events: none;
 }
 
-#roll-button:hover {
-    transform: scale(1.02);
+#roll-button video#deye-hover-reverse {
+    opacity: 0;
+    pointer-events: none;
 }
 
 #dice-and-text-container {
