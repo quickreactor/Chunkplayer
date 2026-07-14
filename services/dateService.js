@@ -57,11 +57,11 @@ class DateService {
     }
 
     /**
-     * Check if today is Wednesday (Rensday!)
-     * @returns {boolean} True if Wednesday
+     * Check if today is Thursday (Thingee Thursday!)
+     * @returns {boolean} True if Thursday
      */
-    isWednesday() {
-        return this.now.getDay() === 3; // 0 = Sunday, 3 = Wednesday
+    isThursday() {
+        return this.now.getDay() === 4; // 0 = Sunday, 4 = Thursday
     }
 
     /**

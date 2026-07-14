@@ -586,7 +586,7 @@ option {
 /* Rensday Styles */
 /* ==================== */
 
-#renner {
+#thingee {
     display: none;
     position: fixed;
     left: 100%;
@@ -594,11 +594,11 @@ option {
     z-index: 910;
 }
 
-#renner.animate {
+#thingee.animate {
     animation: slide 8s linear forwards;
 }
 
-#rensday-text {
+#thingee-text {
     display: none;
     position: fixed;
     top: 50%;
@@ -611,10 +611,10 @@ option {
     z-index: 920;
     text-align: center;
     letter-spacing: 0.2em;
-    animation: rensdayPulse 0.5s ease-in-out infinite alternate;
+    animation: thingeePulse 0.5s ease-in-out infinite alternate;
 }
 
-@keyframes rensdayPulse {
+@keyframes thingeePulse {
     from {
         transform: translate(-50%, -50%) scale(1);
         text-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b, 0 0 60px #ff6b6b;

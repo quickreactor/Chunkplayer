@@ -81,32 +81,32 @@ class EffectService {
     }
 
     /**
-     * Trigger Happy Rensday effect (Jeremy Renner walking + confetti + text)
+     * Trigger Thingee Thursday effect (Thingee walking + confetti + text)
      * @param {number} duration - Duration in milliseconds (default: 8000ms to match GIF animation)
      */
-    triggerRensday(duration = 8000) {
-        console.log('🎉 Triggering Rensday effect!');
+    triggerThingeeThursday(duration = 8000) {
+        console.log('🎉 Triggering Thingee Thursday effect!');
 
         // Play sound after 1 second delay
         setTimeout(() => {
-            const audio = document.getElementById('renner-audio');
+            const audio = document.getElementById('thingee-audio');
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => console.warn('Could not play Renner audio:', e));
+                audio.play().catch(e => console.warn('Could not play Thingee audio:', e));
             }
         }, 1000);
 
-        // Show Renner GIF
-        const renner = document.getElementById('renner');
-        if (renner) {
-            renner.style.display = 'block';
-            renner.classList.add('animate');
+        // Show Thingee GIF
+        const thingee = document.getElementById('thingee');
+        if (thingee) {
+            thingee.style.display = 'block';
+            thingee.classList.add('animate');
         }
 
-        // Show "HAPPY RENSDAY" text
-        const rensdayText = document.getElementById('rensday-text');
-        if (rensdayText) {
-            rensdayText.style.display = 'block';
+        // Show "IT'S THINGEE THURSDAY" text
+        const thingeeText = document.getElementById('thingee-text');
+        if (thingeeText) {
+            thingeeText.style.display = 'block';
         }
 
         // Start confetti
@@ -114,15 +114,15 @@ class EffectService {
 
         // Clean up after duration
         setTimeout(() => {
-            if (renner) {
-                renner.style.display = 'none';
-                renner.classList.remove('animate');
+            if (thingee) {
+                thingee.style.display = 'none';
+                thingee.classList.remove('animate');
             }
-            if (rensdayText) {
-                rensdayText.style.display = 'none';
+            if (thingeeText) {
+                thingeeText.style.display = 'none';
             }
             this.stopConfetti();
-            console.log('🎉 Rensday effect ended');
+            console.log('🎉 Thingee Thursday effect ended');
         }, duration);
     }
 

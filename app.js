@@ -52,10 +52,10 @@ class ChunkPlayerApp {
                 CONFIG.movieData.jokerlessDays || 0
             );
 
-            // Check for Rensday (Wednesday) and trigger effect
-            if (this.dateService.isWednesday()) {
-                console.log('🎉 Happy Rensday! Triggering Jeremy Renner animation...');
-                this.effectService.triggerRensday();
+            // Check for Thingee Thursday and trigger effect
+            if (this.dateService.isThursday()) {
+                console.log('🎉 Thingee Thursday! Triggering Thingee animation...');
+                this.effectService.triggerThingeeThursday();
             }
         } catch (error) {
             ErrorHandler.handle(error, 'ChunkPlayerApp.init');
@@ -269,9 +269,9 @@ class ChunkPlayerApp {
      */
     setupEventListeners() {
         this.domService.elements.rollButton.addEventListener("click", () => {
-            // Unlock rensday audio while we have user gesture context
-            if (this.dateService.isWednesday()) {
-                const audio = document.getElementById('renner-audio');
+            // Unlock thingee audio while we have user gesture context
+            if (this.dateService.isThursday()) {
+                const audio = document.getElementById('thingee-audio');
                 if (audio) {
                     audio.play().then(() => audio.pause()).catch(() => { });
                 }
@@ -788,9 +788,9 @@ class ChunkPlayerApp {
 
         // Reset roll button click handler
         this.domService.elements.rollButton.onclick = () => {
-            // Unlock rensday audio while we have user gesture context
-            if (this.dateService.isWednesday()) {
-                const audio = document.getElementById('renner-audio');
+            // Unlock thingee audio while we have user gesture context
+            if (this.dateService.isThursday()) {
+                const audio = document.getElementById('thingee-audio');
                 if (audio) {
                     audio.play().then(() => audio.pause()).catch(() => { });
                 }
@@ -1143,16 +1143,16 @@ window.Debug = {
     },
 
     /**
-     * Trigger Rensday effect (Jeremy Renner walking + confetti + text)
+     * Trigger Thingee Thursday effect (Thingee walking + confetti + text)
      * @param {number} duration - Duration in milliseconds (default: 8000)
      */
-    rensday(duration = 8000) {
+    thingeeThursday(duration = 8000) {
         if (!window.chunkPlayerApp || !window.chunkPlayerApp.effectService) {
             console.error('%c[Debug] App not initialized', 'color: #ff0000; font-weight: bold');
             return;
         }
-        console.log('%c[Debug] 🎉 Triggering Rensday!', 'color: #ff6b6b; font-weight: bold');
-        window.chunkPlayerApp.effectService.triggerRensday(duration);
+        console.log('%c[Debug] 🎉 Triggering Thingee Thursday!', 'color: #ff6b6b; font-weight: bold');
+        window.chunkPlayerApp.effectService.triggerThingeeThursday(duration);
     },
 
     /**
