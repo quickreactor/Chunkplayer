@@ -493,6 +493,10 @@ class GraffitiService {
                     <span class="mode-icon">&#9998;</span>
                     <span class="mode-label">Draw</span>
                 </button>
+                <button class="graffiti-mode-btn" data-mode="save">
+                    <span class="mode-icon">&#128190;</span>
+                    <span class="mode-label">Save</span>
+                </button>
             </div>
             <button id="graffiti-cancel-mode" class="graffiti-cancel-btn">Cancel</button>
         `;
@@ -508,6 +512,12 @@ class GraffitiService {
                     this.startTextEditing();
                 } else if (mode === 'draw') {
                     this.startDrawMode();
+                } else if (mode === 'save') {
+                    this.savePosterImage();
+                    this.isEditing = false;
+                    if (this.buttonElement) {
+                        this.setupAutoHide();
+                    }
                 }
             });
         });
@@ -1004,6 +1014,55 @@ class GraffitiService {
         element.addEventListener('touchstart', onStart, { passive: false });
         document.addEventListener('touchmove', onMove, { passive: false });
         document.addEventListener('touchend', onEnd);
+    }
+
+    /**
+     * Save poster with graffiti as PNG image
+     */
+    async savePosterImage() {
+        const container = document.getElementById('todays-poster-container');
+        if (!container) return;
+
+        try {
+            const canvas = await html2canvas(container, {
+                useCORS: true,
+                backgroundColor: null
+            });
+
+            const maxDim = 2000;
+            let w = canvas.width;
+            let h = canvas.height;
+            if (w > maxDim || h > maxDim) {
+                const scale = maxDim / Math.max(w, h);
+                w = Math.round(w * scale);
+                h = Math.round(h * scale);
+            }
+            const resized = document.createElement('canvas');
+            resized.width = w;
+            resized.height = h;
+            resized.getContext('2d').drawImage(canvas, 0, 0, w, h);
+
+            resized.toBlob(blob => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const now = new Date();
+                const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const movieName = (CONFIG.movieData &&
+                    (CONFIG.movieData.morbed
+                        ? CONFIG.movieData.punishmentMovie
+                        : CONFIG.movieData.normalMovie
+                    ).name) || 'poster';
+                a.download = `${movieName} graffiti ${timestamp}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }, 'image/png');
+        } catch (error) {
+            console.error('Failed to save poster image:', error);
+        }
     }
 
     /**

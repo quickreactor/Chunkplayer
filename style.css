@@ -79,17 +79,17 @@ html {
 }
 
 .joker-image-row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
     gap: 4px;
     min-height: 64px;
     margin-bottom: 10px;
+    width: 50%;
+    margin: 0 auto;
 }
 
 .joker-image-row img {
-    flex: 0 1 60px;
-    min-width: 0;
+    width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     opacity: 0;
