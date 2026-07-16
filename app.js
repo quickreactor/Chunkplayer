@@ -665,17 +665,79 @@ class ChunkPlayerApp {
             'images/jokers/jokerphoenix.jpg',
             'images/jokers/jokerphoeni2x.jpg',
             'images/jokers/jokertoon1.jpg',
-            'images/jokers/jokertoon2.jpg'
+            'images/jokers/jokertoon2.jpg',
+            'images/jokers/jokerbonus1.jpeg',
+            'images/jokers/jokerbonus2.jpeg',
+            'images/jokers/jokerbonus3.jpeg',
+            'images/jokers/jokerbonus4.jpeg',
+            'images/jokers/jokerbonus5.jpeg',
+            'images/jokers/jokerbonus6.jpeg'
         ];
 
+        let intensity = 0;
+        if (count >= 30) {
+            intensity = 0.8 + Math.min((count - 30) / 20, 1) * 0.2;
+        } else if (count >= 20) {
+            intensity = 0.3 + (count - 20) / 10 * 0.5;
+        } else if (count >= 10) {
+            intensity = (count - 10) / 10 * 0.3;
+        }
+
+        const VARIANTS = 8;
+        const STEPS = 10;
+        const jitterMax = intensity * 4;
+        const animNames = [];
+
+        if (jitterMax > 0.1) {
+            let css = '';
+            for (let v = 0; v < VARIANTS; v++) {
+                const name = `jitter-${v}`;
+                animNames.push(name);
+                let keyframes = `@keyframes ${name} {\n`;
+                for (let s = 0; s <= STEPS; s++) {
+                    const pct = ((s / STEPS) * 100).toFixed(1);
+                    const dx = (Math.random() * 2 - 1) * jitterMax;
+                    const dy = (Math.random() * 2 - 1) * jitterMax;
+                    keyframes += `  ${pct}% { transform: rotate(var(--rotation, 0deg)) translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px); }\n`;
+                }
+                keyframes += '}\n';
+                css += keyframes;
+            }
+            let styleEl = document.getElementById('jitter-keyframes');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'jitter-keyframes';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = css;
+        }
+
+        const duration = Math.max(0.04, 0.18 - intensity * 0.12);
+
         for (let i = 0; i < count; i++) {
+            const card = document.createElement('div');
+            card.className = 'joker-card';
+
             const img = document.createElement('img');
             img.src = jokerImages[Math.floor(Math.random() * jokerImages.length)];
             img.alt = 'Joker';
             const rotation = Math.random() * 360;
             img.style.setProperty('--rotation', `${rotation}deg`);
+            card.style.setProperty('--rotation', `${rotation}deg`);
             img.style.animationDelay = `${i * 0.05}s`;
-            container.appendChild(img);
+
+            const rand = 0.6 + Math.random() * 0.4;
+            const jitterScale = intensity * rand;
+            card.style.setProperty('--red-opacity', (jitterScale * 0.6).toFixed(3));
+
+            if (animNames.length > 0) {
+                const name = animNames[Math.floor(Math.random() * animNames.length)];
+                card.style.animation = `${name} ${duration.toFixed(3)}s steps(${STEPS}) infinite`;
+                card.style.animationDelay = `${i * 0.05}s`;
+            }
+
+            card.appendChild(img);
+            container.appendChild(card);
         }
     }
 
