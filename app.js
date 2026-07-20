@@ -724,7 +724,7 @@ class ChunkPlayerApp {
             const rotation = Math.random() * 360;
             img.style.setProperty('--rotation', `${rotation}deg`);
             card.style.setProperty('--rotation', `${rotation}deg`);
-            img.style.animationDelay = `${i * 0.05}s`;
+            card.style.animationDelay = `${i * 0.05}s`;
 
             const rand = 0.6 + Math.random() * 0.4;
             const jitterScale = intensity * rand;
@@ -732,7 +732,7 @@ class ChunkPlayerApp {
 
             if (animNames.length > 0) {
                 const name = animNames[Math.floor(Math.random() * animNames.length)];
-                card.style.animation = `${name} ${duration.toFixed(3)}s steps(${STEPS}) infinite`;
+                card.style.animation = `jokerFadeIn 0.5s ease forwards, ${name} ${duration.toFixed(3)}s steps(${STEPS}) infinite`;
                 card.style.animationDelay = `${i * 0.05}s`;
             }
 

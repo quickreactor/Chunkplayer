@@ -92,6 +92,8 @@ html {
     position: relative;
     overflow: hidden;
     transform: rotate(var(--rotation, 0deg));
+    opacity: 0;
+    animation: jokerFadeIn 0.5s ease forwards;
 }
 
 .joker-image-row .joker-card::after {
@@ -108,19 +110,11 @@ html {
     aspect-ratio: 1;
     object-fit: cover;
     display: block;
-    opacity: 0;
-    animation: jokerFadeIn 0.5s ease forwards;
 }
 
 @keyframes jokerFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 
