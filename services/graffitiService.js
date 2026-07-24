@@ -47,20 +47,161 @@ class GraffitiService {
         // Resize observer for drawing overlay re-rendering
         this._resizeObserver = null;
         this._resizeDebounce = null;
+
+        // Prepared assets are shared by the pre-roll and playback posters.
+        this._dataLoaded = false;
+        this._fetchPromise = null;
+        this._assetPreparationPromise = null;
+        this._drawingRasterCache = new Map();
+        this._drawingRasterPromises = new Map();
     }
 
     /**
      * Fetch graffiti data if not already loaded
      */
     async fetchData() {
-        if (this.graffitiEntries.length > 0) return;
-        try {
-            this.graffitiEntries = await this.apiService.getGraffiti();
-            console.log('🎨 Graffiti loaded:', this.graffitiEntries);
-        } catch (error) {
-            console.error('Failed to fetch graffiti:', error);
-            ErrorHandler.handle(error, 'GraffitiService.fetchData');
+        if (this._dataLoaded) return this.graffitiEntries;
+        if (this._fetchPromise) return this._fetchPromise;
+
+        this._fetchPromise = (async () => {
+            try {
+                this.graffitiEntries = await this.apiService.getGraffiti();
+                this._dataLoaded = true;
+                console.log('🎨 Graffiti loaded:', this.graffitiEntries);
+                return this.graffitiEntries;
+            } catch (error) {
+                console.error('Failed to fetch graffiti:', error);
+                ErrorHandler.handle(error, 'GraffitiService.fetchData');
+                return this.graffitiEntries;
+            } finally {
+                this._fetchPromise = null;
+            }
+        })();
+
+        return this._fetchPromise;
+    }
+
+    /**
+     * Yield until the browser has a quiet moment before doing expensive canvas work.
+     */
+    _runWhenIdle(task) {
+        return new Promise((resolve, reject) => {
+            const run = () => Promise.resolve()
+                .then(task)
+                .then(resolve, reject);
+
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(run, { timeout: 250 });
+            } else {
+                setTimeout(run, 0);
+            }
+        });
+    }
+
+    async _prepareDrawingRaster(entry) {
+        if (this._drawingRasterCache.has(entry)) {
+            return this._drawingRasterCache.get(entry);
         }
+        if (this._drawingRasterPromises.has(entry)) {
+            return this._drawingRasterPromises.get(entry);
+        }
+
+        const promise = (async () => {
+            const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
+            const blob = await this.drawingService.rasterizeDrawingOverlay(
+                entry,
+                targetWidth,
+                targetHeight
+            );
+            const url = URL.createObjectURL(blob);
+            const image = new Image();
+            image.src = url;
+
+            try {
+                if (image.decode) {
+                    await image.decode();
+                } else {
+                    await new Promise((resolve, reject) => {
+                        image.onload = resolve;
+                        image.onerror = reject;
+                    });
+                }
+            } catch (error) {
+                URL.revokeObjectURL(url);
+                throw error;
+            }
+
+            const prepared = { url, targetWidth, targetHeight };
+            this._drawingRasterCache.set(entry, prepared);
+            return prepared;
+        })();
+
+        this._drawingRasterPromises.set(entry, promise);
+        try {
+            return await promise;
+        } finally {
+            this._drawingRasterPromises.delete(entry);
+        }
+    }
+
+    async _prepareFonts() {
+        if (!document.fonts) return;
+
+        const loads = this.graffitiEntries
+            .filter(entry => entry.type !== 'drawing' && entry.font)
+            .map(entry => document.fonts.load(`16px ${this.getFontFamily(entry.font)}`));
+        await Promise.allSettled(loads);
+    }
+
+    /**
+     * Fetch and rasterize graffiti before Joker physics starts. Drawings are
+     * prepared sequentially so a large weekly set cannot monopolize one frame.
+     */
+    prepareAssets() {
+        if (this._assetPreparationPromise) return this._assetPreparationPromise;
+
+        this._assetPreparationPromise = (async () => {
+            await this.fetchData();
+            await this._runWhenIdle(() => this._prepareFonts());
+
+            const drawings = this.graffitiEntries.filter(entry => entry.type === 'drawing' && entry.data);
+            for (const entry of drawings) {
+                try {
+                    await this._runWhenIdle(() => this._prepareDrawingRaster(entry));
+                } catch (error) {
+                    console.warn('Failed to prepare graffiti drawing:', error);
+                }
+            }
+        })();
+
+        return this._assetPreparationPromise;
+    }
+
+    preload() {
+        return this.prepareAssets();
+    }
+
+    _createDrawingOverlay(entry) {
+        const prepared = this._drawingRasterCache.get(entry);
+        if (prepared) {
+            return this.drawingService.createRasterDrawingOverlay(prepared.url);
+        }
+
+        const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
+        return this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
+    }
+
+    _clearPreparedAssets() {
+        this._drawingRasterCache.forEach(prepared => URL.revokeObjectURL(prepared.url));
+        this._drawingRasterCache.clear();
+        this._drawingRasterPromises.clear();
+        this._assetPreparationPromise = null;
+    }
+
+    _replaceEntries(entries) {
+        this._clearPreparedAssets();
+        this.graffitiEntries = entries;
+        this._dataLoaded = true;
     }
 
     /**
@@ -107,15 +248,16 @@ class GraffitiService {
         const drawingOverlays = this.overlayElements.filter(el => el.classList.contains('graffiti-drawing-overlay'));
         drawingOverlays.forEach(el => el.remove());
         this.overlayElements = this.overlayElements.filter(el => !el.classList.contains('graffiti-drawing-overlay'));
+        const fragment = document.createDocumentFragment();
 
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
-                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
-                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
-                container.appendChild(el);
+                const el = this._createDrawingOverlay(entry);
+                fragment.appendChild(el);
                 this.overlayElements.push(el);
             }
         });
+        container.appendChild(fragment);
     }
 
     /**
@@ -134,7 +276,7 @@ class GraffitiService {
      * Called early so graffiti appears before the user clicks ROLL
      */
     async renderPrerollOverlay() {
-        await this.fetchData();
+        await this.prepareAssets();
 
         this.clearPrerollOverlays();
 
@@ -157,16 +299,16 @@ class GraffitiService {
 
         const imgLeft = posterImage.offsetLeft;
         const imgTop = posterImage.offsetTop;
+        const fragment = document.createDocumentFragment();
 
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
-                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
-                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
+                const el = this._createDrawingOverlay(entry);
                 el.style.left = `${imgLeft}px`;
                 el.style.top = `${imgTop}px`;
                 el.style.width = `${imageWidth}px`;
                 el.style.height = `${imageHeight}px`;
-                prerollContainer.appendChild(el);
+                fragment.appendChild(el);
                 this.prerollOverlayElements.push(el);
             } else if (entry.type !== 'drawing') {
                 const el = this.createOverlayElement(entry, scale);
@@ -174,10 +316,11 @@ class GraffitiService {
                 const pxY = imgTop + (entry.y / 100) * imageHeight;
                 el.style.left = `${pxX}px`;
                 el.style.top = `${pxY}px`;
-                prerollContainer.appendChild(el);
+                fragment.appendChild(el);
                 this.prerollOverlayElements.push(el);
             }
         });
+        prerollContainer.appendChild(fragment);
     }
 
     /**
@@ -187,7 +330,7 @@ class GraffitiService {
         if (this.initialized) return;
 
         try {
-            await this.fetchData();
+            await this.prepareAssets();
 
             this.renderButton();
             if (this.graffitiEntries.length) {
@@ -308,19 +451,20 @@ class GraffitiService {
 
         const posterContainer = document.getElementById('todays-poster-container');
         if (!posterContainer) return;
+        const fragment = document.createDocumentFragment();
 
         this.graffitiEntries.forEach(entry => {
             if (entry.type === 'drawing' && entry.data) {
-                const { targetWidth, targetHeight } = this._getDrawingTargetDimensions(entry);
-                const el = this.drawingService.renderDrawingOverlay(entry, targetWidth, targetHeight);
-                posterContainer.appendChild(el);
+                const el = this._createDrawingOverlay(entry);
+                fragment.appendChild(el);
                 this.overlayElements.push(el);
             } else if (entry.type !== 'drawing') {
                 const el = this.createOverlayElement(entry);
-                posterContainer.appendChild(el);
+                fragment.appendChild(el);
                 this.overlayElements.push(el);
             }
         });
+        posterContainer.appendChild(fragment);
     }
 
     /**
@@ -553,7 +697,8 @@ class GraffitiService {
             try {
                 const apiResult = await this.apiService.submitGraffiti(drawingData);
                 if (apiResult.success) {
-                    this.graffitiEntries = apiResult.all || [...this.graffitiEntries, apiResult.graffiti];
+                    this._replaceEntries(apiResult.all || [...this.graffitiEntries, apiResult.graffiti]);
+                    await this.prepareAssets();
                     this.renderOverlay();
                 } else {
                     alert(apiResult.error || 'Failed to save drawing');
@@ -880,7 +1025,8 @@ class GraffitiService {
                 const result = await this.apiService.submitGraffiti(graffitiData);
 
                 if (result.success) {
-                    this.graffitiEntries = result.all || [...this.graffitiEntries, result.graffiti];
+                    this._replaceEntries(result.all || [...this.graffitiEntries, result.graffiti]);
+                    await this.prepareAssets();
                     this.stopEditing(true);
                     this.renderOverlay();
                 } else {
@@ -1092,7 +1238,10 @@ class GraffitiService {
             this.liveElement = null;
         }
         this.isEditing = false;
+        this._clearPreparedAssets();
         this.graffitiEntries = [];
+        this._dataLoaded = false;
+        this._fetchPromise = null;
         this.initialized = false;
     }
 }

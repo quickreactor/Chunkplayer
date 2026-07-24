@@ -21,9 +21,9 @@ class EffectService {
             const rollButtonWidth = rollButton.getBoundingClientRect().width;
             const movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
 
-            // Move the parent container so graffiti overlay moves with the poster
+            // Move the parent container so graffiti and Joker overlays follow the poster.
             const container = winner.parentElement;
-            if (winner.id === "poster-image-1" && container) {
+            if (container?.classList.contains('poster-container')) {
                 container.classList.add("winner");
                 container.style.transform = `translate(${movementDistance}px, 0)`;
             } else {
@@ -31,7 +31,12 @@ class EffectService {
                 winner.style.transform = `translate(${movementDistance}px, 0)`;
             }
 
-            loser.classList.add("hidden", "fade-out-fast");
+            const loserContainer = loser.parentElement;
+            if (loserContainer?.classList.contains('poster-container')) {
+                loserContainer.classList.add("hidden", "fade-out-fast");
+            } else {
+                loser.classList.add("hidden", "fade-out-fast");
+            }
 
             setTimeout(() => {
                 document.querySelector(".poster-section").classList.add("hidden", "fade-out-slow");

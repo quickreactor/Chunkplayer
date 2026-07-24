@@ -14,6 +14,10 @@ class ChunkPlayerApp {
         this.audioService = new AudioService();
         this.videoService = new VideoService(this.domService, this.audioService);
         this.effectService = new EffectService();
+        this.jokerPhysicsService = new JokerPhysicsService(
+            document.getElementById('poster-container-2'),
+            this.domService.elements.poster2
+        );
         this.dateService = null; // Will be initialized after loading URLs
         this.soundBoardService = null;
         this.adminService = null; // Will be initialized after DOM service is ready
@@ -42,6 +46,7 @@ class ChunkPlayerApp {
         try {
             await this.loadUrls();
             this.setupServices();
+            void this.graffitiService.preload();
             this.setupUseCases();
             this.setupEventListeners();
             this.setupDebugMode();
@@ -608,7 +613,14 @@ class ChunkPlayerApp {
         const hasRolledToday = !VisitRepository.isFirstVisitToday();
         const startValue = hasRolledToday ? jokerlessDays : jokerlessDaysOld;
 
-        this.renderJokerImages(startValue);
+        this.currentJokerCount = startValue;
+        if (hasRolledToday) {
+            this.showJokerRow(startValue);
+        } else {
+            document.getElementById('joker-image-row')?.replaceChildren();
+            document.getElementById('flip-counter-wrapper')?.classList.add('poster-pile-active');
+            if (!CONFIG.movieData.isCoinFlip) this.showPosterJokers(startValue);
+        }
 
         const counter = document.getElementById('flip-counter');
         if (!counter) return;
@@ -624,20 +636,44 @@ class ChunkPlayerApp {
      * Flip the counter to a target value and update joker images
      * @param {number} targetValue - Value to animate to
      */
-    flipCounterTo(targetValue) {
-        this.renderJokerImages(targetValue);
+    flipCounterTo(targetValue, outcome = null) {
+        this.currentJokerCount = targetValue;
+        let jokerWasAdded = false;
+        if (this.jokerPhysicsService.active) {
+            if (outcome === RollOutcome.CRITICAL_FAIL) {
+                this.jokerPhysicsService.release();
+            } else {
+                jokerWasAdded = this.jokerPhysicsService.setCount(targetValue);
+            }
+            setTimeout(() => this.showJokerRow(targetValue), 4000);
+        } else {
+            this.renderJokerImages(targetValue);
+        }
 
         const counter = document.getElementById('flip-counter');
-        if (!counter) return;
+        if (!counter) return jokerWasAdded;
 
         const tick = Tick.DOM.find(counter);
         if (!tick) {
             console.warn('Flip tick instance not found');
-            return;
+            return jokerWasAdded;
         }
 
         tick.value = targetValue;
         console.log(`%c[Flip] Counter animating to "${String(targetValue).padStart(3, '0')}"`, 'color: #00ff00; font-weight: bold');
+        return jokerWasAdded;
+    }
+
+    showPosterJokers(count = this.currentJokerCount || 0) {
+        document.getElementById('flip-counter-wrapper')?.classList.add('poster-pile-active');
+        document.getElementById('joker-image-row')?.replaceChildren();
+        this.jokerPhysicsService.mount(count);
+    }
+
+    showJokerRow(count = this.currentJokerCount || 0) {
+        this.jokerPhysicsService.unmount();
+        document.getElementById('flip-counter-wrapper')?.classList.remove('poster-pile-active');
+        this.renderJokerImages(count);
     }
 
     /**
@@ -649,30 +685,7 @@ class ChunkPlayerApp {
         if (!container) return;
         container.innerHTML = '';
 
-        const jokerImages = [
-            'images/jokers/jokerhammil.jpg',
-            'images/jokers/jokerhammil2.jpg',
-            'images/jokers/jokerheath.jpg',
-            'images/jokers/jokerheath2.jpg',
-            'images/jokers/jokerjack.jpg',
-            'images/jokers/jokerjack2.jpg',
-            'images/jokers/jokerleto.jpg',
-            'images/jokers/jokerleto2.jpg',
-            'images/jokers/jokermorag.jpg',
-            'images/jokers/jokermorag2.jpg',
-            'images/jokers/jokeromero.jpg',
-            'images/jokers/jokeromero2.jpg',
-            'images/jokers/jokerphoenix.jpg',
-            'images/jokers/jokerphoeni2x.jpg',
-            'images/jokers/jokertoon1.jpg',
-            'images/jokers/jokertoon2.jpg',
-            'images/jokers/jokerbonus1.jpeg',
-            'images/jokers/jokerbonus2.jpeg',
-            'images/jokers/jokerbonus3.jpeg',
-            'images/jokers/jokerbonus4.jpeg',
-            'images/jokers/jokerbonus5.jpeg',
-            'images/jokers/jokerbonus6.jpeg'
-        ];
+        const jokerImages = this.jokerPhysicsService.imageSources;
 
         let intensity = 0;
         if (count >= 30) {
@@ -780,7 +793,7 @@ class ChunkPlayerApp {
         this.domService.updateTheme(coinFlip.movie1.bgColor);
 
         // Show graffiti on pre-roll poster
-        this.graffitiService.renderPrerollOverlay();
+        await this.graffitiService.renderPrerollOverlay();
     }
 
     /**
@@ -799,7 +812,7 @@ class ChunkPlayerApp {
         this.domService.elements.poster2.src = punishmentMovie.posterUrl;
 
         // Show graffiti on pre-roll poster
-        this.graffitiService.renderPrerollOverlay();
+        await this.graffitiService.renderPrerollOverlay();
     }
 
     /**
@@ -847,6 +860,7 @@ class ChunkPlayerApp {
         this.domService.elements.rollButton.style.display = 'flex';
         this.domService.elements.diceAndTextContainer.classList.remove('rolled');
         this.domService.elements.flipButton.style.display = 'none';
+        this.showPosterJokers();
 
         // Reset roll button click handler
         this.domService.elements.rollButton.onclick = () => {
@@ -1167,6 +1181,29 @@ window.Debug = {
     reportPunishment() {
         const btn = document.getElementById('punishment-report-btn');
         if (btn) btn.click();
+    },
+
+    /**
+     * Drop the currently mounted Joker pile through the bottom of the poster.
+     * This only tests the visual physics and does not change game or API state.
+     * @example Debug.dropJokers()
+     */
+    dropJokers() {
+        const jokerPhysics = window.chunkPlayerApp?.jokerPhysicsService;
+        if (!jokerPhysics?.active) {
+            console.warn(
+                '%c[Debug] No active poster Joker pile. Open the poster choice screen first.',
+                'color: #ffaa00; font-weight: bold'
+            );
+            return false;
+        }
+
+        console.log(
+            '%c[Debug] Dropping Jokers through the bottom of the poster...',
+            'color: #00ff00; font-weight: bold'
+        );
+        jokerPhysics.release();
+        return true;
     },
 
     /**

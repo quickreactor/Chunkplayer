@@ -341,6 +341,76 @@ class DrawingService {
     }
 
     /**
+     * Rasterize a Fabric drawing once so display code can reuse a decoded image
+     * instead of rebuilding the Fabric canvas during an animation.
+     * @returns {Promise<Blob>}
+     */
+    rasterizeDrawingOverlay(drawingEntry, targetWidth, targetHeight) {
+        return new Promise((resolve, reject) => {
+            const output = document.createElement('canvas');
+            output.width = targetWidth;
+            output.height = targetHeight;
+
+            const tmpId = `draw-preload-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            const tmpEl = document.createElement('canvas');
+            tmpEl.id = tmpId;
+            tmpEl.style.display = 'none';
+            document.body.appendChild(tmpEl);
+
+            let staticCanvas;
+            const cleanup = () => {
+                if (staticCanvas) staticCanvas.dispose();
+                tmpEl.remove();
+            };
+
+            try {
+                staticCanvas = new fabric.StaticCanvas(tmpId, {
+                    width: drawingEntry.width,
+                    height: drawingEntry.height
+                });
+                staticCanvas.loadFromJSON(drawingEntry.data, () => {
+                    try {
+                        staticCanvas.renderAll();
+                        output.getContext('2d').drawImage(
+                            staticCanvas.lowerCanvasEl,
+                            0,
+                            0,
+                            targetWidth,
+                            targetHeight
+                        );
+                        output.toBlob(blob => {
+                            cleanup();
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Unable to rasterize graffiti drawing'));
+                            }
+                        }, 'image/png');
+                    } catch (error) {
+                        cleanup();
+                        reject(error);
+                    }
+                });
+            } catch (error) {
+                cleanup();
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Create a lightweight display element from a prepared drawing raster.
+     */
+    createRasterDrawingOverlay(sourceUrl) {
+        const image = document.createElement('img');
+        image.className = 'graffiti-drawing-overlay';
+        image.src = sourceUrl;
+        image.alt = '';
+        image.draggable = false;
+        return image;
+    }
+
+    /**
      * Render a drawing entry as a canvas element overlay using Fabric StaticCanvas.
      * Renders at a high-resolution bitmap so CSS can scale it down/up without quality loss.
      * @param {Object} drawingEntry - { type: 'drawing', data: FabricJSON, width, height }

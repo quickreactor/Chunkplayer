@@ -54,11 +54,16 @@ class DiceRollUseCase {
         // Register visit (prevents re-roll on refresh)
         this.visitRepo.registerVisit();
 
-        // Animate flip counter to jokerless days
-        this.app.flipCounterTo(movieData.jokerlessDays);
-
         // Route based on outcome
         const outcome = DiceRollLogic.determineOutcome(roll);
+
+        // Update the counter and either add to or release the poster pile.
+        const jokerWasAdded = this.app.flipCounterTo(movieData.jokerlessDays, outcome);
+        if (jokerWasAdded) {
+            // Let the new card visibly reach the pile before the punishment
+            // poster begins its losing fade.
+            await new Promise(resolve => setTimeout(resolve, 1300));
+        }
 
         switch (outcome) {
             case RollOutcome.CRITICAL_FAIL:

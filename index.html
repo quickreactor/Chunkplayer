@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=joker-physics-20260724-2">
     <link href="utils/flip/flip.min.css" rel="stylesheet">
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
@@ -44,11 +44,13 @@
     <script src="services/dateService.js"></script>
     <script src="services/domService.js"></script>
     <script src="services/effectService.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+    <script src="services/jokerPhysicsService.js?v=joker-physics-20260724-2"></script>
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js"></script>
     <script src="services/adminService.js"></script>
-    <script src="services/drawingService.js"></script>
-    <script src="services/graffitiService.js"></script>
+    <script src="services/drawingService.js?v=graffiti-preload-20260724"></script>
+    <script src="services/graffitiService.js?v=graffiti-preload-20260724"></script>
 
     <!-- Use Cases -->
     <script src="useCases/dailyFlowUseCase.js"></script>
@@ -71,7 +73,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js" defer></script>
+    <script src="app.js?v=graffiti-preload-20260724" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
