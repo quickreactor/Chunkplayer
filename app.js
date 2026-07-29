@@ -306,15 +306,23 @@ class ChunkPlayerApp {
         const deyeHover = document.getElementById("deye-hover");
         const deyeHoverReverse = document.getElementById("deye-hover-reverse");
         if (rollButton) {
+            const setDeyeLayer = (video, visible, zIndex) => {
+                video.style.visibility = visible ? "visible" : "hidden";
+                video.style.zIndex = String(zIndex);
+            };
+
             rollButton.addEventListener("mouseenter", () => {
                 deyeIdle.pause();
+                setDeyeLayer(deyeIdle, false, 0);
 
                 deyeHoverReverse.pause();
                 deyeHoverReverse.currentTime = 0;
                 deyeHoverReverse.style.opacity = 0;
+                setDeyeLayer(deyeHoverReverse, false, 0);
 
                 deyeHover.currentTime = 0;
                 deyeHover.style.opacity = 1;
+                setDeyeLayer(deyeHover, true, 2);
                 deyeHover.play();
             });
 
@@ -328,9 +336,11 @@ class ChunkPlayerApp {
 
                 deyeHover.pause();
                 deyeHover.style.opacity = 0;
+                setDeyeLayer(deyeHover, false, 0);
 
                 deyeHoverReverse.currentTime = hoverDuration - hoverTime;
                 deyeHoverReverse.style.opacity = 1;
+                setDeyeLayer(deyeHoverReverse, true, 2);
                 deyeHoverReverse.play();
             });
 
@@ -338,7 +348,9 @@ class ChunkPlayerApp {
                 deyeHoverReverse.pause();
                 deyeHoverReverse.currentTime = 0;
                 deyeHoverReverse.style.opacity = 0;
+                setDeyeLayer(deyeHoverReverse, false, 0);
 
+                setDeyeLayer(deyeIdle, true, 1);
                 deyeIdle.play();
             });
         }

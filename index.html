@@ -16,13 +16,6 @@
         href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Faster+One&family=Knewave&family=Monoton&family=Oswald&family=Permanent+Marker&family=Rock+Salt&family=Rubik+Marker+Hatch&display=swap"
         rel="stylesheet">
 
-    <!-- Preload Custom TTF Fonts -->
-    <link rel="preload" href="fonts/Street2Art-Bold.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="fonts/FromStreetArt-Bold.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="fonts/Super Popstar.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="fonts/edo.ttf" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="fonts/HVD_Peace.ttf" as="font" type="font/ttf" crossorigin>
-
     <!-- Pickr Color Picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 
@@ -47,7 +40,7 @@
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
     <script src="services/jokerPhysicsService.js?v=joker-physics-20260724-2"></script>
     <script src="services/soundBoardService.js"></script>
-    <script src="services/videoService.js"></script>
+    <script src="services/videoService.js?v=media-cleanup-20260724-2"></script>
     <script src="services/adminService.js"></script>
     <script src="services/drawingService.js?v=graffiti-preload-20260724"></script>
     <script src="services/graffitiService.js?v=graffiti-preload-20260724"></script>
@@ -73,7 +66,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=graffiti-preload-20260724" defer></script>
+    <script src="app.js?v=deye-layers-20260724" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
@@ -85,13 +78,7 @@
     <div id="thingee"><img src="images/thingee.gif" alt=""></div>
     <div id="thingee-text">IT'S THINGEE THURSDAY</div>
     <audio id="thingee-audio" src="audio/thingee.mp3" preload="auto"></audio>
-    <video id="d20RollerVideo" autoplay muted playsinline>
-        <source id="diceSource1"
-            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/AIGuXJertFNeQ0qjpUFGuE8/d20_01-hevc-safari.mp4?rlkey=yut8p8rwa7fd1nv1bgkok5mum&raw=1"
-            type='video/mp4; codecs="hvc1"'>
-        <source id="diceSource2"
-            src="https://www.dropbox.com/scl/fo/pf5qpygokl52103vmx2w0/ADq6fMo0orSzJRF4v3rvpGk/d20_01-vp9-chrome.webm?rlkey=yut8p8rwa7fd1bgkok5mum&raw=1"
-            type="video/webm">
+    <video id="d20RollerVideo" autoplay muted playsinline preload="none">
     </video>
     <div class="poster-section">
         <div id="poster-container-1" class="poster-container"><img class="poster-image" id="poster-image-1" src=""
@@ -135,9 +122,8 @@
         </div>
         <div class="videoContainer">
             <div id="video-frame">
-                <video id="videoPlayer" crossorigin="anonymous" controls playsinline
+                <video id="videoPlayer" crossorigin="anonymous" controls playsinline width="1920" height="1080"
                     data-poster="images/chunkplayerlogo.png">
-                    <source src="" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
 
@@ -397,7 +383,7 @@
         </div>
 
     </div>
-    <div id="flip-counter-wrapper">
+    <div id="flip-counter-wrapper" class="poster-pile-active">
         <div id="joker-image-row" class="joker-image-row"></div>
         <div id="flip-counter" class="tick tick-flip" data-credits="false">
             <div data-layout="horizontal center" data-repeat="true"

@@ -27,16 +27,41 @@ class VideoService {
     }
 
     /**
+     * Populate only the source formats supported by the current browser.
+     * Unsupported and placeholder sources are left unset to avoid media errors.
+     */
+    setCompatibleVideoSources(hevcUrl, webmUrl) {
+        const video = this.dom.elements.d20RollerVideo;
+        video.querySelectorAll("source").forEach(source => source.remove());
+
+        const addSource = (id, url, type) => {
+            if (!url) return;
+            const source = document.createElement("source");
+            source.id = id;
+            source.src = url;
+            source.type = type;
+            video.appendChild(source);
+        };
+
+        const supportsHevc = hevcUrl && video.canPlayType('video/mp4; codecs="hvc1"');
+        if (supportsHevc) {
+            addSource("diceSource1", hevcUrl, 'video/mp4; codecs="hvc1"');
+        }
+        addSource("diceSource2", webmUrl, "video/webm");
+    }
+
+    /**
      * Play dice roll video
      * @param {number} number - Dice roll result (1-20)
      * @returns {Promise} Resolves when video ends
      */
     async playDiceVideo(number) {
         return new Promise((resolve) => {
-            document.getElementById("diceSource1").src = this.urls.d20HEVCArray[number - 1];
-            document.getElementById("diceSource2").src = this.urls.d20webmArray[number - 1];
-
             const video = this.dom.elements.d20RollerVideo;
+            this.setCompatibleVideoSources(
+                this.urls.d20HEVCArray[number - 1],
+                this.urls.d20webmArray[number - 1]
+            );
             video.style.display = "block";
             video.load();
 
@@ -67,12 +92,7 @@ class VideoService {
             const video = this.dom.elements.d20RollerVideo;
 
             // Set video sources (coin flip video)
-            if (this.coinFlipVideoHEVC) {
-                document.getElementById("diceSource1").src = this.coinFlipVideoHEVC;
-            }
-            if (this.coinFlipVideoWebM) {
-                document.getElementById("diceSource2").src = this.coinFlipVideoWebM;
-            }
+            this.setCompatibleVideoSources(this.coinFlipVideoHEVC, this.coinFlipVideoWebM);
 
             video.style.display = "block";
             video.load();

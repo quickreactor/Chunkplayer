@@ -10,7 +10,7 @@
 
 @font-face {
     font-family: 'Street2Art';
-    src: url('fonts/Street2Art-Bold.ttf') format('truetype');
+    src: url('fonts/Street2Art-Bold.woff2') format('woff2');
     font-weight: bold;
     font-style: normal;
     font-display: swap;
@@ -18,7 +18,7 @@
 
 @font-face {
     font-family: 'FromStreetArt';
-    src: url('fonts/FromStreetArt-Bold.ttf') format('truetype');
+    src: url('fonts/FromStreetArt-Bold.woff2') format('woff2');
     font-weight: bold;
     font-style: normal;
     font-display: swap;
@@ -26,7 +26,7 @@
 
 @font-face {
     font-family: 'SuperPopstar';
-    src: url('fonts/Super Popstar.ttf') format('truetype');
+    src: url('fonts/Super Popstar.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -34,7 +34,7 @@
 
 @font-face {
     font-family: 'Edo';
-    src: url('fonts/edo.ttf') format('truetype');
+    src: url('fonts/edo.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -42,7 +42,7 @@
 
 @font-face {
     font-family: 'HVD Peace';
-    src: url('fonts/HVD_Peace.ttf') format('truetype');
+    src: url('fonts/HVD_Peace.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -50,7 +50,7 @@
 
 @font-face {
     font-family: 'Gothic-Dice';
-    src: url('fonts/Darksad-Regular.ttf') format('truetype');
+    src: url('fonts/Darksad-Regular.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -68,6 +68,12 @@ html {
 
 #flip-counter-wrapper {
     padding-bottom: 60px;
+}
+
+/* The counter sits below the poster, but its joker row is mounted only after
+   the roll. Keep the pre-roll page compact while poster/graffiti assets load. */
+#flip-counter-wrapper.poster-pile-active {
+    padding-bottom: 0;
 }
 
 #flip-counter,
@@ -226,7 +232,14 @@ h1 {
 #video-frame {
     z-index: 500;
     width: 70vw;
+    aspect-ratio: 16 / 9;
     margin-bottom: 35px;
+}
+
+#video-frame .plyr,
+#video-frame #videoPlayer {
+    width: 100%;
+    height: 100%;
 }
 
 h1 {
@@ -412,15 +425,25 @@ option {
     width: 100%;
     object-fit: contain;
     inset: 0;
+    z-index: 0;
+    visibility: hidden;
+}
+
+#roll-button video#deye-idle {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1;
 }
 
 #roll-button video#deye-hover {
     opacity: 0;
+    z-index: 2;
     pointer-events: none;
 }
 
 #roll-button video#deye-hover-reverse {
     opacity: 0;
+    z-index: 2;
     pointer-events: none;
 }
 
