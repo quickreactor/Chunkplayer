@@ -90,14 +90,16 @@ class AdminService {
      * Show confirmation dialog
      * @param {string} message - Confirmation message
      * @param {Function} onConfirm - Callback if confirmed
+     * @param {string} confirmText - Text displayed on the confirmation button
      */
-    showConfirmation(message, onConfirm) {
+    showConfirmation(message, onConfirm, confirmText = 'Confirm') {
         const dialog = this.domService.elements.confirmDialog;
         const messageEl = this.domService.elements.confirmMessage;
         const yesBtn = this.domService.elements.confirmYes;
         const noBtn = this.domService.elements.confirmNo;
 
         messageEl.textContent = message;
+        yesBtn.textContent = confirmText;
         dialog.classList.remove('hidden');
 
         const cleanup = () => {
@@ -144,7 +146,8 @@ class AdminService {
     handlePunishmentReport(onConfirmed) {
         this.showConfirmation(
             "Are you sure you are ready to morb?",
-            onConfirmed
+            onConfirmed,
+            "Yes, I morbed"
         );
     }
 

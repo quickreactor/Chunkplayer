@@ -386,6 +386,21 @@ class ChunkPlayerApp {
             );
         });
 
+        // Clear graffiti button (Level 1)
+        this.domService.elements.clearGraffitiBtn?.addEventListener("click", () => {
+            this.adminService.showConfirmation(
+                "Are you sure you want to permanently clear all graffiti?",
+                async () => {
+                    const cleared = await Debug.clearGraffiti();
+                    this.adminService.showToast(
+                        cleared ? "Graffiti cleared" : "Failed to clear graffiti",
+                        cleared ? "success" : "error"
+                    );
+                },
+                "Clear Graffiti"
+            );
+        });
+
         // Bypass lockdown button (Level 2)
         this.domService.elements.bypassLockdownBtn?.addEventListener("click", () => {
             this.lockdownUseCase.stop();
@@ -1261,7 +1276,7 @@ window.Debug = {
     async clearGraffiti() {
         if (!window.chunkPlayerApp || !window.chunkPlayerApp.graffitiService) {
             console.error('%c[Debug] GraffitiService not initialized', 'color: #ff0000; font-weight: bold');
-            return;
+            return false;
         }
 
         try {
@@ -1274,11 +1289,14 @@ window.Debug = {
                 window.chunkPlayerApp.graffitiService.destroy();
                 window.chunkPlayerApp.graffitiService.initialized = false;
                 await window.chunkPlayerApp.graffitiService.init();
+                return true;
             } else {
                 console.error('%c[Debug] Failed to clear graffiti:', 'color: #ff0000; font-weight: bold', result);
+                return false;
             }
         } catch (error) {
             console.error('%c[Debug] Error clearing graffiti:', 'color: #ff0000; font-weight: bold', error);
+            return false;
         }
     },
 
