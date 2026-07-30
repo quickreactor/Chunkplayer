@@ -35,6 +35,7 @@ class ChunkPlayerApp {
         this.diceRollUseCase = null;
         this.dailyFlowUseCase = null;
         this.coinFlipUseCase = null;
+        this.logoBgPickr = null;
 
         this.init();
     }
@@ -273,6 +274,8 @@ class ChunkPlayerApp {
      * Setup event listeners
      */
     setupEventListeners() {
+        this.initializeAdminLogoColorPicker();
+
         this.domService.elements.rollButton.addEventListener("click", () => {
             // Unlock thingee audio while we have user gesture context
             if (this.dateService.isThursday()) {
@@ -574,6 +577,93 @@ class ChunkPlayerApp {
                 );
             }
         });
+    }
+
+    /**
+     * Initialize the Level 1 picker for the active movie's logo background.
+     */
+    initializeAdminLogoColorPicker() {
+        const button = this.domService.elements.logoBgColorBtn;
+        const swatch = this.domService.elements.logoBgColorSwatch;
+        if (!button || !swatch || typeof Pickr === 'undefined') return;
+
+        const activeMovie = CONFIG.movieData.morbed
+            ? CONFIG.movieData.punishmentMovie
+            : CONFIG.movieData.normalMovie;
+        let savedColor = activeMovie.bgColor || '#DF0001';
+        const swatches = [
+            '#FFFFFF', '#000000', '#FF0000', '#FF4500',
+            '#FFA500', '#FFFF00', '#00FF00', '#00FFFF',
+            '#0000FF', '#8A2BE2', '#FF1493', '#FF69B4',
+            '#FFD700', '#C0C0C0', '#808080', '#8B4513'
+        ];
+
+        const setSwatch = (color) => {
+            swatch.style.backgroundColor = color;
+        };
+        setSwatch(savedColor);
+
+        this.logoBgPickr = Pickr.create({
+            el: button,
+            container: 'body',
+            theme: 'classic',
+            useAsButton: true,
+            default: savedColor,
+            comparison: false,
+            closeOnScroll: false,
+            position: 'bottom-middle',
+            swatches,
+            components: {
+                palette: true,
+                preview: true,
+                opacity: false,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    input: true,
+                    cancel: true,
+                    clear: false,
+                    save: true
+                }
+            }
+        });
+
+        this.logoBgPickr
+            .on('change', (color) => {
+                if (color) setSwatch(color.toHEXA().toString().slice(0, 7));
+            })
+            .on('cancel', () => {
+                setSwatch(savedColor);
+            })
+            .on('hide', () => {
+                setSwatch(savedColor);
+            })
+            .on('save', async (color, instance) => {
+                if (!color) return;
+
+                const selectedColor = color.toHEXA().toString().slice(0, 7);
+                try {
+                    const result = await this.apiService.setLogoBackgroundColor(selectedColor);
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to update logo background');
+                    }
+
+                    savedColor = selectedColor;
+                    activeMovie.bgColor = selectedColor;
+                    this.domService.updateTheme(selectedColor);
+                    setSwatch(selectedColor);
+                    this.adminService.showToast(
+                        `Logo background updated for ${result.movieType} movie`,
+                        'success'
+                    );
+                    instance.hide();
+                } catch (error) {
+                    console.error('Logo background update failed:', error);
+                    instance.setColor(savedColor, true);
+                    setSwatch(savedColor);
+                    this.adminService.showToast('Failed to update logo background', 'error');
+                }
+            });
     }
 
     /**

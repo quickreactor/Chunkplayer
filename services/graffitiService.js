@@ -896,13 +896,16 @@ class GraffitiService {
 
         this.pickr = Pickr.create({
             el: colorPickerContainer,
-            theme: 'nano',
+            container: 'body',
+            theme: 'classic',
             useAsButton: true,
             default: this.currentEdit.color,
-            closeOnScroll: true,
-            position: 'bottom-start',
+            comparison: false,
+            closeOnScroll: false,
+            position: 'bottom-middle',
             swatches: swatches,
             components: {
+                palette: true,
                 preview: true,
                 opacity: false,
                 hue: true,

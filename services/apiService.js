@@ -245,6 +245,25 @@ class ApiService {
     }
 
     /**
+     * Update the Chunkplayer logo background colour for the active movie.
+     * @param {string} color - Six-digit hexadecimal colour
+     * @returns {Promise<Object>} Response with success status and updated movie type
+     */
+    async setLogoBackgroundColor(color) {
+        try {
+            const response = await fetch(`${this.baseUrl}/set-logo-bg-color`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ color })
+            });
+            return await response.json();
+        } catch (error) {
+            ErrorHandler.handle(error, 'ApiService.setLogoBackgroundColor');
+            throw error;
+        }
+    }
+
+    /**
      * Upload poster image to B2 via Worker
      * @param {File} file - Image file (JPEG/PNG)
      * @param {string} movieName - Movie name for path construction

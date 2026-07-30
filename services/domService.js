@@ -56,6 +56,8 @@ class DOMService {
             adminLevel2: document.getElementById("admin-level-2"),
             punishmentReportBtn: document.getElementById("punishment-report-btn"),
             clearGraffitiBtn: document.getElementById("clear-graffiti-btn"),
+            logoBgColorBtn: document.getElementById("logo-bg-color-btn"),
+            logoBgColorSwatch: document.getElementById("logo-bg-color-swatch"),
             bypassLockdownBtn: document.getElementById("bypass-lockdown-btn"),
             bypassSundayBtn: document.getElementById("bypass-sunday-btn"),
             adminResetBtn: document.getElementById("admin-reset-btn"),

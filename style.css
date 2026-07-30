@@ -954,6 +954,22 @@ option {
     background: #cc0000;
 }
 
+.admin-color-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.admin-color-swatch {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
 .admin-divider {
     border: none;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
@@ -1480,10 +1496,11 @@ option {
     box-shadow: none !important;
 }
 
-/* Pickr App Positioning */
+/* Keep Pickr above the editor/admin UI while preserving its own positioning. */
 .pcr-app {
-    position: fixed !important;
-    z-index: 1000;
+    z-index: 2000;
+    max-width: calc(100vw - 16px);
+    box-sizing: border-box;
 }
 
 /* Textarea */
