@@ -126,7 +126,7 @@ class DOMService {
                 iosNative: true,
             },
             controls: [
-                "play-large", "play", "progress", "current-time",
+                "play", "progress", "current-time",
                 "duration", "pip", "capture", "fullscreen",
             ],
         });
