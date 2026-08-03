@@ -14,6 +14,7 @@ class DrawingService {
         this.canvas = null;
         this.canvasContainer = null;
         this.toolbarElement = null;
+        this.colorPickr = null;
         this.isDrawing = false;
         this.initialized = false;
 
@@ -117,7 +118,7 @@ class DrawingService {
             <div class="drawing-toolbar-row">
                 <button class="draw-tool-btn active" data-tool="brush" data-tooltip="Brush">&#9998;</button>
                 <button class="draw-tool-btn" data-tool="eraser" data-tooltip="Eraser">&#9003;</button>
-                <input type="color" class="draw-color-picker" value="${this.currentColor}" data-tooltip="Color">
+                <button type="button" class="draw-color-picker" data-tooltip="Color" aria-label="Choose brush color"></button>
                 <input type="range" class="draw-size-slider" min="1" max="30" value="${this.currentSize}" data-tooltip="Size">
                 <button class="draw-tool-btn" data-tool="undo" data-tooltip="Undo">&#8630;</button>
                 <button class="draw-tool-btn" data-tool="cancel" data-tooltip="Cancel">&#10005;</button>
@@ -128,6 +129,86 @@ class DrawingService {
         const videoContainer = container.parentElement;
         videoContainer.insertBefore(this.toolbarElement, container);
         this.setupToolbarHandlers();
+        this.initializeColorPicker();
+    }
+
+    /**
+     * Use Pickr instead of the browser's native color input. Firefox Mobile's
+     * native picker is commonly limited to a small set of preset colors.
+     */
+    initializeColorPicker() {
+        const colorButton = this.toolbarElement?.querySelector('.draw-color-picker');
+        if (!colorButton) return;
+
+        colorButton.style.setProperty('--draw-color', this.currentColor);
+
+        // Keep a usable fallback if the Pickr CDN is unavailable.
+        if (typeof Pickr === 'undefined') {
+            colorButton.addEventListener('click', () => {
+                const fallback = document.createElement('input');
+                fallback.type = 'color';
+                fallback.value = this.currentColor;
+                fallback.addEventListener('input', (event) => {
+                    this.setBrushColor(event.target.value);
+                    colorButton.style.setProperty('--draw-color', this.currentColor);
+                });
+                fallback.click();
+            });
+            return;
+        }
+
+        this.colorPickr = Pickr.create({
+            el: colorButton,
+            container: 'body',
+            theme: 'classic',
+            useAsButton: true,
+            default: this.currentColor,
+            comparison: false,
+            closeOnScroll: false,
+            position: 'bottom-middle',
+            swatches: [
+                '#FFFFFF', '#D1D5DB', '#6B7280', '#000000',
+                '#EF4444', '#F97316', '#F59E0B', '#FDE047',
+                '#84CC16', '#22C55E', '#14B8A6', '#06B6D4',
+                '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7',
+                '#EC4899', '#F43F5E', '#92400E', '#7C2D12'
+            ],
+            components: {
+                palette: true,
+                preview: true,
+                opacity: false,
+                hue: true,
+                interaction: {
+                    hex: true,
+                    input: true,
+                    clear: false,
+                    save: false
+                }
+            }
+        });
+
+        const updateColor = (color) => {
+            if (!color) return;
+            this.setBrushColor(color.toHEXA().toString().slice(0, 7));
+            colorButton.style.setProperty('--draw-color', this.currentColor);
+        };
+
+        this.colorPickr.on('change', updateColor);
+        this.colorPickr.on('swatchselect', updateColor);
+    }
+
+    setBrushColor(color) {
+        this.currentColor = color;
+        if (this.canvas && !this.isEraser) {
+            this.canvas.freeDrawingBrush.color = color;
+        }
+    }
+
+    destroyColorPicker() {
+        if (this.colorPickr) {
+            this.colorPickr.destroyAndRemove();
+            this.colorPickr = null;
+        }
     }
 
     /**
@@ -135,7 +216,6 @@ class DrawingService {
      */
     setupToolbarHandlers() {
         const toolBtns = this.toolbarElement.querySelectorAll('.draw-tool-btn');
-        const colorPicker = this.toolbarElement.querySelector('.draw-color-picker');
         const sizeSlider = this.toolbarElement.querySelector('.draw-size-slider');
 
         toolBtns.forEach(btn => {
@@ -164,13 +244,6 @@ class DrawingService {
                         break;
                 }
             });
-        });
-
-        colorPicker.addEventListener('input', (e) => {
-            this.currentColor = e.target.value;
-            if (!this.isEraser) {
-                this.canvas.freeDrawingBrush.color = this.currentColor;
-            }
         });
 
         sizeSlider.addEventListener('input', (e) => {
@@ -285,6 +358,7 @@ class DrawingService {
         const height = this.canvas.height;
 
         // Cleanup
+        this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
 
@@ -317,6 +391,7 @@ class DrawingService {
     cancelDrawing() {
         if (!this.canvas) return;
 
+        this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
 
@@ -449,6 +524,7 @@ class DrawingService {
      * Destroy the service and clean up
      */
     destroy() {
+        this.destroyColorPicker();
         if (this.canvas) {
             this.canvas.dispose();
             this.canvas = null;
