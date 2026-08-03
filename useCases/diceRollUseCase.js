@@ -89,7 +89,8 @@ class DiceRollUseCase {
         await this.effect.movieWinnerLoser(
             this.dom.elements.poster2,
             this.dom.elements.poster1,
-            this.dom.elements.rollButton
+            this.dom.elements.rollButton,
+            -1
         );
         setTimeout(() => {
             this.videoPlayback.playPunishmentChunk(movieData.punishmentMovie, true);

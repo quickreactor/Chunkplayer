@@ -11,15 +11,16 @@ class EffectService {
      * @param {HTMLElement} winner - Winning poster element
      * @param {HTMLElement} loser - Losing poster element
      * @param {HTMLElement} rollButton - Roll button element
+     * @param {number} direction - Direction to move (1 = right, -1 = left)
      * @returns {Promise} Resolves when animation completes
      */
-    async movieWinnerLoser(winner, loser, rollButton) {
+    async movieWinnerLoser(winner, loser, rollButton, direction = 1) {
         return new Promise((resolve) => {
             const posterComputed = getComputedStyle(winner);
             const posterMargin = parseFloat(posterComputed.marginLeft);
             const posterWidth = winner.getBoundingClientRect().width;
             const rollButtonWidth = rollButton.getBoundingClientRect().width;
-            const movementDistance = posterWidth / 2 + posterMargin + rollButtonWidth / 2;
+            const movementDistance = (posterWidth / 2 + posterMargin + rollButtonWidth / 2) * direction;
 
             // Move the parent container so graffiti and Joker overlays follow the poster.
             const container = winner.parentElement;
