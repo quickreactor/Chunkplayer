@@ -311,7 +311,8 @@ class JokerPhysicsService {
             14,
             Math.min(46, Math.sqrt((this.width * this.height) / Math.max(this.targetCount, 1)) * 0.72)
         );
-        const sizeMultiplier = window.innerWidth <= 600 ? 1.35 : 2;
+        const isMobileLayout = window.matchMedia('(max-width: 768px)').matches;
+        const sizeMultiplier = isMobileLayout ? 0.675 : 2;
         const size = baseSize * sizeMultiplier;
         const halfSize = size / 2;
         const overlayRect = this.overlay.getBoundingClientRect();

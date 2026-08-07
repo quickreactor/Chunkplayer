@@ -120,6 +120,9 @@ class DOMService {
         }
 
         this.player = new Plyr("#videoPlayer", {
+            // The whole video surface is handled below so mouse and touch input
+            // behave consistently instead of requiring the small play control.
+            clickToPlay: false,
             fullscreen: {
                 enabled: true,
                 fallback: true,
@@ -129,6 +132,17 @@ class DOMService {
                 "play", "progress", "current-time",
                 "duration", "pip", "capture", "fullscreen",
             ],
+        });
+
+        this.player.on('ready', () => {
+            const videoSurface = document.querySelector('#video-frame .plyr__video-wrapper');
+            if (!videoSurface || videoSurface.dataset.tapToPlayBound === 'true') return;
+
+            videoSurface.dataset.tapToPlayBound = 'true';
+            videoSurface.addEventListener('click', (event) => {
+                if (event.target.closest('.plyr__controls, button, input')) return;
+                this.player.togglePlay();
+            });
         });
     }
 
