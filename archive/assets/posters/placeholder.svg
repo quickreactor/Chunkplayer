@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" role="img" aria-labelledby="title desc">
+  <title id="title">Poster unavailable</title>
+  <desc id="desc">A cosmic D20 placeholder for a movie poster.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#11142c"/><stop offset="1" stop-color="#241546"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#68e5ff" stop-opacity=".38"/><stop offset="1" stop-color="#68e5ff" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#bg)"/>
+  <circle cx="200" cy="278" r="188" fill="url(#glow)"/>
+  <g fill="none" stroke="#b18cff" stroke-width="8" stroke-linejoin="round">
+    <path d="M200 118 325 208 278 360H122L75 208Z"/>
+    <path d="m200 118 78 242M200 118l-78 242M75 208h250M75 208l203 152M325 208 122 360" opacity=".7"/>
+  </g>
+  <text x="200" y="285" text-anchor="middle" fill="#f7f2ff" font-family="system-ui,sans-serif" font-size="92" font-weight="700">20</text>
+  <text x="200" y="465" text-anchor="middle" fill="#68e5ff" font-family="system-ui,sans-serif" font-size="22" letter-spacing="6">CHUNKPLAYER</text>
+  <text x="200" y="505" text-anchor="middle" fill="#aaa8c5" font-family="system-ui,sans-serif" font-size="18">POSTER SIGNAL LOST</text>
+</svg>
