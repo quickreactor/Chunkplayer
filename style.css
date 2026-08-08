@@ -136,27 +136,31 @@ html {
 }
 
 .joker-image-row {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: center;
-    gap: clamp(2px, 0.35vw, 6px);
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 4px;
     min-height: 64px;
-    width: min(90vw, 1200px);
+    width: 50%;
     margin: 0 auto 10px;
 }
 
 .joker-image-row .joker-card {
     position: relative;
-    flex: 1 1 0;
+    aspect-ratio: 1;
     min-width: 0;
-    max-width: 72px;
-    overflow: hidden;
-    opacity: 0;
-    animation: jokerFadeIn 0.5s ease forwards;
 }
 
-.joker-image-row .joker-card::after {
+.joker-image-row .joker-card-visual {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform: rotate(var(--rotation, 0deg));
+    opacity: 0;
+    animation: jokerFadeIn 0.5s ease forwards;
+    will-change: transform;
+}
+
+.joker-image-row .joker-card-visual::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -167,7 +171,7 @@ html {
 
 .joker-image-row img {
     width: 100%;
-    aspect-ratio: 1;
+    height: 100%;
     object-fit: cover;
     display: block;
 }
