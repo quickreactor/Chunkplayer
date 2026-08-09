@@ -8,9 +8,10 @@
  * while matching Matter bodies provide collision, stacking, and sleeping.
  */
 class JokerPhysicsService {
-    constructor(posterContainer, posterImage) {
+    constructor(posterContainer, posterImage, audioService) {
         this.posterContainer = posterContainer;
         this.posterImage = posterImage;
+        this.audioService = audioService;
         this.viewportLayer = null;
         this.overlay = null;
         this.engine = null;
@@ -169,19 +170,76 @@ class JokerPhysicsService {
         this.engine.gravity.y = 1;
         this.engine.gravity.scale = 0.0015;
         Matter.Events.on(this.engine, 'collisionStart', event => {
-            for (const pair of event.pairs) {
-                if (pair.bodyA.plugin?.isJoker && pair.bodyB.plugin?.isJoker) {
-                    const aIsEntering = pair.bodyA.plugin.isEntering;
-                    const bIsEntering = pair.bodyB.plugin.isEntering;
-                    if (aIsEntering && !bIsEntering) {
-                        pair.bodyA.plugin.isEntering = false;
-                    } else if (bIsEntering && !aIsEntering) {
-                        pair.bodyB.plugin.isEntering = false;
-                    }
-                }
-            }
+            this.handleEnteringContacts(event.pairs);
+            this.handleLandingContacts(event.pairs);
+        });
+        Matter.Events.on(this.engine, 'collisionActive', event => {
+            this.handleLandingContacts(event.pairs);
         });
         this.rebuildBoundaries();
+    }
+
+    handleEnteringContacts(pairs) {
+        for (const pair of pairs) {
+            if (!pair.bodyA.plugin?.isJoker || !pair.bodyB.plugin?.isJoker) continue;
+
+            const aIsEntering = pair.bodyA.plugin.isEntering;
+            const bIsEntering = pair.bodyB.plugin.isEntering;
+            if (aIsEntering && !bIsEntering) {
+                pair.bodyA.plugin.isEntering = false;
+            } else if (bIsEntering && !aIsEntering) {
+                pair.bodyB.plugin.isEntering = false;
+            }
+        }
+    }
+
+    handleLandingContacts(pairs) {
+        if (!this.floorEnabled) return;
+
+        const floorContacts = [];
+        const jokerContacts = [];
+
+        for (const pair of pairs) {
+            const bodyAIsJoker = pair.bodyA.plugin?.isJoker;
+            const bodyBIsJoker = pair.bodyB.plugin?.isJoker;
+            const bodyAIsFloor = pair.bodyA.plugin?.isJokerFloor;
+            const bodyBIsFloor = pair.bodyB.plugin?.isJokerFloor;
+
+            if (bodyAIsJoker && bodyBIsFloor) {
+                floorContacts.push(pair.bodyA);
+            } else if (bodyBIsJoker && bodyAIsFloor) {
+                floorContacts.push(pair.bodyB);
+            } else if (bodyAIsJoker && bodyBIsJoker) {
+                jokerContacts.push([pair.bodyA, pair.bodyB]);
+            }
+        }
+
+        for (const body of floorContacts) {
+            this.markJokerLanded(body);
+        }
+
+        // Propagate landing through every currently connected Joker contact.
+        // collisionActive covers cards that touched before the lower card was
+        // grounded, while hasLanded prevents rebounds or pile shifts replaying.
+        let landedAnotherJoker = true;
+        while (landedAnotherJoker) {
+            landedAnotherJoker = false;
+            for (const [bodyA, bodyB] of jokerContacts) {
+                if (bodyA.plugin.hasLanded && !bodyB.plugin.hasLanded) {
+                    landedAnotherJoker = this.markJokerLanded(bodyB) || landedAnotherJoker;
+                } else if (bodyB.plugin.hasLanded && !bodyA.plugin.hasLanded) {
+                    landedAnotherJoker = this.markJokerLanded(bodyA) || landedAnotherJoker;
+                }
+            }
+        }
+    }
+
+    markJokerLanded(body) {
+        if (!body.plugin?.isJoker || body.plugin.hasLanded) return false;
+
+        body.plugin.hasLanded = true;
+        this.audioService?.playJokerImpactSound?.();
+        return true;
     }
 
     rebuildBoundaries() {
@@ -208,7 +266,10 @@ class JokerPhysicsService {
         const floorOptions = {
             isStatic: true,
             friction: 0.9,
-            restitution: 0
+            restitution: 0,
+            plugin: {
+                isJokerFloor: true
+            }
         };
 
         const mainWallHeight = this.height - capHeight + 2;
@@ -342,6 +403,7 @@ class JokerPhysicsService {
             plugin: {
                 isJoker: true,
                 isEntering: !settled,
+                hasLanded: settled,
                 spawnX: x
             }
         });

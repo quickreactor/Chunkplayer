@@ -66,57 +66,6 @@ html {
     color: #7f7f7f;
 }
 
-.archive-map-link {
-    position: fixed;
-    top: max(12px, env(safe-area-inset-top));
-    right: max(12px, env(safe-area-inset-right));
-    z-index: 1200;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 13px 9px 11px;
-    color: #dffaff;
-    background: rgba(15, 18, 38, 0.9);
-    border: 1px solid rgba(104, 229, 255, 0.55);
-    border-radius: 999px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.35), inset 0 0 18px rgba(104, 229, 255, 0.06);
-    font-family: 'Gothic-Dice', Arial, sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color 160ms ease, border-color 160ms ease, background 160ms ease, transform 160ms ease;
-}
-
-.archive-map-link span[aria-hidden="true"] {
-    color: #b18cff;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    filter: drop-shadow(0 0 5px rgba(177, 140, 255, 0.8));
-}
-
-.archive-map-link:hover {
-    color: #fff;
-    background: rgba(42, 35, 78, 0.96);
-    border-color: #b18cff;
-    transform: translateY(-1px);
-}
-
-.archive-map-link:focus-visible {
-    outline: 3px solid #fff4a8;
-    outline-offset: 3px;
-}
-
-@media (max-width: 520px) {
-    .archive-map-link {
-        top: max(8px, env(safe-area-inset-top));
-        right: max(8px, env(safe-area-inset-right));
-        padding: 8px 10px;
-        font-size: 11px;
-    }
-}
-
 #flip-counter-wrapper {
     padding-bottom: 60px;
 }
@@ -778,24 +727,45 @@ option {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 8px;
     margin-top: 10px;
     position: relative;
 }
 
-#admin-toggle-btn {
+.admin-icon-button {
+    box-sizing: border-box;
+    width: 44px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(255, 255, 255, 0.05);
     border: none;
     color: rgba(255, 255, 255, 0.3);
-    padding: 8px 12px;
+    padding: 0;
     cursor: pointer;
     border-radius: 4px;
     font-size: 20px;
+    line-height: 1;
+    text-decoration: none;
     transition: all 0.3s ease;
 }
 
-#admin-toggle-btn:hover {
+.admin-icon-button:hover {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-icon-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.75);
+    outline-offset: 3px;
+}
+
+.archive-map-link span {
+    color: inherit;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    filter: grayscale(1);
 }
 
 .admin-panel {

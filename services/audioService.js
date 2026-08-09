@@ -9,6 +9,14 @@ class AudioService {
     constructor() {
         this.urls = {};
         this.sounds = [];
+        this.jokerImpactAudio = typeof Audio !== 'undefined'
+            ? new Audio('audio/pah2.wav')
+            : null;
+        this.activeJokerImpactAudio = new Set();
+
+        if (this.jokerImpactAudio) {
+            this.jokerImpactAudio.preload = 'auto';
+        }
     }
 
     /**
@@ -87,6 +95,26 @@ class AudioService {
         if (CONFIG.movieData && CONFIG.movieData.punishmentMovie) {
             audio.src = CONFIG.movieData.punishmentMovie.sound;
             audio.play();
+        }
+    }
+
+    /**
+     * Play the Joker landing sound. Each impact gets its own audio element so
+     * closely spaced landings can overlap without restarting an earlier sound.
+     */
+    playJokerImpactSound() {
+        if (!this.jokerImpactAudio) return;
+
+        const audio = this.jokerImpactAudio.cloneNode(true);
+        audio.volume = 0.3;
+        const cleanup = () => this.activeJokerImpactAudio.delete(audio);
+        this.activeJokerImpactAudio.add(audio);
+        audio.addEventListener('ended', cleanup, { once: true });
+        audio.addEventListener('error', cleanup, { once: true });
+
+        const playback = audio.play();
+        if (playback && typeof playback.catch === 'function') {
+            playback.catch(cleanup);
         }
     }
 }

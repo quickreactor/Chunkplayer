@@ -7,7 +7,7 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=joker-grid-rotation-20260809">
+    <link rel="stylesheet" href="style.css?v=archive-utility-control-20260809">
 
     <!-- Google Fonts for Graffiti -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,12 +33,12 @@
 
     <!-- Services -->
     <script src="services/apiService.js?v=admin-logo-color-20260730"></script>
-    <script src="services/audioService.js"></script>
+    <script src="services/audioService.js?v=joker-impact-audio-volume-20260809"></script>
     <script src="services/dateService.js"></script>
     <script src="services/domService.js?v=video-surface-play-20260806"></script>
     <script src="services/effectService.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
-    <script src="services/jokerPhysicsService.js?v=joker-mobile-scale-50-20260807"></script>
+    <script src="services/jokerPhysicsService.js?v=joker-impact-audio-20260809"></script>
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js?v=media-cleanup-20260724-2"></script>
     <script src="services/adminService.js"></script>
@@ -66,16 +66,12 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=joker-grid-jitter-20260809" defer></script>
+    <script src="app.js?v=joker-impact-audio-20260809" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
 
 <body>
-    <a class="archive-map-link" href="archive.html" aria-label="Open the movie archive constellation">
-        <span aria-hidden="true">✦</span>
-        <span>Archive</span>
-    </a>
     <div id="snow"></div>
     <div id="confetti-container"></div>
     <div id="sonic"><img src="images/eric.gif" alt=""></div>
@@ -146,7 +142,12 @@
         </div>
         <!-- Admin Section -->
         <div id="admin-section" class="admin-section hidden">
-            <button id="admin-toggle-btn">⚙️</button>
+            <button id="admin-toggle-btn" class="admin-icon-button" aria-label="Open admin controls"
+                title="Settings">⚙️</button>
+            <a class="admin-icon-button archive-map-link" href="archive.html?v=circular-constellations-20260810"
+                aria-label="Open the movie archive constellation" title="Archive">
+                <span aria-hidden="true">✦</span>
+            </a>
             <div id="admin-panel" class="admin-panel hidden">
                 <!-- Password Entry -->
                 <div id="admin-login" class="admin-login">

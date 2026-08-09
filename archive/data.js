@@ -1,6 +1,44 @@
 /* Canonical, browser-local research data. No fetch is used so the map works from file://. */
 window.CHUNKPLAYER_ARCHIVE = {
   generated: "2026-08-07",
+  chooserByMovie: {
+    "unfrosted": "barnaby",
+    "madame-web": "tom",
+    "pinocchio": "robert",
+    "golden-arm": "interlude",
+    "hundreds-of-beavers": "tom",
+    "ball-of-twine": "interlude",
+    "hard-ticket-to-hawaii": "barnaby",
+    "bedtime-stories": "robert",
+    "trancers-5": "tom",
+    "chopping-mall": "barnaby",
+    "the-mask": "robert",
+    "shakma": "tom",
+    "better-off-dead": "barnaby",
+    "electric-dreams": "robert",
+    "the-stunt-man": "tom",
+    "lifeforce": "barnaby",
+    "lethal-weapon": "robert",
+    "com-for-murder": "tom",
+    "uninvited": "barnaby",
+    "dragonball-evolution": "robert",
+    "the-fury": "tom",
+    "champagne-and-bullets": "barnaby",
+    "tammy-and-the-t-rex": "robert",
+    "innerspace": "tom",
+    "maximum-overdrive": "barnaby",
+    "toxic-avenger": "robert",
+    "the-fanatic": "tom",
+    "emmas-boy": "barnaby",
+    "buckaroo-banzai": "robert",
+    "police-story": "tom",
+    "live-wire": "barnaby",
+    "good-luck-have-fun-dont-die": "robert",
+    "the-dead-zone": "tom",
+    "the-napa-boys": "barnaby",
+    "cherry-2000": "robert",
+    "from-beyond": "tom"
+  },
   movies: [
     {
       id: "unfrosted", title: "Unfrosted", alternateTitles: [], type: "film", releaseYear: 2024,
@@ -128,7 +166,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "the-mask", title: "The Mask", alternateTitles: [], type: "film", releaseYear: 1994,
-      watchedDate: "2024-11-20", dateConfidence: "estimated", category: "normal", chunkCount: 19,
+      watchedDate: "2024-11-14", dateConfidence: "confirmed", category: "normal", chunkCount: 19,
       runtime: 101, genres: ["Comedy", "Fantasy"], poster: "assets/posters/the-mask.jpg",
       directors: ["Chuck Russell"], producers: ["Robert Engelman"], writers: ["Mike Werb"],
       cast: ["Jim Carrey", "Peter Riegert", "Peter Greene", "Amy Yasbeck", "Cameron Diaz"],
@@ -139,7 +177,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "shakma", title: "Shakma", alternateTitles: [], type: "film", releaseYear: 1990,
-      watchedDate: "2024-12-13", dateConfidence: "estimated", category: "normal", chunkCount: 20,
+      watchedDate: "2024-12-11", dateConfidence: "confirmed", category: "normal", chunkCount: 20,
       runtime: 101, genres: ["Horror"], poster: "assets/posters/shakma.jpg",
       directors: ["Hugh Parks", "Tom Logan"], producers: ["Hugh Parks"], writers: ["Roger Engle"],
       cast: ["Christopher Atkins", "Amanda Wyss", "Ari Meyers", "Roddy McDowall", "Robb Edward Morris"],
@@ -149,7 +187,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "better-off-dead", title: "Better Off Dead", alternateTitles: [], type: "film", releaseYear: 1985,
-      watchedDate: "2025-01-06", dateConfidence: "estimated", category: "normal", chunkCount: 19,
+      watchedDate: "2025-01-04", dateConfidence: "confirmed", category: "normal", chunkCount: 19,
       runtime: 97, genres: ["Comedy", "Romance"], poster: "assets/posters/better-off-dead.jpg",
       directors: ["Savage Steve Holland"], producers: ["Michael Jaffe"], writers: ["Savage Steve Holland"],
       cast: ["John Cusack", "Diane Franklin", "Curtis Armstrong", "Amanda Wyss", "David Ogden Stiers"],
@@ -160,7 +198,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "electric-dreams", title: "Electric Dreams", alternateTitles: [], type: "film", releaseYear: 1984,
-      watchedDate: "2025-01-30", dateConfidence: "estimated", category: "normal", chunkCount: 19,
+      watchedDate: "2025-01-31", dateConfidence: "confirmed", category: "normal", chunkCount: 19,
       runtime: 95, genres: ["Science fiction", "Romance"], poster: "assets/posters/electric-dreams.jpg",
       directors: ["Steve Barron"], producers: ["Larry DeWaay", "Rusty Lemorande"], writers: ["Rusty Lemorande"],
       cast: ["Lenny von Dohlen", "Virginia Madsen", "Maxwell Caulfield", "Bud Cort", "Don Fellows"],
@@ -170,7 +208,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "com-for-murder", title: ".com for Murder", alternateTitles: [], type: "film", releaseYear: 2002,
-      watchedDate: "2025-02-24", dateConfidence: "estimated", category: "normal", chunkCount: 19,
+      watchedDate: "2025-05-21", dateConfidence: "confirmed", category: "normal", chunkCount: 19,
       runtime: 96, genres: ["Thriller"], poster: "assets/posters/com-for-murder.jpg",
       directors: ["Nico Mastorakis"], producers: ["Nico Mastorakis"], writers: ["Nico Mastorakis", "Phil Marr"],
       cast: ["Nastassja Kinski", "Nicollette Sheridan", "Roger Daltrey", "Huey Lewis", "Jeffery Dean"],
@@ -180,7 +218,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "the-stunt-man", title: "The Stunt Man", alternateTitles: [], type: "film", releaseYear: 1980,
-      watchedDate: "2025-03-20", dateConfidence: "estimated", category: "normal", chunkCount: 26,
+      watchedDate: "2025-02-26", dateConfidence: "confirmed", category: "normal", chunkCount: 26,
       runtime: 131, genres: ["Comedy", "Thriller"], poster: "assets/posters/the-stunt-man.jpg",
       directors: ["Richard Rush"], producers: ["Richard Rush", "Melvin Simon"], writers: ["Lawrence B. Marcus", "Richard Rush", "Paul Brodeur"],
       cast: ["Peter O'Toole", "Steve Railsback", "Barbara Hershey", "Allen Garfield", "Alex Rocco"],
@@ -191,7 +229,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "lifeforce", title: "Lifeforce", alternateTitles: ["The Space Vampires"], type: "film", releaseYear: 1985,
-      watchedDate: "2025-03-31", dateConfidence: "estimated", category: "normal", chunkCount: 23,
+      watchedDate: "2025-03-29", dateConfidence: "confirmed", category: "normal", chunkCount: 23,
       runtime: 116, genres: ["Science fiction", "Horror"], poster: "assets/posters/lifeforce.jpg",
       directors: ["Tobe Hooper"], producers: ["Menahem Golan", "Yoram Globus"], writers: ["Dan O'Bannon", "Don Jakoby", "Colin Wilson"],
       cast: ["Steve Railsback", "Peter Firth", "Frank Finlay", "Mathilda May", "Patrick Stewart"],
@@ -202,7 +240,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "lethal-weapon", title: "Lethal Weapon", alternateTitles: [], type: "film", releaseYear: 1987,
-      watchedDate: "2025-05-07", dateConfidence: "estimated", category: "normal", chunkCount: 21,
+      watchedDate: "2025-04-26", dateConfidence: "confirmed", category: "normal", chunkCount: 21,
       runtime: 110, genres: ["Action", "Crime"], poster: "assets/posters/lethal-weapon.jpg",
       directors: ["Richard Donner"], producers: ["Richard Donner", "Joel Silver"], writers: ["Shane Black"],
       cast: ["Mel Gibson", "Danny Glover", "Gary Busey", "Mitchell Ryan", "Tom Atkins"],

@@ -5,30 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <base href="archive/">
   <meta name="theme-color" content="#070816">
-  <title>Movie Archive · Chunkplayer</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>The Chunkplayer Archive</title>
+  <link rel="icon" href="assets/archive-favicon.svg?v=1" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="styles.css?v=masthead-wordmark-20260810">
 </head>
 <body>
   <a class="skip-link" href="#map">Skip to map</a>
   <div class="stars" aria-hidden="true"></div>
   <header class="masthead">
     <div class="brand">
-      <img src="assets/chunkplayer-logo.png" alt="" width="52" height="52">
-      <div>
-        <p class="eyebrow">THE CHUNKPLAYER ARCHIVE</p>
-        <h1>Movie Constellation</h1>
-      </div>
+      <h1>THE CHUNKPLAYER ARCHIVE</h1>
     </div>
     <div class="archive-stats" aria-label="Archive summary">
       <span><strong id="movie-count">0</strong> titles</span>
       <span><strong id="year-span">—</strong> watched</span>
       <span><strong id="connection-count">0</strong> connections</span>
+      <span id="runtime-stat" title="Combined runtime of every archive title"><strong id="runtime-total">0h</strong> runtime</span>
+      <span id="chunk-stat" title="Five-minute chunks, rounded down once per title"><strong id="chunk-total">0</strong> chunks</span>
+      <span id="archive-age-stat"><strong id="archive-age">—</strong> since the first chunk</span>
     </div>
     <a class="return-link" href="../index.html"><span aria-hidden="true">←</span> Today’s chunk</a>
   </header>
 
   <main>
-    <section class="controls" aria-label="Map controls">
+    <section class="controls-shell" aria-label="Map controls">
+      <button id="controls-toggle" class="controls-toggle" type="button" aria-expanded="true" aria-controls="archive-controls">
+        <span class="controls-toggle-title">Filters &amp; layout</span>
+        <span class="controls-toggle-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" focusable="false"><path d="m5.5 7.75 4.5 4 4.5-4"></path></svg>
+        </span>
+      </button>
+      <div class="controls" id="archive-controls">
       <label class="search-control" for="search">
         <span>Find a title or person</span>
         <input id="search" type="search" autocomplete="off" placeholder="e.g. Stephen King">
@@ -39,6 +46,13 @@
         <label><input type="checkbox" value="punishment" checked> Punishment</label>
         <label><input type="checkbox" value="reward" checked> Reward</label>
       </fieldset>
+      <fieldset class="filter-group" id="chooser-filters">
+        <legend>Chosen by</legend>
+        <label><input type="checkbox" value="barnaby" checked> Barnaby</label>
+        <label><input type="checkbox" value="tom" checked> Tom</label>
+        <label><input type="checkbox" value="robert" checked> Robert</label>
+        <label><input type="checkbox" value="interlude" checked> Interludes</label>
+      </fieldset>
       <fieldset class="filter-group" id="relation-filters">
         <legend>Connections</legend>
         <label><input type="checkbox" value="person" checked> People</label>
@@ -48,8 +62,10 @@
       </fieldset>
       <div class="view-controls" aria-label="Layout controls">
         <button id="web-view" type="button" class="active" aria-pressed="true">Constellation</button>
-        <button id="timeline-view" type="button" aria-pressed="false">Timeline</button>
+        <button id="timeline-view" type="button" aria-pressed="false">Watch order</button>
+        <button id="release-view" type="button" aria-pressed="false">Release order</button>
         <button id="reset-view" type="button">Reset view</button>
+      </div>
       </div>
     </section>
 
@@ -70,8 +86,8 @@
         </defs>
         <g id="viewport">
           <g id="links"></g>
-          <g id="nodes"></g>
           <g id="timeline-axis"></g>
+          <g id="nodes"></g>
         </g>
       </svg>
       <div class="map-help" aria-hidden="true">Drag to explore · wheel/pinch to zoom · select a poster for details</div>
@@ -119,14 +135,16 @@
   </main>
 
   <footer>
-    <p>Dates marked ≈ are reconstructed from archive poster timestamps. Credits and production notes link to their sources.</p>
-    <p class="legend"><span class="dot normal"></span>Normal <span class="dot punishment"></span>Punishment <span class="dot reward"></span>Reward</p>
+    <div class="legend-stack" aria-label="Map color legend">
+      <p class="legend"><span class="legend-label">Border</span><span class="dot barnaby"></span>Barnaby <span class="dot tom"></span>Tom <span class="dot robert"></span>Robert <span class="dot interlude"></span>Interlude</p>
+      <p class="legend"><span class="legend-label">Corner dot</span><span class="dot normal"></span>Normal <span class="dot punishment"></span>Punishment <span class="dot reward"></span>Reward</p>
+    </div>
   </footer>
 
   <script src="vendor/d3.v7.9.0.min.js"></script>
-  <script src="data.js"></script>
+  <script src="data.js?v=chooser-colors-20260810"></script>
   <script src="connection-images.js"></script>
   <script src="verified-connections.js"></script>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=circular-constellations-20260810"></script>
 </body>
 </html>

@@ -16,7 +16,8 @@ class ChunkPlayerApp {
         this.effectService = new EffectService();
         this.jokerPhysicsService = new JokerPhysicsService(
             document.getElementById('poster-container-2'),
-            this.domService.elements.poster2
+            this.domService.elements.poster2,
+            this.audioService
         );
         this.dateService = null; // Will be initialized after loading URLs
         this.soundBoardService = null;
