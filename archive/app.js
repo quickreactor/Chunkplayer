@@ -3,10 +3,11 @@
 
   const archive = window.CHUNKPLAYER_ARCHIVE;
   const chooserByMovie = archive.chooserByMovie || {};
+  const timelineEvents = archive.timelineEvents || [];
   const movies = archive.movies.map(movie => ({
     ...movie,
     kind: "movie",
-    chosenBy: chooserByMovie[movie.id] || null,
+    chosenBy: movie.category === "punishment" ? null : chooserByMovie[movie.id] || null,
     chunkCount: chunkCountForRuntime(movie.runtime)
   }));
   const movieById = new Map(movies.map(movie => [movie.id, movie]));
@@ -53,6 +54,8 @@
   const status = document.getElementById("live-status");
   const controlsToggle = document.getElementById("controls-toggle");
   const controlsPanel = document.getElementById("archive-controls");
+  const timelineEventPopover = document.getElementById("timeline-event-popover");
+  const timelineEventClose = document.getElementById("timeline-event-close");
   let width = 1200;
   let height = 700;
   let layout = "web";
@@ -65,6 +68,10 @@
   let detailHistory = [];
   let pinchGestureActive = false;
   let suppressMapClicksUntil = 0;
+  let currentZoomTransform = d3.zoomIdentity;
+  let activeTimelineEventId = null;
+  let activeTimelineEventAnchor = null;
+  let activeTimelineEventTrigger = null;
   const savedPositions = new Map();
 
   function trackTouchGesture(event) {
@@ -92,20 +99,23 @@
 
   const zoom = d3.zoom()
     .scaleExtent([0.18, 3.5])
-    .filter(event => event.type.startsWith("touch") || !event.target.closest || !event.target.closest(".movie-node, .hub-node"))
-    .on("zoom", event => viewport.attr("transform", event.transform));
+    .filter(event => event.type.startsWith("touch") || !event.target.closest || !event.target.closest(".movie-node, .hub-node, .timeline-event-marker"))
+    .on("zoom", event => {
+      currentZoomTransform = event.transform;
+      viewport.attr("transform", event.transform);
+      positionTimelineEventPopover();
+    });
   svg.call(zoom).on("dblclick.zoom", null);
 
   document.getElementById("movie-count").textContent = movies.length;
-  document.getElementById("connection-count").textContent = allLinks.length;
   const dated = movies.filter(movie => movie.watchedDate).map(movie => movie.watchedDate).sort();
-  document.getElementById("year-span").textContent = dated.length ? `${dated[0].slice(0, 4)}–${dated.at(-1).slice(0, 4)}` : "—";
-  const archiveAge = dated.length ? formatCalendarDuration(dated[0], new Date()) : "—";
+  const archiveAge = dated.length ? formatCompactCalendarDuration(dated[0], new Date()) : "—";
   document.getElementById("archive-age").textContent = archiveAge;
   if (dated.length) {
     const firstChunkDate = dateFormatter.format(new Date(`${dated[0]}T12:00:00`));
+    document.getElementById("archive-start").textContent = firstChunkDate;
     document.getElementById("archive-age-stat").title = `Elapsed time from ${firstChunkDate} to today`;
-    document.getElementById("archive-age-stat").setAttribute("aria-label", `${archiveAge} since the first chunk on ${firstChunkDate}`);
+    document.getElementById("archive-age-stat").setAttribute("aria-label", `Established ${firstChunkDate}; ${archiveAge} since the first chunk`);
   }
   const totalRuntime = movies.reduce((sum, movie) => sum + (Number.isFinite(movie.runtime) ? movie.runtime : 0), 0);
   const totalChunks = movies.reduce((sum, movie) => sum + (movie.chunkCount || 0), 0);
@@ -124,7 +134,7 @@
     return remainder ? `${hours}h ${remainder}m` : `${hours}h`;
   }
 
-  function formatCalendarDuration(startDateString, endDate) {
+  function formatCompactCalendarDuration(startDateString, endDate) {
     const [startYear, startMonth, startDay] = startDateString.split("-").map(Number);
     const start = new Date(startYear, startMonth - 1, startDay);
     const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
@@ -141,7 +151,7 @@
       monthCursor = addCalendarMonths(cursor, months);
     }
     const days = dayNumber(end) - dayNumber(monthCursor);
-    return [durationPart(years, "year"), durationPart(months, "month"), durationPart(days, "day")].join(", ");
+    return `${years}y ${months}m ${days}d`;
   }
 
   function addCalendarYears(date, years) {
@@ -158,7 +168,6 @@
 
   function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
   function dayNumber(date) { return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000); }
-  function durationPart(value, unit) { return `${value} ${unit}${value === 1 ? "" : "s"}`; }
 
   function setControlsExpanded(expanded, announce = false) {
     controlsPanel.hidden = !expanded;
@@ -176,6 +185,7 @@
   }
 
   function rebuild() {
+    closeTimelineEvent();
     const categories = checkedValues("#category-filters");
     const choosers = checkedValues("#chooser-filters");
     const relations = checkedValues("#relation-filters");
@@ -271,7 +281,9 @@
     group.append("rect").attr("class", "node-label-bg").attr("x", -52).attr("y", 68).attr("width", 104).attr("height", 33).attr("rx", 6);
     group.append("text").attr("class", "node-title").attr("y", 81).text(ellipsize(movie.title, 18));
     group.append("text").attr("class", "node-date").attr("y", 94).text(formatNodeSubtitle(movie));
-    group.append("circle").attr("cx", 35).attr("cy", -55).attr("r", 5).attr("fill", categoryColors[movie.category]).attr("stroke", "#070816").attr("stroke-width", 1.5);
+    if (movie.category !== "normal") {
+      group.append("circle").attr("cx", 35).attr("cy", -55).attr("r", 5).attr("fill", categoryColors[movie.category]).attr("stroke", "#070816").attr("stroke-width", 1.5);
+    }
   }
 
   function drawHubNode(group, hubNode) {
@@ -698,40 +710,207 @@
   }
 
   function positionTimeline(nodeJoin) {
+    axisLayer.selectAll("*").remove();
     nodeJoin.on(".drag", null);
     linkLayer.interrupt().attr("display", "none");
     nodeJoin.filter(node => node.kind === "hub").interrupt().attr("display", "none");
     const movieJoin = nodeJoin.filter(node => node.kind === "movie").attr("display", null);
     const isReleaseOrder = layout === "release";
-    const movieNodes = currentNodes.filter(node => node.kind === "movie").sort((a, b) => {
-      if (isReleaseOrder) return a.releaseYear - b.releaseYear || a.title.localeCompare(b.title);
-      return dateValue(a) - dateValue(b) || a.title.localeCompare(b.title);
-    });
+    const movieNodes = currentNodes.filter(node => node.kind === "movie");
     const startX = 150;
     const spacing = 150;
-    const trackY = Math.max(180, height * .48);
-    movieNodes.forEach((node, index) => {
-      node.x = startX + index * spacing;
-      node.y = trackY;
-    });
     const duration = reducedMotion ? 0 : 700;
+
+    if (isReleaseOrder) {
+      movieNodes.sort((a, b) => a.releaseYear - b.releaseYear || a.title.localeCompare(b.title));
+      const trackY = Math.max(180, height * .48);
+      movieNodes.forEach((node, index) => {
+        node.x = startX + index * spacing;
+        node.y = trackY;
+      });
+      movieJoin.transition().duration(duration).attr("transform", node => `translate(${node.x},${node.y})`);
+      drawTimelineAxis(movieNodes, trackY, spacing, true, "RELEASE ORDER");
+      setTimeout(() => focusTimelineStart(trackY), duration + 30);
+      return;
+    }
+
+    const watchNodes = movieNodes
+      .filter(node => node.category !== "punishment")
+      .sort((a, b) => dateValue(a) - dateValue(b) || a.title.localeCompare(b.title));
+    const punishmentNodes = movieNodes
+      .filter(node => node.category === "punishment")
+      .sort((a, b) => dateValue(a) - dateValue(b) || a.title.localeCompare(b.title));
+    const watchTrackY = Math.max(180, height * .3);
+    const punishmentTrackY = watchTrackY + 270;
+    watchNodes.forEach((node, index) => {
+      node.x = startX + index * spacing;
+      node.y = watchTrackY;
+    });
+    positionPunishmentNodes(punishmentNodes, watchNodes, startX, spacing, punishmentTrackY);
+    const eventPositions = positionTimelineEvents(watchNodes, watchTrackY + 122, spacing);
+    const timelineExtentX = Math.max(
+      watchNodes.at(-1)?.x ?? -Infinity,
+      d3.max(eventPositions, event => event.x) ?? -Infinity
+    );
     movieJoin.transition().duration(duration).attr("transform", node => `translate(${node.x},${node.y})`);
-    drawTimelineAxis(movieNodes, trackY, startX, spacing, isReleaseOrder);
-    setTimeout(() => focusTimelineStart(trackY), duration + 30);
+    drawTimelineAxis(watchNodes, watchTrackY, spacing, false, "DAILY CHUNKS", "", timelineExtentX);
+    drawTimelineAxis(punishmentNodes, punishmentTrackY, spacing, false, "PUNISHMENTS", "punishment", timelineExtentX);
+    drawTimelineEvents(eventPositions, watchNodes[0]?.x - spacing / 2, punishmentNodes.length ? punishmentTrackY + 168 : watchTrackY + 330);
+    const focusY = watchNodes.length && punishmentNodes.length ? (watchTrackY + punishmentTrackY) / 2 : punishmentNodes.length ? punishmentTrackY : watchTrackY;
+    setTimeout(() => focusTimelineStart(focusY), duration + 30);
   }
 
-  function drawTimelineAxis(movieNodes, trackY, startX, spacing, isReleaseOrder) {
-    axisLayer.selectAll("*").remove();
-    if (!movieNodes.length) return;
-    const axisY = trackY + 122;
-    axisLayer.append("line").attr("class", "timeline-line").attr("x1", startX - 60).attr("x2", startX + (movieNodes.length - 1) * spacing + 60).attr("y1", axisY).attr("y2", axisY);
-    const yearForMovie = movie => isReleaseOrder ? String(movie.releaseYear) : movie.watchedDate?.slice(0, 4);
-    const years = d3.groups(movieNodes.filter(movie => yearForMovie(movie)), yearForMovie);
-    years.forEach(([year, entries]) => {
-      const x = d3.mean(entries, entry => entry.x);
-      axisLayer.append("line").attr("class", "timeline-tick").attr("x1", x).attr("x2", x).attr("y1", axisY - 10).attr("y2", axisY + 10);
-      axisLayer.append("text").attr("class", "timeline-label").attr("x", x).attr("y", axisY + 27).text(year);
+  function positionPunishmentNodes(punishmentNodes, watchNodes, startX, spacing, trackY) {
+    const anchors = watchNodes.filter(node => timelineDate(node));
+    punishmentNodes.forEach((node, index) => {
+      node.y = trackY;
+      if (anchors.length < 2 || !timelineDate(node)) {
+        node.x = startX + index * spacing;
+        return;
+      }
+      node.x = timelineXForDate(timelineDate(node), anchors, spacing, false);
     });
+  }
+
+  function positionTimelineEvents(watchNodes, axisY, spacing) {
+    const anchors = watchNodes.filter(node => timelineDate(node));
+    if (anchors.length < 2) return [];
+    return timelineEvents.map(event => ({
+      ...event,
+      x: timelineXForDate(event.layoutDate, anchors, spacing, true),
+      axisY,
+      dotY: axisY + 86
+    }));
+  }
+
+  function timelineXForDate(dateString, anchors, spacing, allowTail) {
+    const target = dateStringValue(dateString);
+    const first = anchors[0];
+    const last = anchors.at(-1);
+    if (target <= dateValue(first)) return first.x;
+    if (target >= dateValue(last)) return last.x + (allowTail && target > dateValue(last) ? spacing / 2 : 0);
+    const rightIndex = anchors.findIndex(anchor => dateValue(anchor) >= target);
+    const left = anchors[rightIndex - 1];
+    const right = anchors[rightIndex];
+    const interval = dateValue(right) - dateValue(left);
+    const progress = interval ? (target - dateValue(left)) / interval : 0;
+    return left.x + (right.x - left.x) * progress;
+  }
+
+  function drawTimelineEvents(events, keyX, keyY) {
+    if (!events.length) return;
+    const key = axisLayer.append("g").attr("class", "timeline-event-key").attr("transform", `translate(${keyX},${keyY})`);
+    key.append("circle").attr("r", 5).attr("cx", 5).attr("cy", -2);
+    key.append("text").attr("class", "timeline-event-key-title").attr("x", 18).attr("y", 1).text("Credible Jared Leto Accusations");
+
+    const markers = axisLayer.selectAll("g.timeline-event-marker")
+      .data(events, event => event.id)
+      .join("g")
+      .attr("class", "timeline-event-marker")
+      .attr("role", "button")
+      .attr("tabindex", 0)
+      .attr("focusable", true)
+      .attr("aria-controls", "timeline-event-popover")
+      .attr("aria-expanded", event => String(event.id === activeTimelineEventId))
+      .attr("aria-label", event => `${event.displayDate}: ${event.title}`)
+      .on("click", function (domEvent, event) {
+        domEvent.preventDefault();
+        domEvent.stopPropagation();
+        toggleTimelineEvent(event, this);
+      })
+      .on("keydown", function (domEvent, event) {
+        if (domEvent.key !== "Enter" && domEvent.key !== " ") return;
+        domEvent.preventDefault();
+        domEvent.stopPropagation();
+        toggleTimelineEvent(event, this);
+      });
+
+    markers.append("line")
+      .attr("class", "timeline-event-stem")
+      .attr("x1", event => event.x).attr("x2", event => event.x)
+      .attr("y1", event => event.axisY + 2).attr("y2", event => event.dotY);
+    markers.append("circle").attr("class", "timeline-event-hit").attr("cx", event => event.x).attr("cy", event => event.dotY).attr("r", 18);
+    markers.append("circle").attr("class", "timeline-event-dot").attr("cx", event => event.x).attr("cy", event => event.dotY).attr("r", 6);
+    markers.each(function (event) {
+      if (event.id !== activeTimelineEventId) return;
+      activeTimelineEventAnchor = { x: event.x, y: event.dotY };
+      activeTimelineEventTrigger = this;
+      requestAnimationFrame(positionTimelineEventPopover);
+    });
+  }
+
+  function drawTimelineAxis(movieNodes, trackY, spacing, isReleaseOrder, trackLabel, trackClass = "", extentX = null) {
+    if (!movieNodes.length) return;
+    const trackGroup = axisLayer.append("g").attr("class", `timeline-track ${trackClass}`.trim());
+    const orderedNodes = [...movieNodes].sort((a, b) => a.x - b.x);
+    const axisY = trackY + 122;
+    const yearForMovie = movie => isReleaseOrder ? String(movie.releaseYear) : timelineDate(movie)?.slice(0, 4);
+    const years = d3.groups(orderedNodes.filter(movie => yearForMovie(movie)), yearForMovie);
+    const yearMarkers = years.map(([year, entries], index) => ({
+      year,
+      x: index === 0 ? entries[0].x - spacing / 2 : (years[index - 1][1].at(-1).x + entries[0].x) / 2
+    }));
+    const lineStart = yearMarkers[0]?.x ?? orderedNodes[0].x - spacing / 2;
+    const lineEnd = Math.max(orderedNodes.at(-1).x, Number.isFinite(extentX) ? extentX : -Infinity) + 60;
+    trackGroup.append("text").attr("class", "timeline-track-label").attr("x", lineStart).attr("y", trackY - 88).text(trackLabel);
+    trackGroup.append("line").attr("class", "timeline-line").attr("x1", lineStart).attr("x2", lineEnd).attr("y1", axisY).attr("y2", axisY);
+    yearMarkers.forEach(({ year, x }) => {
+      trackGroup.append("line").attr("class", "timeline-tick").attr("x1", x).attr("x2", x).attr("y1", axisY - 10).attr("y2", axisY + 10);
+      trackGroup.append("text").attr("class", "timeline-label").attr("x", x).attr("y", axisY + 27).text(year);
+    });
+  }
+
+  function toggleTimelineEvent(event, trigger) {
+    if (activeTimelineEventId === event.id) {
+      closeTimelineEvent(true);
+      return;
+    }
+    activeTimelineEventId = event.id;
+    activeTimelineEventAnchor = { x: event.x, y: event.dotY };
+    activeTimelineEventTrigger = trigger;
+    document.getElementById("timeline-event-date").textContent = event.displayDate;
+    document.getElementById("timeline-event-title").textContent = event.title;
+    document.getElementById("timeline-event-summary").textContent = event.summary;
+    document.getElementById("timeline-event-response").textContent = event.response;
+    const sourceNav = document.getElementById("timeline-event-sources");
+    sourceNav.replaceChildren(...event.sources.map(source => {
+      const link = element("a", source.label);
+      link.href = source.url;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      return link;
+    }));
+    axisLayer.selectAll(".timeline-event-marker").attr("aria-expanded", marker => String(marker.id === event.id));
+    timelineEventPopover.hidden = false;
+    requestAnimationFrame(positionTimelineEventPopover);
+    status.textContent = `${event.displayDate} timeline note opened: ${event.title}.`;
+  }
+
+  function closeTimelineEvent(returnFocus = false) {
+    if (!activeTimelineEventId && timelineEventPopover.hidden) return;
+    const trigger = activeTimelineEventTrigger;
+    activeTimelineEventId = null;
+    activeTimelineEventAnchor = null;
+    activeTimelineEventTrigger = null;
+    timelineEventPopover.hidden = true;
+    timelineEventPopover.style.removeProperty("left");
+    timelineEventPopover.style.removeProperty("top");
+    axisLayer.selectAll(".timeline-event-marker").attr("aria-expanded", "false");
+    if (returnFocus && trigger?.isConnected) trigger.focus();
+  }
+
+  function positionTimelineEventPopover() {
+    if (timelineEventPopover.hidden || !activeTimelineEventAnchor) return;
+    const [anchorX, anchorY] = currentZoomTransform.apply([activeTimelineEventAnchor.x, activeTimelineEventAnchor.y]);
+    const padding = 10;
+    const popoverWidth = timelineEventPopover.offsetWidth;
+    const popoverHeight = timelineEventPopover.offsetHeight;
+    const left = Math.max(padding, Math.min(width - popoverWidth - padding, anchorX - popoverWidth / 2));
+    const below = anchorY + 16;
+    const above = anchorY - popoverHeight - 16;
+    const top = below + popoverHeight <= height - padding ? below : Math.max(padding, above);
+    timelineEventPopover.style.left = `${left}px`;
+    timelineEventPopover.style.top = `${top}px`;
   }
 
   function ticked() {
@@ -748,6 +927,7 @@
   }
 
   function navigateDetail(kind, id, remember = true) {
+    closeTimelineEvent();
     if (remember && currentDetail && (currentDetail.kind !== kind || currentDetail.id !== id)) detailHistory.push(currentDetail);
     currentDetail = { kind, id };
     selectedId = id;
@@ -801,6 +981,7 @@
     if (!movie) return;
     openDetail();
     panel.dataset.kind = "movie";
+    panel.dataset.category = movie.category;
     document.getElementById("detail-context").textContent = "Archive record";
     document.getElementById("detail-poster").src = movie.poster;
     document.getElementById("detail-poster").alt = `${movie.title} poster`;
@@ -845,6 +1026,7 @@
     if (!hub) return;
     openDetail();
     panel.dataset.kind = hub.type;
+    delete panel.dataset.category;
     const isCredit = hub.type === "person" || hub.type === "production";
     const firstMovie = movieById.get(hub.movies[0]);
     const firstImage = connectionImage(hub, hub.movies[0]);
@@ -884,7 +1066,7 @@
     const roles = hub.roleByMovie?.[movieId] || [hub.type === "theme" ? "Major theme" : "Connected title"];
     const record = connectionImage(hub, movieId);
     const item = document.createElement("li");
-    item.className = "movie-role-card";
+    item.className = `movie-role-card ${movie.category}`;
     const image = document.createElement("img");
     image.src = record?.image || hub.portrait || movie.poster;
     image.alt = record?.image ? `${hub.label} in or associated with ${movie.title}` : `${movie.title} image`;
@@ -1000,9 +1182,11 @@
     svg.attr("viewBox", `0 0 ${width} ${height}`);
     if (layout !== "web") draw();
     else ticked();
+    requestAnimationFrame(positionTimelineEventPopover);
   }
 
   function setLayout(nextLayout) {
+    closeTimelineEvent();
     layout = nextLayout;
     const layoutButtons = { web: "web-view", timeline: "timeline-view", release: "release-view" };
     Object.entries(layoutButtons).forEach(([buttonLayout, buttonId]) => {
@@ -1022,6 +1206,9 @@
   }
 
   function formatWatchDate(movie) {
+    if (movie.punishmentStartDate) {
+      return `Punishment began ${dateFormatter.format(new Date(`${movie.punishmentStartDate}T12:00:00`))}`;
+    }
     if (!movie.watchedDate) {
       if (movie.dateConfidence === "current") return "Current punishment movie";
       return "Punishment date not recorded";
@@ -1030,23 +1217,26 @@
     return `${prefix}${dateFormatter.format(new Date(`${movie.watchedDate}T12:00:00`))}${movie.dateConfidence === "estimated" ? " · reconstructed" : ""}`;
   }
   function formatShortDate(movie) {
-    if (!movie.watchedDate) return movie.category === "punishment" ? "PUNISHMENT" : "DATE UNKNOWN";
-    const [year, month, day] = movie.watchedDate.split("-");
+    const date = timelineDate(movie);
+    if (!date) return movie.category === "punishment" ? "PUNISHMENT" : "DATE UNKNOWN";
+    const [year, month, day] = date.split("-");
     return `${movie.dateConfidence === "estimated" ? "≈ " : ""}${day}/${month}/${year.slice(2)}`;
   }
   function formatNodeSubtitle(movie) { return layout === "release" ? `RELEASED ${movie.releaseYear}` : formatShortDate(movie); }
-  function dateValue(movie) { return movie.watchedDate ? new Date(`${movie.watchedDate}T12:00:00`).getTime() : Date.UTC(2026, 11, 1) + movie.title.charCodeAt(0); }
+  function timelineDate(movie) { return movie.punishmentStartDate || movie.watchedDate; }
+  function dateValue(movie) { return timelineDate(movie) ? new Date(`${timelineDate(movie)}T12:00:00`).getTime() : Date.UTC(2026, 11, 1) + movie.title.charCodeAt(0); }
+  function dateStringValue(dateString) { return new Date(`${dateString}T12:00:00`).getTime(); }
   function ellipsize(value, max) { return value.length > max ? `${value.slice(0, max - 1)}…` : value; }
   function element(tag, text) { const node = document.createElement(tag); node.textContent = text; return node; }
 
   document.querySelectorAll("#category-filters input, #chooser-filters input, #relation-filters input").forEach(input => input.addEventListener("change", rebuild));
   controlsToggle.addEventListener("click", () => setControlsExpanded(controlsToggle.getAttribute("aria-expanded") !== "true", true));
-  document.getElementById("search").addEventListener("input", event => { searchTerm = event.target.value; selectedId = null; applySearchAndSelection(); });
+  document.getElementById("search").addEventListener("input", event => { closeTimelineEvent(); searchTerm = event.target.value; selectedId = null; applySearchAndSelection(); });
   document.getElementById("web-view").addEventListener("click", () => setLayout("web"));
   document.getElementById("timeline-view").addEventListener("click", () => setLayout("timeline"));
   document.getElementById("release-view").addEventListener("click", () => setLayout("release"));
   document.getElementById("reset-view").addEventListener("click", () => {
-    searchTerm = ""; selectedId = null; currentDetail = null; detailHistory = []; savedPositions.clear(); document.getElementById("search").value = ""; panel.hidden = true; backdrop.hidden = true; updateBackControl(); applySearchAndSelection(); if (layout === "web") draw(); else fitToContent();
+    closeTimelineEvent(); searchTerm = ""; selectedId = null; currentDetail = null; detailHistory = []; savedPositions.clear(); document.getElementById("search").value = ""; panel.hidden = true; backdrop.hidden = true; updateBackControl(); applySearchAndSelection(); if (layout === "web") draw(); else fitToContent();
   });
   document.getElementById("detail-back").addEventListener("click", event => {
     event.preventDefault();
@@ -1062,6 +1252,11 @@
   };
   closeButton.addEventListener("pointerup", closeFromControl);
   closeButton.addEventListener("click", closeFromControl);
+  timelineEventClose.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeTimelineEvent(true);
+  });
   document.addEventListener("pointerdown", event => {
     if (panel.hidden) return;
     const bounds = closeButton.getBoundingClientRect();
@@ -1072,16 +1267,26 @@
   document.addEventListener("click", event => {
     if (!panel.hidden && event.target.closest?.("#close-detail")) closeFromControl(event);
   }, true);
+  document.addEventListener("click", event => {
+    if (timelineEventPopover.hidden) return;
+    if (event.target.closest?.("#timeline-event-popover, .timeline-event-marker")) return;
+    closeTimelineEvent();
+  });
   backdrop.addEventListener("pointerup", clearSelection);
   svg.on("click.clear-selection", event => {
     if (suppressSelectionForGesture()) return;
+    if (!event.target.closest(".timeline-event-marker")) closeTimelineEvent();
     if (!event.target.closest(".graph-node")) clearSelection();
   });
   mapElement.addEventListener("pointerup", event => {
     if (suppressSelectionForGesture()) return;
     if (event.target === mapElement) clearSelection();
   });
-  document.addEventListener("keydown", event => { if (event.key === "Escape" && !panel.hidden) closeDetail(); });
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    if (!timelineEventPopover.hidden) closeTimelineEvent(true);
+    else if (!panel.hidden) closeDetail();
+  });
   window.closeChunkplayerDetail = closeDetail;
 
   new ResizeObserver(resize).observe(mapElement);

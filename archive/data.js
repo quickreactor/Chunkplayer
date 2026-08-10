@@ -1,6 +1,6 @@
 /* Canonical, browser-local research data. No fetch is used so the map works from file://. */
 window.CHUNKPLAYER_ARCHIVE = {
-  generated: "2026-08-07",
+  generated: "2026-08-10",
   chooserByMovie: {
     "unfrosted": "barnaby",
     "madame-web": "tom",
@@ -39,6 +39,42 @@ window.CHUNKPLAYER_ARCHIVE = {
     "cherry-2000": "robert",
     "from-beyond": "tom"
   },
+  timelineEvents: [
+    {
+      id: "allie-teilz-reposts-allegation",
+      layoutDate: "2025-05-15",
+      displayDate: "May 2025",
+      title: "Allie Teilz republishes an allegation",
+      summary: "DJ and producer Allie Teilz reposted a statement she first made in 2012 and alleged that Jared Leto assaulted her when she was 17. Subsequent reporting said the post prompted numerous responses from women describing similar experiences.",
+      response: "Leto's representative called Teilz's allegation demonstrably false and denied all allegations covered by the later report.",
+      sources: [
+        { label: "Air Mail report", url: "https://airmail.news/issues/2025-6-7/the-cult-of-leto?pubDate=20250607" }
+      ]
+    },
+    {
+      id: "air-mail-leto-report",
+      layoutDate: "2025-06-07",
+      displayDate: "7 June 2025",
+      title: "Air Mail publishes nine accounts",
+      summary: "Air Mail published accounts from nine women alleging sexual impropriety by Jared Leto, including accounts concerning interactions while some were underage.",
+      response: "A representative for Leto expressly denied every allegation in the report.",
+      sources: [
+        { label: "Air Mail report", url: "https://airmail.news/issues/2025-6-7/the-cult-of-leto?pubDate=20250607" }
+      ]
+    },
+    {
+      id: "bbc-leto-documentary",
+      layoutDate: "2026-07-29",
+      displayDate: "29 July 2026",
+      title: "BBC documentary publishes further accounts",
+      summary: "A BBC documentary presented four women's allegations concerning sexual misconduct and assault when they were teenagers. The BBC said it corroborated the accounts using supporting photos, messages and a non-disclosure agreement; the Associated Press said it could not independently verify the claims.",
+      response: "Leto said he had never sexually assaulted anyone and called the claims absolutely and categorically false.",
+      sources: [
+        { label: "BBC report", url: "https://www.bbc.com/news/articles/cd7lg2nz2x2o" },
+        { label: "Associated Press", url: "https://apnews.com/article/jared-leto-bbc-documentary-assault-allegations-5af6a24a21e4b6a718062a5765b70736" }
+      ]
+    }
+  ],
   movies: [
     {
       id: "unfrosted", title: "Unfrosted", alternateTitles: [], type: "film", releaseYear: 2024,
@@ -449,7 +485,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "morbius", title: "Morbius", alternateTitles: [], type: "film", releaseYear: 2022,
-      watchedDate: null, dateConfidence: "unknown", category: "punishment", chunkCount: null,
+      watchedDate: null, punishmentStartDate: "2024-05-07", dateConfidence: "confirmed", category: "punishment", chunkCount: null,
       runtime: 104, genres: ["Superhero", "Horror"], poster: "assets/posters/morbius.jpg",
       directors: ["Daniel Espinosa"], producers: ["Avi Arad", "Matt Tolmach", "Lucas Foster"], writers: ["Matt Sazama", "Burk Sharpless"],
       cast: ["Jared Leto", "Matt Smith", "Adria Arjona", "Jared Harris", "Tyrese Gibson"],
@@ -460,7 +496,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "clifford", title: "Clifford", alternateTitles: [], type: "film", releaseYear: 1994,
-      watchedDate: null, dateConfidence: "unknown", category: "punishment", chunkCount: null,
+      watchedDate: null, punishmentStartDate: "2025-02-27", dateConfidence: "confirmed", category: "punishment", chunkCount: null,
       runtime: 90, genres: ["Comedy"], poster: "assets/posters/clifford.jpg",
       directors: ["Paul Flaherty"], producers: ["Larry Brezner", "Pieter Jan Brugge"], writers: ["William Porter", "Steven Kampmann"],
       cast: ["Martin Short", "Charles Grodin", "Mary Steenburgen", "Dabney Coleman", "Richard Kind"],
@@ -471,7 +507,7 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "joker-folie-a-deux", title: "Joker: Folie à Deux", alternateTitles: ["Joker 2"], type: "film", releaseYear: 2024,
-      watchedDate: null, dateConfidence: "unknown", category: "punishment", chunkCount: null,
+      watchedDate: null, punishmentStartDate: "2025-11-09", dateConfidence: "confirmed", category: "punishment", chunkCount: null,
       runtime: 138, genres: ["Musical", "Drama"], poster: "assets/posters/joker-folie-a-deux.jpg",
       directors: ["Todd Phillips"], producers: ["Todd Phillips", "Emma Tillinger Koskoff", "Joseph Garner"], writers: ["Scott Silver", "Todd Phillips"],
       cast: ["Joaquin Phoenix", "Lady Gaga", "Brendan Gleeson", "Catherine Keener", "Zazie Beetz"],
