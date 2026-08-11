@@ -22,6 +22,7 @@ class DrawingService {
         this.currentColor = '#ffffff';
         this.currentSize = 4;
         this.isEraser = false;
+        this.isPickingColor = false;
 
         // Undo stack
         this.undoStack = [];
@@ -234,14 +235,10 @@ class DrawingService {
 
                 switch (tool) {
                     case 'brush':
-                        this.setEraser(false);
-                        toolBtns.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
+                        this.selectDrawingTool('brush');
                         break;
                     case 'eraser':
-                        this.setEraser(true);
-                        toolBtns.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
+                        this.selectDrawingTool('eraser');
                         break;
                     case 'undo':
                         this.undo();
@@ -268,6 +265,13 @@ class DrawingService {
         sizeSlider.addEventListener('input', (e) => {
             this.currentSize = parseInt(e.target.value);
             this.canvas.freeDrawingBrush.width = this.currentSize;
+        });
+    }
+
+    selectDrawingTool(tool) {
+        this.setEraser(tool === 'eraser');
+        this.toolbarElement?.querySelectorAll('.draw-tool-btn[data-tool]').forEach(button => {
+            button.classList.toggle('active', button.dataset.tool === tool);
         });
     }
 
@@ -351,6 +355,11 @@ class DrawingService {
     setupKeyboardShortcuts() {
         this.removeKeyboardShortcuts();
         this._onKeyDown = (event) => {
+            const target = event.target;
+            const isTyping = target?.isContentEditable ||
+                target?.matches?.('input[type="text"], textarea, select');
+            if (isTyping) return;
+
             const isUndoShortcut = (event.ctrlKey || event.metaKey) &&
                 !event.shiftKey &&
                 event.key.toLowerCase() === 'z';
@@ -365,6 +374,23 @@ class DrawingService {
 
             if (event.ctrlKey || event.metaKey || event.altKey) return;
 
+            const key = event.key.toLowerCase();
+            if (key === 'b') {
+                event.preventDefault();
+                this.selectDrawingTool('brush');
+                return;
+            }
+            if (key === 'e') {
+                event.preventDefault();
+                this.selectDrawingTool('eraser');
+                return;
+            }
+            if (key === 'i') {
+                event.preventDefault();
+                this.openEyedropper();
+                return;
+            }
+
             if (event.code === 'BracketLeft') {
                 event.preventDefault();
                 this.adjustBrushSize(-1);
@@ -374,6 +400,44 @@ class DrawingService {
             }
         };
         document.addEventListener('keydown', this._onKeyDown);
+    }
+
+    async openEyedropper() {
+        if (this.isPickingColor) return;
+
+        if (typeof window.EyeDropper !== 'function' || !window.isSecureContext) {
+            // Safari/WebKit and Firefox do not expose EyeDropper. On desktop,
+            // clicking the native color input opens the platform color picker.
+            this.toolbarElement?.querySelector('.draw-color-picker')?.click();
+            return;
+        }
+
+        this.isPickingColor = true;
+        try {
+            const result = await new window.EyeDropper().open();
+            this.setBrushColor(result.sRGBHex);
+            this.syncColorPickerControl();
+            this.selectDrawingTool('brush');
+        } catch (error) {
+            // Pressing Escape rejects the promise; cancellation needs no UI.
+            if (error?.name !== 'AbortError') {
+                console.error('Eyedropper failed:', error);
+            }
+        } finally {
+            this.isPickingColor = false;
+        }
+    }
+
+    syncColorPickerControl() {
+        const colorControl = this.toolbarElement?.querySelector('.draw-color-picker');
+        if (!colorControl) return;
+
+        if (colorControl.matches('input[type="color"]')) {
+            colorControl.value = this.currentColor;
+        } else {
+            colorControl.style.setProperty('--draw-color', this.currentColor);
+            this.colorPickr?.setColor(this.currentColor, true);
+        }
     }
 
     adjustBrushSize(delta) {
@@ -389,9 +453,11 @@ class DrawingService {
     }
 
     removeKeyboardShortcuts() {
-        if (!this._onKeyDown) return;
-        document.removeEventListener('keydown', this._onKeyDown);
-        this._onKeyDown = null;
+        if (this._onKeyDown) {
+            document.removeEventListener('keydown', this._onKeyDown);
+            this._onKeyDown = null;
+        }
+        this.isPickingColor = false;
     }
 
     /**
