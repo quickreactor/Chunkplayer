@@ -1748,14 +1748,28 @@ option {
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 6px;
     cursor: pointer;
+    background: none;
+    padding: 0;
+}
+
+.draw-color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.draw-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+.draw-color-picker--custom {
     background: var(--draw-color, #ffffff);
     padding: 2px;
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25);
     flex: 0 0 auto;
 }
 
-.draw-color-picker:hover,
-.draw-color-picker:focus-visible {
+.draw-color-picker--custom:hover,
+.draw-color-picker--custom:focus-visible {
     border-color: rgba(255, 255, 255, 0.8);
     outline: none;
 }

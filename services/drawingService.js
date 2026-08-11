@@ -29,6 +29,7 @@ class DrawingService {
 
         // Bound handlers for cleanup
         this._onPathCreated = null;
+        this._onKeyDown = null;
     }
 
     /**
@@ -55,6 +56,7 @@ class DrawingService {
         const setupCanvas = () => {
             this.createCanvas(container, posterImg);
             this.createToolbar(container);
+            this.setupKeyboardShortcuts();
             this.saveState();
         };
 
@@ -112,13 +114,18 @@ class DrawingService {
      * Create the drawing toolbar UI
      */
     createToolbar(container) {
+        const useMobileColorPicker = window.matchMedia?.('(hover: none) and (pointer: coarse)')?.matches === true;
+        const colorPickerControl = useMobileColorPicker
+            ? '<button type="button" class="draw-color-picker draw-color-picker--custom" data-tooltip="Color" aria-label="Choose brush color"></button>'
+            : `<input type="color" class="draw-color-picker" value="${this.currentColor}" data-tooltip="Color">`;
+
         this.toolbarElement = document.createElement('div');
         this.toolbarElement.className = 'drawing-toolbar';
         this.toolbarElement.innerHTML = `
             <div class="drawing-toolbar-row">
                 <button class="draw-tool-btn active" data-tool="brush" data-tooltip="Brush">&#9998;</button>
                 <button class="draw-tool-btn" data-tool="eraser" data-tooltip="Eraser">&#9003;</button>
-                <button type="button" class="draw-color-picker" data-tooltip="Color" aria-label="Choose brush color"></button>
+                ${colorPickerControl}
                 <input type="range" class="draw-size-slider" min="1" max="30" value="${this.currentSize}" data-tooltip="Size">
                 <button class="draw-tool-btn" data-tool="undo" data-tooltip="Undo">&#8630;</button>
                 <button class="draw-tool-btn" data-tool="cancel" data-tooltip="Cancel">&#10005;</button>
@@ -129,7 +136,9 @@ class DrawingService {
         const videoContainer = container.parentElement;
         videoContainer.insertBefore(this.toolbarElement, container);
         this.setupToolbarHandlers();
-        this.initializeColorPicker();
+        if (useMobileColorPicker) {
+            this.initializeColorPicker();
+        }
     }
 
     /**
@@ -216,6 +225,7 @@ class DrawingService {
      */
     setupToolbarHandlers() {
         const toolBtns = this.toolbarElement.querySelectorAll('.draw-tool-btn');
+        const colorPicker = this.toolbarElement.querySelector('.draw-color-picker');
         const sizeSlider = this.toolbarElement.querySelector('.draw-size-slider');
 
         toolBtns.forEach(btn => {
@@ -245,6 +255,15 @@ class DrawingService {
                 }
             });
         });
+
+        if (colorPicker.matches('input[type="color"]')) {
+            colorPicker.addEventListener('input', (e) => {
+                this.currentColor = e.target.value;
+                if (!this.isEraser) {
+                    this.canvas.freeDrawingBrush.color = this.currentColor;
+                }
+            });
+        }
 
         sizeSlider.addEventListener('input', (e) => {
             this.currentSize = parseInt(e.target.value);
@@ -327,6 +346,55 @@ class DrawingService {
     }
 
     /**
+     * Enable the standard desktop undo shortcut while the drawing editor is open.
+     */
+    setupKeyboardShortcuts() {
+        this.removeKeyboardShortcuts();
+        this._onKeyDown = (event) => {
+            const isUndoShortcut = (event.ctrlKey || event.metaKey) &&
+                !event.shiftKey &&
+                event.key.toLowerCase() === 'z';
+
+            if (!this.isDrawing) return;
+
+            if (isUndoShortcut) {
+                event.preventDefault();
+                this.undo();
+                return;
+            }
+
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+            if (event.code === 'BracketLeft') {
+                event.preventDefault();
+                this.adjustBrushSize(-1);
+            } else if (event.code === 'BracketRight') {
+                event.preventDefault();
+                this.adjustBrushSize(1);
+            }
+        };
+        document.addEventListener('keydown', this._onKeyDown);
+    }
+
+    adjustBrushSize(delta) {
+        const sizeSlider = this.toolbarElement?.querySelector('.draw-size-slider');
+        const minimum = sizeSlider ? Number(sizeSlider.min) : 1;
+        const maximum = sizeSlider ? Number(sizeSlider.max) : 30;
+
+        this.currentSize = Math.min(maximum, Math.max(minimum, this.currentSize + delta));
+        if (sizeSlider) sizeSlider.value = this.currentSize;
+        if (this.canvas?.freeDrawingBrush) {
+            this.canvas.freeDrawingBrush.width = this.currentSize;
+        }
+    }
+
+    removeKeyboardShortcuts() {
+        if (!this._onKeyDown) return;
+        document.removeEventListener('keydown', this._onKeyDown);
+        this._onKeyDown = null;
+    }
+
+    /**
      * Load a canvas state from JSON
      */
     loadState(json) {
@@ -358,6 +426,7 @@ class DrawingService {
         const height = this.canvas.height;
 
         // Cleanup
+        this.removeKeyboardShortcuts();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -391,6 +460,7 @@ class DrawingService {
     cancelDrawing() {
         if (!this.canvas) return;
 
+        this.removeKeyboardShortcuts();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -524,6 +594,7 @@ class DrawingService {
      * Destroy the service and clean up
      */
     destroy() {
+        this.removeKeyboardShortcuts();
         this.destroyColorPicker();
         if (this.canvas) {
             this.canvas.dispose();
