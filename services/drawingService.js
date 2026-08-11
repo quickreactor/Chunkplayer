@@ -24,7 +24,18 @@ class DrawingService {
         this.isEraser = false;
         this.posterImage = null;
         this.lastPointerPosition = null;
-        this.isPickingColor = false;
+        this.isPosterEyedropperActive = false;
+        this.posterEyedropperLoupe = null;
+        this.posterEyedropperCanvas = null;
+        this.posterEyedropperContext = null;
+        this.posterSampleCanvas = null;
+        this.posterSampleContext = null;
+        this.posterEyedropperFrame = null;
+        this.posterEyedropperPreviousDrawingMode = null;
+        this.posterEyedropperPressStartedAt = null;
+        this.posterEyedropperPressIsNewActivation = false;
+        this.posterEyedropperHoldThreshold = 300;
+        this.posterSamplingBlocked = false;
 
         // Undo stack
         this.undoStack = [];
@@ -33,7 +44,9 @@ class DrawingService {
         // Bound handlers for cleanup
         this._onPathCreated = null;
         this._onKeyDown = null;
+        this._onKeyUp = null;
         this._onPointerMove = null;
+        this._onPosterEyedropperClick = null;
     }
 
     /**
@@ -51,6 +64,7 @@ class DrawingService {
         this.onFinish = onFinish;
         this.onCancel = onCancel;
         this.undoStack = [];
+        this.posterSamplingBlocked = false;
 
         // Get the poster image to match canvas dimensions
         const posterImg = container.querySelector('img');
@@ -274,6 +288,9 @@ class DrawingService {
     }
 
     selectDrawingTool(tool) {
+        if (this.isPosterEyedropperActive) {
+            this.stopPosterEyedropper();
+        }
         this.setEraser(tool === 'eraser');
         this.toolbarElement?.querySelectorAll('.draw-tool-btn[data-tool]').forEach(button => {
             button.classList.toggle('active', button.dataset.tool === tool);
@@ -371,6 +388,12 @@ class DrawingService {
 
             if (!this.isDrawing) return;
 
+            if (event.key === 'Escape' && this.isPosterEyedropperActive) {
+                event.preventDefault();
+                this.stopPosterEyedropper();
+                return;
+            }
+
             if (isUndoShortcut) {
                 event.preventDefault();
                 this.undo();
@@ -392,12 +415,15 @@ class DrawingService {
             }
             if (key === 'i') {
                 event.preventDefault();
-                this.openEyedropper();
-                return;
-            }
-            if (key === 'j') {
-                event.preventDefault();
-                this.samplePosterColorAtCursor();
+                if (event.repeat) return;
+
+                if (this.isPosterEyedropperActive) {
+                    this.stopPosterEyedropper();
+                    return;
+                }
+
+                this.posterEyedropperPressStartedAt = performance.now();
+                this.posterEyedropperPressIsNewActivation = this.startPosterEyedropper();
                 return;
             }
 
@@ -409,33 +435,25 @@ class DrawingService {
                 this.adjustBrushSize(1);
             }
         };
-        document.addEventListener('keydown', this._onKeyDown);
-    }
+        this._onKeyUp = (event) => {
+            if (event.key.toLowerCase() !== 'i' || this.posterEyedropperPressStartedAt === null) return;
 
-    async openEyedropper() {
-        if (this.isPickingColor) return;
+            event.preventDefault();
+            const pressDuration = performance.now() - this.posterEyedropperPressStartedAt;
+            const shouldPickOnRelease = this.posterEyedropperPressIsNewActivation &&
+                pressDuration >= this.posterEyedropperHoldThreshold;
 
-        if (typeof window.EyeDropper !== 'function' || !window.isSecureContext) {
-            // Firefox and Safari cannot activate the native panel's eyedropper
-            // from page JavaScript. Opening the color input is the only native
-            // fallback those browsers expose.
-            this.toolbarElement?.querySelector('.draw-color-picker')?.click();
-            return;
-        }
+            this.posterEyedropperPressStartedAt = null;
+            this.posterEyedropperPressIsNewActivation = false;
 
-        this.isPickingColor = true;
-        try {
-            const result = await new window.EyeDropper().open();
-            this.setBrushColor(result.sRGBHex);
-            this.syncColorPickerControl();
-            this.selectDrawingTool('brush');
-        } catch (error) {
-            if (error?.name !== 'AbortError') {
-                console.error('Eyedropper failed:', error);
+            if (shouldPickOnRelease && this.isPosterEyedropperActive) {
+                if (!this.samplePosterColorAtCursor()) {
+                    this.stopPosterEyedropper();
+                }
             }
-        } finally {
-            this.isPickingColor = false;
-        }
+        };
+        document.addEventListener('keydown', this._onKeyDown);
+        document.addEventListener('keyup', this._onKeyUp);
     }
 
     setupPointerTracking() {
@@ -445,6 +463,9 @@ class DrawingService {
                 clientX: event.clientX,
                 clientY: event.clientY
             };
+            if (this.isPosterEyedropperActive) {
+                this.schedulePosterEyedropperRender();
+            }
         };
         document.addEventListener('pointermove', this._onPointerMove, { passive: true });
     }
@@ -457,45 +478,235 @@ class DrawingService {
         this.lastPointerPosition = null;
     }
 
-    samplePosterColorAtCursor() {
+    startPosterEyedropper() {
+        const image = this.posterImage;
+        if (this.isPosterEyedropperActive || !image?.complete || !image.naturalWidth) return false;
+
+        this.ensurePosterEyedropperElements();
+        this.isPosterEyedropperActive = true;
+        this.posterEyedropperPreviousDrawingMode = this.canvas?.isDrawingMode ?? null;
+
+        if (this.canvas) {
+            this.canvas.isDrawingMode = false;
+        }
+        this.canvasContainer?.classList.add('poster-eyedropper-active');
+        image.classList.add('poster-eyedropper-target');
+
+        this._onPosterEyedropperClick = (event) => {
+            if (!this.isPosterEyedropperActive) return;
+
+            const pointer = { clientX: event.clientX, clientY: event.clientY };
+            if (this.getPosterSamplePoint(pointer)) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (!this.samplePosterColorAtPointer(pointer)) {
+                    this.stopPosterEyedropper();
+                }
+            } else {
+                this.stopPosterEyedropper();
+            }
+        };
+        document.addEventListener('click', this._onPosterEyedropperClick, true);
+        this.schedulePosterEyedropperRender();
+        return true;
+    }
+
+    stopPosterEyedropper() {
+        if (this._onPosterEyedropperClick) {
+            document.removeEventListener('click', this._onPosterEyedropperClick, true);
+            this._onPosterEyedropperClick = null;
+        }
+        if (this.posterEyedropperFrame !== null) {
+            cancelAnimationFrame(this.posterEyedropperFrame);
+            this.posterEyedropperFrame = null;
+        }
+
+        this.posterEyedropperLoupe?.classList.remove('visible');
+        this.canvasContainer?.classList.remove('poster-eyedropper-active');
+        this.posterImage?.classList.remove('poster-eyedropper-target');
+
+        if (this.canvas && this.posterEyedropperPreviousDrawingMode !== null) {
+            this.canvas.isDrawingMode = this.posterEyedropperPreviousDrawingMode;
+        }
+
+        this.isPosterEyedropperActive = false;
+        this.posterEyedropperPreviousDrawingMode = null;
+        this.posterEyedropperPressStartedAt = null;
+        this.posterEyedropperPressIsNewActivation = false;
+    }
+
+    ensurePosterEyedropperElements() {
+        if (!this.posterEyedropperLoupe) {
+            this.posterEyedropperLoupe = document.createElement('div');
+            this.posterEyedropperLoupe.className = 'poster-eyedropper-loupe';
+            this.posterEyedropperLoupe.setAttribute('aria-hidden', 'true');
+
+            this.posterEyedropperCanvas = document.createElement('canvas');
+            this.posterEyedropperCanvas.className = 'poster-eyedropper-loupe-canvas';
+            this.posterEyedropperLoupe.appendChild(this.posterEyedropperCanvas);
+            document.body.appendChild(this.posterEyedropperLoupe);
+        }
+
+        const loupeSize = 88;
+        const pixelRatio = Math.max(1, window.devicePixelRatio || 1);
+        const backingSize = Math.round(loupeSize * pixelRatio);
+        if (this.posterEyedropperCanvas.width !== backingSize) {
+            this.posterEyedropperCanvas.width = backingSize;
+            this.posterEyedropperCanvas.height = backingSize;
+        }
+        this.posterEyedropperContext = this.posterEyedropperCanvas.getContext('2d');
+
+        if (!this.posterSampleCanvas) {
+            this.posterSampleCanvas = document.createElement('canvas');
+            this.posterSampleCanvas.width = 1;
+            this.posterSampleCanvas.height = 1;
+            this.posterSampleContext = this.posterSampleCanvas.getContext('2d', { willReadFrequently: true });
+        }
+    }
+
+    schedulePosterEyedropperRender() {
+        if (!this.isPosterEyedropperActive || this.posterEyedropperFrame !== null) return;
+
+        this.posterEyedropperFrame = requestAnimationFrame(() => {
+            this.posterEyedropperFrame = null;
+            this.renderPosterEyedropperLoupe();
+        });
+    }
+
+    renderPosterEyedropperLoupe() {
         const image = this.posterImage;
         const pointer = this.lastPointerPosition;
-        if (!image || !pointer || !image.complete || !image.naturalWidth) return;
+        const point = this.getPosterSamplePoint(pointer);
+        const loupe = this.posterEyedropperLoupe;
+        const context = this.posterEyedropperContext;
+        const canvas = this.posterEyedropperCanvas;
+
+        if (!this.isPosterEyedropperActive || !image || !point || !loupe || !context || !canvas) {
+            loupe?.classList.remove('visible');
+            return;
+        }
+
+        const sampleSize = 11;
+        const sampleRadius = Math.floor(sampleSize / 2);
+        const sourceLeft = point.sourceX - sampleRadius;
+        const sourceTop = point.sourceY - sampleRadius;
+        const clippedLeft = Math.max(0, sourceLeft);
+        const clippedTop = Math.max(0, sourceTop);
+        const clippedRight = Math.min(image.naturalWidth, sourceLeft + sampleSize);
+        const clippedBottom = Math.min(image.naturalHeight, sourceTop + sampleSize);
+        const cellSize = canvas.width / sampleSize;
+
+        context.save();
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#101010';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.imageSmoothingEnabled = false;
+        context.drawImage(
+            image,
+            clippedLeft,
+            clippedTop,
+            clippedRight - clippedLeft,
+            clippedBottom - clippedTop,
+            (clippedLeft - sourceLeft) * cellSize,
+            (clippedTop - sourceTop) * cellSize,
+            (clippedRight - clippedLeft) * cellSize,
+            (clippedBottom - clippedTop) * cellSize
+        );
+
+        const targetLeft = sampleRadius * cellSize;
+        const pixelRatio = canvas.width / 88;
+        context.lineWidth = 3 * pixelRatio;
+        context.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+        context.strokeRect(targetLeft, targetLeft, cellSize, cellSize);
+        context.lineWidth = pixelRatio;
+        context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+        context.strokeRect(targetLeft, targetLeft, cellSize, cellSize);
+        context.restore();
+
+        const color = this.readPosterPixel(point);
+        if (color) {
+            loupe.style.setProperty('--poster-eyedropper-color', color);
+        }
+        this.positionPosterEyedropperLoupe(pointer);
+        loupe.classList.add('visible');
+    }
+
+    positionPosterEyedropperLoupe(pointer) {
+        if (!this.posterEyedropperLoupe || !pointer) return;
+
+        const loupeRadius = 44;
+        this.posterEyedropperLoupe.style.left = `${pointer.clientX - loupeRadius}px`;
+        this.posterEyedropperLoupe.style.top = `${pointer.clientY - loupeRadius}px`;
+    }
+
+    getPosterSamplePoint(pointer) {
+        const image = this.posterImage;
+        if (!image || !pointer || !image.complete || !image.naturalWidth) return null;
 
         const rect = image.getBoundingClientRect();
         const isOverPoster = pointer.clientX >= rect.left &&
             pointer.clientX <= rect.right &&
             pointer.clientY >= rect.top &&
             pointer.clientY <= rect.bottom;
-        if (!isOverPoster || rect.width === 0 || rect.height === 0) return;
+        if (!isOverPoster || rect.width === 0 || rect.height === 0) return null;
 
-        const sourceX = Math.min(
-            image.naturalWidth - 1,
-            Math.max(0, Math.floor((pointer.clientX - rect.left) / rect.width * image.naturalWidth))
-        );
-        const sourceY = Math.min(
-            image.naturalHeight - 1,
-            Math.max(0, Math.floor((pointer.clientY - rect.top) / rect.height * image.naturalHeight))
-        );
+        return {
+            sourceX: Math.min(
+                image.naturalWidth - 1,
+                Math.max(0, Math.floor((pointer.clientX - rect.left) / rect.width * image.naturalWidth))
+            ),
+            sourceY: Math.min(
+                image.naturalHeight - 1,
+                Math.max(0, Math.floor((pointer.clientY - rect.top) / rect.height * image.naturalHeight))
+            )
+        };
+    }
+
+    readPosterPixel(point) {
+        if (!point || !this.posterImage) return null;
+        this.ensurePosterEyedropperElements();
 
         try {
-            const sampleCanvas = document.createElement('canvas');
-            sampleCanvas.width = 1;
-            sampleCanvas.height = 1;
-            const context = sampleCanvas.getContext('2d', { willReadFrequently: true });
-            context.drawImage(image, sourceX, sourceY, 1, 1, 0, 0, 1, 1);
-            const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
-            if (alpha === 0) return;
+            this.posterSampleContext.clearRect(0, 0, 1, 1);
+            this.posterSampleContext.drawImage(
+                this.posterImage,
+                point.sourceX,
+                point.sourceY,
+                1,
+                1,
+                0,
+                0,
+                1,
+                1
+            );
+            const [red, green, blue, alpha] = this.posterSampleContext.getImageData(0, 0, 1, 1).data;
+            if (alpha === 0) return null;
 
-            const color = `#${[red, green, blue]
+            return `#${[red, green, blue]
                 .map(channel => channel.toString(16).padStart(2, '0'))
                 .join('')}`;
-            this.setBrushColor(color);
-            this.syncColorPickerControl();
-            this.selectDrawingTool('brush');
         } catch (error) {
-            console.warn('Poster color sampling is blocked for this image:', error);
+            if (!this.posterSamplingBlocked) {
+                console.warn('Poster color sampling is blocked for this image:', error);
+                this.posterSamplingBlocked = true;
+            }
+            return null;
         }
+    }
+
+    samplePosterColorAtCursor() {
+        return this.samplePosterColorAtPointer(this.lastPointerPosition);
+    }
+
+    samplePosterColorAtPointer(pointer) {
+        const color = this.readPosterPixel(this.getPosterSamplePoint(pointer));
+        if (!color) return false;
+
+        this.stopPosterEyedropper();
+        this.setBrushColor(color);
+        this.syncColorPickerControl();
+        this.selectDrawingTool('brush');
+        return true;
     }
 
     syncColorPickerControl() {
@@ -527,7 +738,21 @@ class DrawingService {
             document.removeEventListener('keydown', this._onKeyDown);
             this._onKeyDown = null;
         }
-        this.isPickingColor = false;
+        if (this._onKeyUp) {
+            document.removeEventListener('keyup', this._onKeyUp);
+            this._onKeyUp = null;
+        }
+        this.stopPosterEyedropper();
+    }
+
+    destroyPosterEyedropper() {
+        this.stopPosterEyedropper();
+        this.posterEyedropperLoupe?.remove();
+        this.posterEyedropperLoupe = null;
+        this.posterEyedropperCanvas = null;
+        this.posterEyedropperContext = null;
+        this.posterSampleCanvas = null;
+        this.posterSampleContext = null;
     }
 
     /**
@@ -564,6 +789,7 @@ class DrawingService {
         // Cleanup
         this.removeKeyboardShortcuts();
         this.removePointerTracking();
+        this.destroyPosterEyedropper();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -600,6 +826,7 @@ class DrawingService {
 
         this.removeKeyboardShortcuts();
         this.removePointerTracking();
+        this.destroyPosterEyedropper();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -736,6 +963,7 @@ class DrawingService {
     destroy() {
         this.removeKeyboardShortcuts();
         this.removePointerTracking();
+        this.destroyPosterEyedropper();
         this.destroyColorPicker();
         if (this.canvas) {
             this.canvas.dispose();
