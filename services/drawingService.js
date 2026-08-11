@@ -22,6 +22,8 @@ class DrawingService {
         this.currentColor = '#ffffff';
         this.currentSize = 4;
         this.isEraser = false;
+        this.posterImage = null;
+        this.lastPointerPosition = null;
         this.isPickingColor = false;
 
         // Undo stack
@@ -31,6 +33,7 @@ class DrawingService {
         // Bound handlers for cleanup
         this._onPathCreated = null;
         this._onKeyDown = null;
+        this._onPointerMove = null;
     }
 
     /**
@@ -55,9 +58,11 @@ class DrawingService {
 
         // Wait for image to be ready
         const setupCanvas = () => {
+            this.posterImage = posterImg;
             this.createCanvas(container, posterImg);
             this.createToolbar(container);
             this.setupKeyboardShortcuts();
+            this.setupPointerTracking();
             this.saveState();
         };
 
@@ -390,6 +395,11 @@ class DrawingService {
                 this.openEyedropper();
                 return;
             }
+            if (key === 'j') {
+                event.preventDefault();
+                this.samplePosterColorAtCursor();
+                return;
+            }
 
             if (event.code === 'BracketLeft') {
                 event.preventDefault();
@@ -406,8 +416,9 @@ class DrawingService {
         if (this.isPickingColor) return;
 
         if (typeof window.EyeDropper !== 'function' || !window.isSecureContext) {
-            // Safari/WebKit and Firefox do not expose EyeDropper. On desktop,
-            // clicking the native color input opens the platform color picker.
+            // Firefox and Safari cannot activate the native panel's eyedropper
+            // from page JavaScript. Opening the color input is the only native
+            // fallback those browsers expose.
             this.toolbarElement?.querySelector('.draw-color-picker')?.click();
             return;
         }
@@ -419,12 +430,71 @@ class DrawingService {
             this.syncColorPickerControl();
             this.selectDrawingTool('brush');
         } catch (error) {
-            // Pressing Escape rejects the promise; cancellation needs no UI.
             if (error?.name !== 'AbortError') {
                 console.error('Eyedropper failed:', error);
             }
         } finally {
             this.isPickingColor = false;
+        }
+    }
+
+    setupPointerTracking() {
+        this.removePointerTracking();
+        this._onPointerMove = (event) => {
+            this.lastPointerPosition = {
+                clientX: event.clientX,
+                clientY: event.clientY
+            };
+        };
+        document.addEventListener('pointermove', this._onPointerMove, { passive: true });
+    }
+
+    removePointerTracking() {
+        if (this._onPointerMove) {
+            document.removeEventListener('pointermove', this._onPointerMove);
+            this._onPointerMove = null;
+        }
+        this.lastPointerPosition = null;
+    }
+
+    samplePosterColorAtCursor() {
+        const image = this.posterImage;
+        const pointer = this.lastPointerPosition;
+        if (!image || !pointer || !image.complete || !image.naturalWidth) return;
+
+        const rect = image.getBoundingClientRect();
+        const isOverPoster = pointer.clientX >= rect.left &&
+            pointer.clientX <= rect.right &&
+            pointer.clientY >= rect.top &&
+            pointer.clientY <= rect.bottom;
+        if (!isOverPoster || rect.width === 0 || rect.height === 0) return;
+
+        const sourceX = Math.min(
+            image.naturalWidth - 1,
+            Math.max(0, Math.floor((pointer.clientX - rect.left) / rect.width * image.naturalWidth))
+        );
+        const sourceY = Math.min(
+            image.naturalHeight - 1,
+            Math.max(0, Math.floor((pointer.clientY - rect.top) / rect.height * image.naturalHeight))
+        );
+
+        try {
+            const sampleCanvas = document.createElement('canvas');
+            sampleCanvas.width = 1;
+            sampleCanvas.height = 1;
+            const context = sampleCanvas.getContext('2d', { willReadFrequently: true });
+            context.drawImage(image, sourceX, sourceY, 1, 1, 0, 0, 1, 1);
+            const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
+            if (alpha === 0) return;
+
+            const color = `#${[red, green, blue]
+                .map(channel => channel.toString(16).padStart(2, '0'))
+                .join('')}`;
+            this.setBrushColor(color);
+            this.syncColorPickerControl();
+            this.selectDrawingTool('brush');
+        } catch (error) {
+            console.warn('Poster color sampling is blocked for this image:', error);
         }
     }
 
@@ -493,6 +563,7 @@ class DrawingService {
 
         // Cleanup
         this.removeKeyboardShortcuts();
+        this.removePointerTracking();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -508,6 +579,7 @@ class DrawingService {
         }
 
         this.isDrawing = false;
+        this.posterImage = null;
         this.undoStack = [];
 
         if (this.onFinish) {
@@ -527,6 +599,7 @@ class DrawingService {
         if (!this.canvas) return;
 
         this.removeKeyboardShortcuts();
+        this.removePointerTracking();
         this.destroyColorPicker();
         this.canvas.dispose();
         this.canvas = null;
@@ -542,6 +615,7 @@ class DrawingService {
         }
 
         this.isDrawing = false;
+        this.posterImage = null;
         this.undoStack = [];
 
         if (this.onCancel) {
@@ -661,6 +735,7 @@ class DrawingService {
      */
     destroy() {
         this.removeKeyboardShortcuts();
+        this.removePointerTracking();
         this.destroyColorPicker();
         if (this.canvas) {
             this.canvas.dispose();
@@ -675,6 +750,7 @@ class DrawingService {
             this.toolbarElement = null;
         }
         this.isDrawing = false;
+        this.posterImage = null;
         this.undoStack = [];
         this.initialized = false;
     }
