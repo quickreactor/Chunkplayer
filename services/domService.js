@@ -141,8 +141,8 @@ class DOMService {
             videoSurface.dataset.tapToPlayBound = 'true';
             videoSurface.addEventListener('click', (event) => {
                 if (event.target.closest('.plyr__controls, button, input')) return;
-                this.player.togglePlay();
-            });
+                this.player.play();
+            }, { once: true });
         });
     }
 
