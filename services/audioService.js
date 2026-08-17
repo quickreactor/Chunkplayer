@@ -62,8 +62,8 @@ class AudioService {
 
         console.log(`Random sound - Group ${randomArrNumber}, Sound ${num}, File - ${sounds[num - 1]}`);
 
-        // Dark realm special case
-        if (num === 20 && CONFIG.movieData && CONFIG.movieData.rewardMovie) {
+        // Reward collections can optionally provide their own critical-success sound.
+        if (num === 20 && CONFIG.movieData?.rewardMovie?.sound) {
             audioElement.src = CONFIG.movieData.rewardMovie.sound;
         } else {
             audioElement.src = sounds[num - 1];

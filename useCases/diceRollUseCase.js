@@ -98,7 +98,7 @@ class DiceRollUseCase {
     }
 
     /**
-     * Handle critical success (roll of 20) - Dark Realm
+     * Handle critical success (roll of 20) - reward sequence
      * @param {Object} movieData - Movie data
      * @returns {Promise<void>}
      */
@@ -111,6 +111,17 @@ class DiceRollUseCase {
 
         // Trigger the special sequence
         const normalMovie = movieData.morbed ? movieData.punishmentMovie : movieData.normalMovie;
+        if (!movieData.rewardMovie) {
+            console.error("Critical success rolled without an available reward collection");
+            this.videoPlayback.playNormalChunk(
+                normalMovie,
+                normalMovie.chunks,
+                normalMovie.titles,
+                true
+            );
+            return;
+        }
+
         this.videoPlayback.playCriticalSuccessSequence(
             movieData.rewardMovie,
             normalMovie,

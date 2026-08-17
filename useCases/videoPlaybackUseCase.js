@@ -6,7 +6,7 @@
  * Handles video playback for all scenarios:
  * - Normal chunk playback
  * - Punishment (morb) chunk playback
- * - Critical success (Dark Realm) sequence
+ * - Critical success reward sequence
  */
 class VideoPlaybackUseCase {
     /**
@@ -104,24 +104,39 @@ class VideoPlaybackUseCase {
     }
 
     /**
-     * Play critical success (Dark Realm) sequence
-     * Sequence: Dark Realm Intro → Normal Chunk → Dark Realm Outro
-     * @param {Object} rewardMovie - Reward movie with preRoll and postRoll
+     * Play critical success reward sequence.
+     * Reward chunks are stored in one array and consumed in consecutive pairs:
+     * chunk 1 before the normal chunk, chunk 2 after it; then 3 and 4, etc.
+     * The reward pointer is 1-based and always identifies the intro chunk.
+     *
+     * Sequence: Reward intro → Normal Chunk → Reward outro
+     * @param {Object} rewardMovie - Reward movie with a chunks array
      * @param {Object} normalMovie - Normal movie for the middle chunk
      * @param {Array} chunkArray - Normal movie chunk URLs
      * @param {Array} titleArray - Normal movie chunk titles
      * @param {boolean} isFirst - Is this the first video after roll
      */
     async playCriticalSuccessSequence(rewardMovie, normalMovie, chunkArray, titleArray, isFirst = false) {
-        console.log("CRITICAL SUCCESS! Entering the Dark Realm...");
+        console.log("CRITICAL SUCCESS! Playing reward sequence...");
 
         const playerElement = this.dom.elements.videoPlayer;
-        let rewardMoviePointer = rewardMovie.pointer;
+        const rewardMoviePointer = Number(rewardMovie.pointer) || 1;
+        const rewardTitle = rewardMovie.title || 'Critical success reward';
+        const introClip = rewardMovie.chunks?.[rewardMoviePointer - 1];
+        const outroClip = rewardMovie.chunks?.[rewardMoviePointer];
 
-        // --- Phase 1: Play Dark Realm Intro ---
-        playerElement.src = rewardMovie.preRoll[rewardMoviePointer];
+        if (!introClip || !outroClip) {
+            console.error("Reward collection does not contain a complete clip pair", {
+                rewardMovie: rewardMovie.name,
+                pointer: rewardMoviePointer
+            });
+            return;
+        }
 
-        this.dom.setText('epTitle', "You are now entering... the Dark Realm");
+        // --- Phase 1: Play reward intro ---
+        playerElement.src = introClip;
+
+        this.dom.setText('epTitle', rewardTitle);
         this.dom.show('container');
 
         // Handle container visibility/fade-in
@@ -135,22 +150,22 @@ class VideoPlaybackUseCase {
         // Always show admin section when entering video playback
         if (this.onShowAdmin) this.onShowAdmin();
 
-        // Listener 1: When Dark Realm Intro ends → Load Normal Chunk
+        // Listener 1: When reward intro ends → Load normal chunk
         const handleIntroEnd = () => {
-            console.log("Dark Realm Intro ended. Loading normal chunk...");
+            console.log("Reward intro ended. Loading normal chunk...");
 
             // Load the standard daily video
             this.playNormalChunk(normalMovie, chunkArray, titleArray, false);
 
             // --- Phase 2: Play Normal Daily Chunk ---
 
-            // Listener 2: When Normal Chunk ends → Load Dark Realm Outro
+            // Listener 2: When normal chunk ends → Load reward outro
             const handleNormalEnd = () => {
-                console.log("Normal chunk ended. Loading Dark Realm Outro...");
+                console.log("Normal chunk ended. Loading reward outro...");
 
-                // Load the Dark Realm Outro chunk
-                playerElement.src = rewardMovie.postRoll[rewardMoviePointer];
-                this.dom.setText('epTitle', "Escaping the Dark Realm");
+                // Load the matching reward outro chunk
+                playerElement.src = outroClip;
+                this.dom.setText('epTitle', `${rewardTitle} complete`);
 
                 // Start Outro playback
                 playerElement.play();

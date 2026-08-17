@@ -458,7 +458,8 @@ class ChunkPlayerApp {
                 const input = document.getElementById(inputId);
                 const min = type.startsWith('jokerless') || type === 'testflip' ? 0 : 1;
                 const currentValue = parseInt(input.value) || 0;
-                input.value = Math.max(currentValue - 1, min);
+                const step = type === 'reward' ? 2 : 1;
+                input.value = Math.max(currentValue - step, min);
                 // No API call - only update input value
             });
         });
@@ -482,7 +483,8 @@ class ChunkPlayerApp {
                 const input = document.getElementById(inputId);
                 const max = type === 'fakeroll' ? 20 : Infinity;
                 const currentValue = parseInt(input.value) || 0;
-                input.value = Math.min(currentValue + 1, max);
+                const step = type === 'reward' ? 2 : 1;
+                input.value = Math.min(currentValue + step, max);
                 // No API call - only update input value
             });
         });
