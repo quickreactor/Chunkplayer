@@ -87,10 +87,17 @@ html {
 .joker-image-row {
     display: grid;
     grid-template-columns: repeat(10, minmax(0, 1fr));
-    gap: 4px;
+    column-gap: 4px;
+    row-gap: 4px;
     min-height: 64px;
     width: 50%;
     margin: 0 auto 10px;
+}
+
+/* Once the roll resolves into the Joker array, pack its rows tightly while
+   retaining enough horizontal separation to keep individual cards readable. */
+#flip-counter-wrapper:not(.poster-pile-active) .joker-image-row {
+    row-gap: 0;
 }
 
 .joker-image-row .joker-card {
