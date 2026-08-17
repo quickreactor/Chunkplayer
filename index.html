@@ -7,7 +7,7 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=poster-eyedropper-loupe-20260811">
+    <link rel="stylesheet" href="style.css?v=clip-export-20260818">
 
     <!-- Google Fonts for Graffiti -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
 
     <!-- Application Scripts (loaded in order) -->
     <!-- Configuration -->
-    <script src="config.js"></script>
+    <script src="config.js?v=live-server-worker-20260818"></script>
     <script src="errorHandler.js"></script>
 
     <!-- Utilities -->
@@ -35,13 +35,14 @@
     <script src="services/apiService.js?v=admin-logo-color-20260730"></script>
     <script src="services/audioService.js?v=joker-impact-audio-volume-20260809"></script>
     <script src="services/dateService.js"></script>
-    <script src="services/domService.js?v=video-surface-play-20260806"></script>
+    <script src="services/domService.js?v=clip-export-20260818"></script>
     <script src="services/effectService.js"></script>
     <script src="services/posterService.js?v=poster-preload-20260818"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
     <script src="services/jokerPhysicsService.js?v=joker-impact-audio-20260809"></script>
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js?v=media-cleanup-20260724-2"></script>
+    <script src="services/clipExportService.js?v=clip-export-20260818"></script>
     <script src="services/adminService.js"></script>
     <script src="services/drawingService.js?v=poster-eyedropper-i-20260811"></script>
     <script src="services/graffitiService.js?v=firefox-picker-20260730"></script>
@@ -67,7 +68,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=joker-impact-audio-20260809" defer></script>
+    <script src="app.js?v=admin-panel-fit-20260818" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
@@ -144,7 +145,7 @@
         <!-- Admin Section -->
         <div id="admin-section" class="admin-section hidden">
             <button id="admin-toggle-btn" class="admin-icon-button" aria-label="Open admin controls"
-                title="Settings">⚙️</button>
+                aria-controls="admin-panel" aria-expanded="false" title="Settings">⚙️</button>
             <a class="admin-icon-button archive-map-link" href="archive.html?v=circular-constellations-20260810"
                 aria-label="Open the movie archive constellation" title="Archive">
                 <span aria-hidden="true">✦</span>
@@ -416,6 +417,7 @@
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="utils/plyr-plugin-capture.js"></script>
+    <script src="utils/plyr-plugin-clip-export.js?v=clip-export-20260818"></script>
 </body>
 
 </html>

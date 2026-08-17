@@ -11,10 +11,11 @@ class AppConfig {
     static get API_BASE_URL() {
         const hostname = window.location.hostname;
         const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+        const useLocalWorker = isLocal && new URLSearchParams(window.location.search).get('worker') === 'local';
 
-        return isLocal
-            ? "http://localhost:8787"  // Local Wrangler dev server
-            : "https://chunkplayerneo.quickreactor.workers.dev";  // Production
+        return useLocalWorker
+            ? "http://localhost:8787"  // Explicit local Wrangler testing: ?worker=local
+            : "https://chunkplayerneo.quickreactor.workers.dev";  // Production and VS Code Live Server
     }
 
     static INITIAL_CHUNK_NUMBER = 1;

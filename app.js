@@ -367,10 +367,19 @@ class ChunkPlayerApp {
         // Admin toggle button
         this.domService.elements.adminToggleBtn?.addEventListener("click", () => {
             this.domService.elements.adminPanel.classList.toggle('hidden');
-            this.domService.elements.adminPassword?.focus();
+            const panelIsOpen = !this.domService.elements.adminPanel.classList.contains('hidden');
+            this.domService.elements.adminToggleBtn.setAttribute('aria-expanded', String(panelIsOpen));
+            this.domService.elements.adminToggleBtn.setAttribute(
+                'aria-label',
+                panelIsOpen ? 'Close admin controls' : 'Open admin controls'
+            );
+            if (panelIsOpen) {
+                this.positionAdminPanel();
+                this.domService.elements.adminPassword?.focus({ preventScroll: true });
+            }
 
             // If panel opened and user already has stored clearance, show panels directly
-            if (!this.domService.elements.adminPanel.classList.contains('hidden')) {
+            if (panelIsOpen) {
                 const level = this.adminService.getClearance();
                 if (level > 0) {
                     this.domService.elements.adminLogin.classList.add('display-none');
@@ -635,6 +644,15 @@ class ChunkPlayerApp {
                 }
             }
         });
+
+        const repositionOpenAdminPanel = () => {
+            if (!this.domService.elements.adminPanel.classList.contains('hidden')) {
+                this.positionAdminPanel();
+            }
+        };
+        window.addEventListener('resize', repositionOpenAdminPanel);
+        window.addEventListener('scroll', repositionOpenAdminPanel, { passive: true });
+        window.visualViewport?.addEventListener('resize', repositionOpenAdminPanel);
 
         this.domService.elements.scheduleForcedRollBtn?.addEventListener("click", async () => {
             const date = this.domService.elements.forcedRollDateInput.value;
@@ -1212,6 +1230,37 @@ class ChunkPlayerApp {
             this.domService.elements.adminTestFlipInput.value = 0;
             this.domService.elements.forcedRollDateInput.value = this.getAucklandDateInput();
             this.showForcedRollStatus(null);
+        }
+    }
+
+    /**
+     * Fit the admin panel into whichever side of the cog has more viewport room.
+     * The cog remains in normal document flow; only the overlay is repositioned.
+     */
+    positionAdminPanel() {
+        const panel = this.domService.elements.adminPanel;
+        const toggle = this.domService.elements.adminToggleBtn;
+        if (!panel || !toggle) return;
+
+        const toggleRect = toggle.getBoundingClientRect();
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        const viewportTop = window.visualViewport?.offsetTop || 0;
+        const viewportBottom = viewportTop + viewportHeight;
+        const gutter = 12;
+        const gap = 10;
+        const spaceAbove = Math.max(0, toggleRect.top - viewportTop - gutter - gap);
+        const spaceBelow = Math.max(0, viewportBottom - toggleRect.bottom - gutter - gap);
+        const placeAbove = spaceAbove >= spaceBelow;
+
+        panel.dataset.placement = placeAbove ? 'above' : 'below';
+        panel.style.maxHeight = `${placeAbove ? spaceAbove : spaceBelow}px`;
+
+        if (placeAbove) {
+            panel.style.top = 'auto';
+            panel.style.bottom = `${window.innerHeight - toggleRect.top + gap}px`;
+        } else {
+            panel.style.top = `${toggleRect.bottom + gap}px`;
+            panel.style.bottom = 'auto';
         }
     }
 

@@ -135,7 +135,7 @@ class DOMService {
             },
             controls: [
                 "play", "progress", "current-time",
-                "duration", "pip", "capture", "fullscreen",
+                "duration", "pip", "clip-export", "capture", "fullscreen",
             ],
         });
 
