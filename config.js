@@ -139,6 +139,10 @@ const CONFIG = {
     api: {
         baseUrl: AppConfig.API_BASE_URL
     },
+    features: {
+        // Exporter code is retained, but disabled until its mobile behavior is revisited.
+        clipExport: false
+    },
     debug: new DebugConfig(),
     movieData: null,
     initialChunkNumber: AppConfig.INITIAL_CHUNK_NUMBER

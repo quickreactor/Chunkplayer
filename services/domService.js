@@ -124,6 +124,14 @@ class DOMService {
             return;
         }
 
+        const controls = [
+            "play", "progress", "current-time",
+            "duration", "pip", "capture", "fullscreen",
+        ];
+        if (CONFIG.features?.clipExport) {
+            controls.splice(5, 0, "clip-export");
+        }
+
         this.player = new Plyr("#videoPlayer", {
             // The whole video surface is handled below so mouse and touch input
             // behave consistently instead of requiring the small play control.
@@ -133,10 +141,7 @@ class DOMService {
                 fallback: true,
                 iosNative: true,
             },
-            controls: [
-                "play", "progress", "current-time",
-                "duration", "pip", "clip-export", "capture", "fullscreen",
-            ],
+            controls,
         });
 
         this.player.on('ready', () => {
