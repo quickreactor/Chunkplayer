@@ -14,6 +14,7 @@ class ChunkPlayerApp {
         this.audioService = new AudioService();
         this.videoService = new VideoService(this.domService, this.audioService);
         this.effectService = new EffectService();
+        this.posterService = new PosterService();
         this.jokerPhysicsService = new JokerPhysicsService(
             document.getElementById('poster-container-2'),
             this.domService.elements.poster2,
@@ -171,6 +172,9 @@ class ChunkPlayerApp {
 
             CONFIG.movieData = await response2.json();
 
+            // Start fetching and decoding every poster today's flow may need.
+            this.posterService.prepareDailyPosters(CONFIG.movieData, this.domService.elements);
+
             // Initialize DateService after movie data is loaded
             this.dateService = new DateService();
 
@@ -224,6 +228,7 @@ class ChunkPlayerApp {
             this.videoService,
             this.audioService,
             this.soundBoardService,
+            this.posterService,
             () => {
                 this.showAdminSection();
                 // Initialize graffiti when entering video playback
@@ -631,6 +636,34 @@ class ChunkPlayerApp {
             }
         });
 
+        this.domService.elements.scheduleForcedRollBtn?.addEventListener("click", async () => {
+            const date = this.domService.elements.forcedRollDateInput.value;
+            const roll = Number.parseInt(this.domService.elements.forcedRollInput.value, 10);
+            if (!date || !Number.isInteger(roll) || roll < 1 || roll > 20) {
+                this.adminService.showToast('Choose an Auckland date and a roll from 1 to 20.', 'error');
+                return;
+            }
+
+            try {
+                const result = await this.apiService.setForcedRoll(date, roll);
+                if (!result.success) throw new Error(result.error || 'Could not schedule the roll');
+                this.showForcedRollStatus(result.forcedRoll);
+                this.adminService.showToast(`Roll ${roll} scheduled for ${date}`, 'success');
+            } catch (error) {
+                this.adminService.showToast(error.message || 'Could not schedule the roll', 'error');
+            }
+        });
+
+        this.domService.elements.clearForcedRollBtn?.addEventListener("click", async () => {
+            try {
+                await this.apiService.clearForcedRoll();
+                this.showForcedRollStatus(null);
+                this.adminService.showToast('Scheduled roll cancelled', 'success');
+            } catch (error) {
+                this.adminService.showToast(error.message || 'Could not cancel the scheduled roll', 'error');
+            }
+        });
+
         this.logoBgPickr
             .on('change', (color) => {
                 if (color) setSwatch(color.toHEXA().toString().slice(0, 7));
@@ -907,8 +940,8 @@ class ChunkPlayerApp {
 
         // Show candidate posters with FLIP button
         this.domService.show('posterSection');
-        this.domService.elements.poster1.src = coinFlip.movie1.posterUrl;
-        this.domService.elements.poster2.src = coinFlip.movie2.posterUrl;
+        this.posterService.setSource(this.domService.elements.poster1, coinFlip.movie1.posterUrl, 'high');
+        this.posterService.setSource(this.domService.elements.poster2, coinFlip.movie2.posterUrl, 'high');
         this.domService.elements.rollButton.style.display = 'none';
         this.domService.elements.flipButton.style.display = 'flex';
 
@@ -931,8 +964,12 @@ class ChunkPlayerApp {
         const videoNumberText = targetMovie.pointer;
 
         this.domService.show('posterSection');
-        this.domService.elements.poster1.src = videoNumberText == 1 ? "images/question.jpg" : normalMovie.posterUrl;
-        this.domService.elements.poster2.src = punishmentMovie.posterUrl;
+        this.posterService.setSource(
+            this.domService.elements.poster1,
+            videoNumberText == 1 ? "images/question.jpg" : normalMovie.posterUrl,
+            'high'
+        );
+        this.posterService.setSource(this.domService.elements.poster2, punishmentMovie.posterUrl, 'high');
 
         // Show graffiti on pre-roll poster
         await this.graffitiService.renderPrerollOverlay();
@@ -972,12 +1009,12 @@ class ChunkPlayerApp {
 
         // Update poster2 to punishment movie (for roll animation)
         const punishmentMovie = CONFIG.movieData.punishmentMovie;
-        this.domService.elements.poster2.src = punishmentMovie.posterUrl;
+        this.posterService.setSource(this.domService.elements.poster2, punishmentMovie.posterUrl, 'high');
 
         // Update poster1 to winner
         const winnerIndex = coinFlip.candidateIndex;
         const winner = winnerIndex === 0 ? coinFlip.movie1 : coinFlip.movie2;
-        this.domService.elements.poster1.src = winner.posterUrl;
+        this.posterService.setSource(this.domService.elements.poster1, winner.posterUrl, 'high');
 
         // Show ROLL button, hide FLIP button
         this.domService.elements.rollButton.style.display = 'flex';
@@ -1109,6 +1146,7 @@ class ChunkPlayerApp {
             // 3. Refresh daily data
             const response = await fetch(`${CONFIG.api.baseUrl}/get-daily-data`);
             CONFIG.movieData = await response.json();
+            this.posterService.prepareDailyPosters(CONFIG.movieData, this.domService.elements);
 
             // 4. Update local state
             const targetMovie = CONFIG.movieData.punishmentMovie;
@@ -1159,6 +1197,9 @@ class ChunkPlayerApp {
             this.domService.elements.adminJokerlessDaysInput.value = data.jokerlessDays ?? 0;
             this.domService.elements.adminJokerlessDaysOldInput.value = data.jokerlessDaysOld ?? 0;
             this.domService.elements.adminTestFlipInput.value = data.jokerlessDays ?? 0;
+            this.domService.elements.forcedRollDateInput.value = this.getAucklandDateInput();
+            const forcedRoll = await this.apiService.getForcedRoll();
+            this.showForcedRollStatus(forcedRoll.forcedRoll);
         } catch (error) {
             console.error('Failed to load pointer values:', error);
             // Set defaults
@@ -1169,7 +1210,26 @@ class ChunkPlayerApp {
             this.domService.elements.adminJokerlessDaysInput.value = 0;
             this.domService.elements.adminJokerlessDaysOldInput.value = 0;
             this.domService.elements.adminTestFlipInput.value = 0;
+            this.domService.elements.forcedRollDateInput.value = this.getAucklandDateInput();
+            this.showForcedRollStatus(null);
         }
+    }
+
+    getAucklandDateInput() {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        const getPart = (type) => parts.find(part => part.type === type)?.value;
+        return `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+    }
+
+    showForcedRollStatus(forcedRoll) {
+        const status = this.domService.elements.forcedRollStatus;
+        if (!status) return;
+        status.textContent = forcedRoll
+            ? `Scheduled: roll ${forcedRoll.roll} on ${forcedRoll.date} (Auckland)`
+            : 'No roll scheduled.';
+        status.className = forcedRoll ? 'upload-status success' : 'upload-status';
     }
 
     /**

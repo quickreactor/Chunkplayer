@@ -9,57 +9,8 @@ class AdminService {
     constructor(apiService, domService) {
         this.apiService = apiService;
         this.domService = domService;
-        this.currentClearance = 0; // 0 = none, 1 = self-report, 2 = full admin
+        this.currentClearance = this.apiService.getClearance(); // 0 = none, 1 = self-report, 2 = full admin
         this.pendingAction = null;
-        this.STORAGE_KEY = 'admin_clearance';
-        this.DATE_KEY = 'admin_clearance_date';
-
-        // Restore clearance from localStorage if it's from today
-        this.restoreClearance();
-    }
-
-    /**
-     * Get today's date key for localStorage
-     */
-    _getTodayKey() {
-        const today = new Date();
-        return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    }
-
-    /**
-     * Restore clearance from localStorage if it's from today
-     */
-    restoreClearance() {
-        const savedDate = localStorage.getItem(this.DATE_KEY);
-        const today = this._getTodayKey();
-
-        if (savedDate === today) {
-            const savedClearance = localStorage.getItem(this.STORAGE_KEY);
-            if (savedClearance) {
-                this.currentClearance = parseInt(savedClearance);
-                console.log(`%c[Admin] Restored clearance level ${this.currentClearance} for ${today}`, 'color: #00ff00; font-weight: bold');
-            }
-        } else {
-            // Clear stale clearance from previous day
-            this.clearStoredClearance();
-        }
-    }
-
-    /**
-     * Save clearance to localStorage
-     */
-    saveClearance() {
-        const today = this._getTodayKey();
-        localStorage.setItem(this.STORAGE_KEY, this.currentClearance.toString());
-        localStorage.setItem(this.DATE_KEY, today);
-    }
-
-    /**
-     * Clear stored clearance from localStorage
-     */
-    clearStoredClearance() {
-        localStorage.removeItem(this.STORAGE_KEY);
-        localStorage.removeItem(this.DATE_KEY);
     }
 
     /**
@@ -68,22 +19,14 @@ class AdminService {
      * @returns {Promise<number>} Clearance level achieved (0, 1, or 2)
      */
     async login(password) {
-        // Check level 2 first (higher clearance)
-        if (await this.apiService.verifyPassword(password, 2)) {
-            this.currentClearance = 2;
-            this.saveClearance();
-            return 2;
+        try {
+            this.currentClearance = await this.apiService.login(password);
+            return this.currentClearance;
+        } catch (error) {
+            this.currentClearance = 0;
+            this.apiService.clearAdminSession();
+            return 0;
         }
-
-        // Check level 1
-        if (await this.apiService.verifyPassword(password, 1)) {
-            this.currentClearance = 1;
-            this.saveClearance();
-            return 1;
-        }
-
-        this.currentClearance = 0;
-        return 0;
     }
 
     /**
@@ -156,6 +99,7 @@ class AdminService {
      * @returns {number} Current clearance level
      */
     getClearance() {
+        this.currentClearance = this.apiService.getClearance();
         return this.currentClearance;
     }
 
@@ -164,6 +108,7 @@ class AdminService {
      */
     resetClearance() {
         this.currentClearance = 0;
+        this.apiService.clearAdminSession();
     }
 
     /**

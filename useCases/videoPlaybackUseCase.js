@@ -14,13 +14,15 @@ class VideoPlaybackUseCase {
      * @param {VideoService} videoService - Video service instance
      * @param {AudioService} audioService - Audio service instance
      * @param {SoundBoardService} soundBoardService - Soundboard service instance
+     * @param {PosterService} posterService - Poster preload and assignment service
      * @param {Function} onShowAdmin - Callback to show admin section
      */
-    constructor(domService, videoService, audioService, soundBoardService, onShowAdmin = null) {
+    constructor(domService, videoService, audioService, soundBoardService, posterService, onShowAdmin = null) {
         this.dom = domService;
         this.video = videoService;
         this.audio = audioService;
         this.soundBoard = soundBoardService;
+        this.posters = posterService;
         this.onShowAdmin = onShowAdmin;
     }
 
@@ -48,7 +50,7 @@ class VideoPlaybackUseCase {
         this.dom.setText('epTitle', titleArray[videoNumberIndex] || titleArray[0]);
 
         const posterSrc = calculatedChunkNumber == 1 ? "images/question.jpg" : movie.posterUrl;
-        this.dom.elements.todaysPoster.src = posterSrc;
+        this.posters.setSource(this.dom.elements.todaysPoster, posterSrc, 'high');
         this.dom.changeFavicon(movie.faviconUrl);
         document.title = `${DateHelpers.toSentenceCase(movie.name)} Chunk Player`;
 
@@ -97,7 +99,7 @@ class VideoPlaybackUseCase {
         this.dom.setText('dayCountDisplay', `/ ${punishmentMovie.chunks.length}`);
         this.dom.setText('epTitle', (punishmentMovie.titles[punishmentMovie.pointer - 1] || punishmentMovie.titles[0]));
         this.dom.setText('numberDisplay', currentMorbCount);
-        this.dom.elements.todaysPoster.src = `images/${punishmentMovie.name}.jpg`;
+        this.posters.setSource(this.dom.elements.todaysPoster, punishmentMovie.posterUrl, 'high');
         this.dom.elements.chunkSelector.style.pointerEvents = "none";
 
         this.audio.playMorbiusSound();

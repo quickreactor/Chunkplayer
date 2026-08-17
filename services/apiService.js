@@ -8,6 +8,44 @@
 class ApiService {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
+        this.ADMIN_SESSION_KEY = 'chunkplayer_admin_session';
+        this.adminSession = this.loadAdminSession();
+    }
+
+    loadAdminSession() {
+        try {
+            const saved = sessionStorage.getItem(this.ADMIN_SESSION_KEY);
+            const session = saved ? JSON.parse(saved) : null;
+            if (session?.token && [1, 2].includes(session.level)) return session;
+        } catch (error) {
+            console.warn('Could not restore admin session:', error);
+        }
+        return null;
+    }
+
+    getClearance() {
+        return this.adminSession?.level || 0;
+    }
+
+    clearAdminSession() {
+        this.adminSession = null;
+        sessionStorage.removeItem(this.ADMIN_SESSION_KEY);
+    }
+
+    async adminFetch(endpoint, options = {}) {
+        const token = this.adminSession?.token;
+        if (!token) {
+            throw new Error('Admin clearance required');
+        }
+
+        const headers = new Headers(options.headers || {});
+        headers.set('Authorization', `Bearer ${token}`);
+        const response = await fetch(`${this.baseUrl}${endpoint}`, { ...options, headers });
+        if (response.status === 401) {
+            this.clearAdminSession();
+            throw new Error('Admin session expired. Please log in again.');
+        }
+        return response;
     }
 
     /**
@@ -49,7 +87,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async selfMorb() {
-        const response = await fetch(`${this.baseUrl}/self-morb`);
+        const response = await this.adminFetch('/self-morb', { method: 'POST' });
         return await response.json();
     }
 
@@ -59,7 +97,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async setNormalPointer(value) {
-        const response = await fetch(`${this.baseUrl}/set-normal-pointer?value=${value}`);
+        const response = await this.adminFetch(`/set-normal-pointer?value=${value}`, { method: 'POST' });
         return await response.json();
     }
 
@@ -69,7 +107,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async setPunishmentPointer(value) {
-        const response = await fetch(`${this.baseUrl}/set-punishment-pointer?value=${value}`);
+        const response = await this.adminFetch(`/set-punishment-pointer?value=${value}`, { method: 'POST' });
         return await response.json();
     }
 
@@ -79,7 +117,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async setRewardPointer(value) {
-        const response = await fetch(`${this.baseUrl}/set-reward-pointer?value=${value}`);
+        const response = await this.adminFetch(`/set-reward-pointer?value=${value}`, { method: 'POST' });
         return await response.json();
     }
 
@@ -89,7 +127,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async setJokerlessDays(value) {
-        const response = await fetch(`${this.baseUrl}/set-jokerless-days?value=${value}`);
+        const response = await this.adminFetch(`/set-jokerless-days?value=${value}`, { method: 'POST' });
         return await response.json();
     }
 
@@ -99,7 +137,7 @@ class ApiService {
      * @returns {Promise<Object>} JSON response
      */
     async setJokerlessDaysOld(value) {
-        const response = await fetch(`${this.baseUrl}/set-jokerless-days-old?value=${value}`);
+        const response = await this.adminFetch(`/set-jokerless-days-old?value=${value}`, { method: 'POST' });
         return await response.json();
     }
 
@@ -112,48 +150,42 @@ class ApiService {
         return await response.json();
     }
 
+    async getForcedRoll() {
+        const response = await this.adminFetch('/admin/forced-roll');
+        return await response.json();
+    }
+
+    async setForcedRoll(date, roll) {
+        const response = await this.adminFetch('/admin/forced-roll', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date, roll })
+        });
+        return await response.json();
+    }
+
+    async clearForcedRoll() {
+        const response = await this.adminFetch('/admin/forced-roll', { method: 'DELETE' });
+        return await response.json();
+    }
+
     /**
-     * Verify admin password (client-side hash check)
-     * @param {string} password - Password to verify
-     * @param {number} level - Clearance level (1 or 2)
-     * @returns {Promise<boolean>} True if password matches
+     * Log in through the Worker. Passwords are never checked or stored in the browser.
      */
-    async verifyPassword(password, level) {
-        // Check if crypto.subtle is available (secure context)
-        if (crypto.subtle) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-            // Pre-computed hashes for passwords (SHA-256)
-            const expectedHashes = {
-                level1: "988f2a699e6386c8b2302edd69f5f455a58160738bef528891dd0cf942735060",
-                level2: "c8f0baac2d64e7d7a7edba9ae4cced1da9cb8fe5fb72e9283e0a494a217aee0e"
-            };
-
-            return hashHex === expectedHashes[`level${level}`];
+    async login(password) {
+        const response = await fetch(`${this.baseUrl}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Invalid clearance code');
         }
 
-        // Fallback for insecure contexts - using simple hash (not stored in code for security)
-        // This is a simplified check that still prevents casual password viewing
-        const simpleHash = (str) => {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash.toString(36);
-        };
-
-        const fallbackHashes = {
-            level1: simpleHash("morb"),
-            level2: simpleHash("chunky")
-        };
-
-        return simpleHash(password) === fallbackHashes[`level${level}`];
+        this.adminSession = { token: result.token, level: result.level };
+        sessionStorage.setItem(this.ADMIN_SESSION_KEY, JSON.stringify(this.adminSession));
+        return result.level;
     }
 
     /**
@@ -164,7 +196,7 @@ class ApiService {
     async reportPunishment() {
         try {
             console.log('📡 Reporting punishment watch...');
-            const response = await fetch(`${this.baseUrl}/report-punishment`, {
+            const response = await this.adminFetch('/report-punishment', {
                 method: 'POST'
             });
             const result = await response.json();
@@ -218,7 +250,7 @@ class ApiService {
      */
     async updateGraffiti(index, data) {
         try {
-            const response = await fetch(`${this.baseUrl}/update-graffiti`, {
+            const response = await this.adminFetch('/update-graffiti', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ index, data })
@@ -236,7 +268,7 @@ class ApiService {
      */
     async clearGraffiti() {
         try {
-            const response = await fetch(`${this.baseUrl}/clear-graffiti`);
+            const response = await this.adminFetch('/clear-graffiti', { method: 'POST' });
             return await response.json();
         } catch (error) {
             ErrorHandler.handle(error, 'ApiService.clearGraffiti');
@@ -251,7 +283,7 @@ class ApiService {
      */
     async setLogoBackgroundColor(color) {
         try {
-            const response = await fetch(`${this.baseUrl}/set-logo-bg-color`, {
+            const response = await this.adminFetch('/set-logo-bg-color', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ color })
@@ -275,7 +307,7 @@ class ApiService {
             formData.append('file', file);
             formData.append('movieName', movieName);
 
-            const response = await fetch(`${this.baseUrl}/upload-poster`, {
+            const response = await this.adminFetch('/upload-poster', {
                 method: 'POST',
                 body: formData
             });

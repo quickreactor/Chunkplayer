@@ -37,6 +37,7 @@
     <script src="services/dateService.js"></script>
     <script src="services/domService.js?v=video-surface-play-20260806"></script>
     <script src="services/effectService.js"></script>
+    <script src="services/posterService.js?v=poster-preload-20260818"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
     <script src="services/jokerPhysicsService.js?v=joker-impact-audio-20260809"></script>
     <script src="services/soundBoardService.js"></script>
@@ -82,7 +83,7 @@
     </video>
     <div class="poster-section">
         <div id="poster-container-1" class="poster-container"><img class="poster-image" id="poster-image-1" src=""
-                alt=""></div>
+                alt="" crossorigin="anonymous" decoding="async"></div>
         <div id="dice-and-text-container">
             <div id="roll-button">
                 <video id="deye-idle" autoplay loop muted playsinline>
@@ -100,7 +101,7 @@
         </div>
         <div id="flip-button" style="display: none;">FLIP</div>
         <div id="poster-container-2" class="poster-container"><img class="poster-image" src="" alt=""
-                id="poster-image-2"></div>
+                id="poster-image-2" crossorigin="anonymous" decoding="async"></div>
     </div>
     <div class="container hidden">
         <div id="top-bar">
@@ -129,7 +130,7 @@
 
             </div>
             <div id="todays-poster-container">
-                <img src="" alt="" id="todays-poster" crossorigin="anonymous">
+                <img src="" alt="" id="todays-poster" crossorigin="anonymous" decoding="async">
             </div>
             <div id="soundboard">
                 <h1>Drops</h1>
@@ -271,6 +272,17 @@
                             <button class="stepper-plus" data-type="fakeroll">+</button>
                         </div>
                         <button id="execute-fake-roll-btn" class="admin-action-btn">Execute Fake Roll</button>
+                    </div>
+
+                    <div class="admin-pointer-control">
+                        <label>Schedule Real Roll (Auckland date)</label>
+                        <div class="stepper-with-action">
+                            <input type="date" id="forced-roll-date">
+                            <input type="number" class="stepper-input" id="forced-roll-input" min="1" max="20" value="20">
+                            <button id="schedule-forced-roll-btn" class="admin-action-btn">Schedule</button>
+                            <button id="clear-forced-roll-btn" class="admin-action-btn">Cancel</button>
+                        </div>
+                        <div id="forced-roll-status" class="upload-status"></div>
                     </div>
 
                     <!-- Test Flip Counter -->
