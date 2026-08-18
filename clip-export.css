@@ -1,0 +1,560 @@
+/* Compact Mediabunny clip editor: full-video overview plus a frame-accurate precision rail. */
+
+#video-frame .plyr.clip-editor-open .plyr__controls,
+#video-frame .plyr.clip-editor-open .plyr__control--overlaid {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.clip-export-control {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.clip-export-control svg {
+    display: block;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+}
+
+.clip-editor {
+    --clip-panel: rgba(15, 18, 25, 0.98);
+    --clip-overview: #6fa6d8;
+    --clip-selection: #4f8cc9;
+    --clip-trim: #f4f7fb;
+    --clip-cti-color: #ff5a3c;
+    --clip-muted: #bdc7d5;
+    --clip-colour-map: linear-gradient(90deg, #5d89a7 0%, #8077a4 52%, #b27d73 100%);
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 12;
+    box-sizing: border-box;
+    max-height: 200px;
+    padding: 4px max(8px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--clip-panel);
+    color: #f7f8fa;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 12px;
+    text-align: left;
+}
+
+.clip-editor[hidden],
+.clip-editor [hidden] {
+    display: none !important;
+}
+
+.clip-editor button {
+    position: relative;
+    box-sizing: border-box;
+    color: inherit;
+    font: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.clip-editor button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+}
+
+.clip-editor button:disabled {
+    cursor: not-allowed;
+    opacity: 0.46;
+}
+
+.clip-topbar,
+.clip-secondary-actions,
+.clip-clock,
+.clip-time-row,
+.clip-transport {
+    display: flex;
+    align-items: center;
+}
+
+.clip-topbar {
+    height: 36px;
+    justify-content: space-between;
+}
+
+.clip-clock {
+    min-width: 0;
+    gap: 5px;
+    padding-left: 4px;
+    color: var(--clip-muted);
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: 0.035em;
+    white-space: nowrap;
+}
+
+.clip-clock output:first-child {
+    color: #fff;
+}
+
+.clip-secondary-actions {
+    height: 36px;
+    gap: 0;
+}
+
+.clip-icon-button,
+.clip-tool {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.clip-icon-button::before,
+.clip-tool::before {
+    position: absolute;
+    inset: 5px;
+    border-radius: 5px;
+    background: transparent;
+    content: '';
+}
+
+.clip-icon-button:hover::before,
+.clip-icon-button:focus-visible::before,
+.clip-tool:hover::before,
+.clip-tool:focus-visible::before {
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.clip-icon-button svg,
+.clip-tool svg {
+    position: relative;
+    z-index: 1;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+}
+
+.clip-icon-button {
+    color: var(--clip-muted);
+}
+
+.clip-icon-button[aria-pressed='true'],
+.clip-icon-button--export {
+    color: #fff;
+}
+
+.clip-icon-button[aria-pressed='true']::before {
+    background: color-mix(in srgb, var(--clip-overview) 22%, transparent);
+}
+
+.clip-icon-button--export {
+    color: var(--clip-selection);
+}
+
+.clip-tooltip {
+    position: absolute;
+    right: 50%;
+    bottom: calc(100% - 2px);
+    z-index: 30;
+    width: max-content;
+    max-width: 150px;
+    padding: 4px 7px;
+    transform: translateX(50%) translateY(3px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+    background: #050608;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1.2;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 100ms ease, transform 100ms ease;
+}
+
+.clip-icon-button:hover .clip-tooltip,
+.clip-icon-button:focus-visible .clip-tooltip,
+.clip-tool:hover .clip-tooltip,
+.clip-tool:focus-visible .clip-tooltip {
+    transform: translateX(50%) translateY(0);
+    opacity: 1;
+}
+
+.clip-overview,
+.clip-timeline {
+    position: relative;
+    margin: 0 16px;
+    touch-action: none;
+    user-select: none;
+}
+
+.clip-overview {
+    height: 24px;
+}
+
+.clip-overview__track,
+.clip-overview__selection {
+    position: absolute;
+    top: 10px;
+    height: 4px;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.clip-overview__track {
+    right: 0;
+    left: 0;
+    background: var(--clip-colour-map);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.clip-overview__selection {
+    right: calc(100% - var(--overview-end));
+    left: var(--overview-start);
+    z-index: 2;
+    min-width: 3px;
+    background: color-mix(in srgb, var(--clip-overview) 46%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--clip-overview) 24%, transparent);
+}
+
+.clip-overview__playhead {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: var(--overview-playhead);
+    z-index: 3;
+    width: 2px;
+    transform: translateX(-1px);
+    background: var(--clip-cti-color);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+.clip-overview__playhead::before {
+    position: absolute;
+    top: -1px;
+    left: -4px;
+    border-top: 6px solid var(--clip-cti-color);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    content: '';
+}
+
+.clip-overview--dragging .clip-overview__selection {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--clip-overview) 35%, transparent);
+}
+
+.clip-timeline {
+    height: 52px;
+}
+
+.clip-timeline__track,
+.clip-timeline__selection {
+    position: absolute;
+    top: 21px;
+    height: 10px;
+    pointer-events: none;
+}
+
+.clip-timeline__track {
+    right: 0;
+    left: 0;
+    border-radius: 3px;
+    background: var(--clip-colour-map);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+}
+
+.clip-timeline__selection {
+    right: calc(100% - var(--clip-end));
+    left: var(--clip-start);
+    top: 1px;
+    z-index: 2;
+    height: 52px;
+    border: 0;
+    background: transparent;
+    cursor: grab;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.clip-timeline__selection::before {
+    position: absolute;
+    top: 17px;
+    right: 0;
+    left: 0;
+    box-sizing: border-box;
+    height: 18px;
+    border-top: 2px solid var(--clip-selection);
+    border-bottom: 2px solid var(--clip-selection);
+    background: color-mix(in srgb, var(--clip-selection) 30%, transparent);
+    content: '';
+    pointer-events: none;
+}
+
+.clip-timeline--dragging .clip-timeline__selection {
+    cursor: grabbing;
+}
+
+.clip-editor button.clip-trim-handle,
+.clip-editor button.clip-cti {
+    display: block;
+    position: absolute;
+    top: 0;
+    z-index: 6;
+    width: 44px;
+    height: 52px;
+    margin: 0 0 0 -22px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.clip-editor button.clip-trim-handle {
+    cursor: ew-resize;
+}
+
+.clip-trim-handle--start {
+    left: var(--clip-start);
+}
+
+.clip-trim-handle--end {
+    left: var(--clip-end);
+}
+
+.clip-trim-handle span {
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    width: 20px;
+    height: 34px;
+    color: var(--clip-trim);
+    pointer-events: none;
+}
+
+.clip-trim-handle span svg {
+    width: 20px;
+    height: 34px;
+}
+
+.clip-trim-handle:hover span,
+.clip-trim-handle:focus-visible span,
+.clip-timeline--dragging .clip-trim-handle span {
+    color: var(--clip-cti-color);
+}
+
+.clip-cti {
+    left: var(--clip-playhead);
+    z-index: 8;
+}
+
+.clip-cti span {
+    position: absolute;
+    top: 6px;
+    bottom: 5px;
+    left: 21px;
+    width: 2px;
+    background: var(--clip-cti-color);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.clip-cti span::before {
+    position: absolute;
+    top: -2px;
+    left: -4px;
+    border-top: 6px solid var(--clip-cti-color);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    content: '';
+}
+
+.clip-cti:hover span,
+.clip-cti:focus-visible span,
+.clip-timeline--dragging .clip-cti span {
+    width: 3px;
+    background: var(--clip-cti-color);
+}
+
+.clip-time-row {
+    height: 14px;
+    justify-content: space-between;
+    padding: 0 4px;
+    color: #fff;
+    font-family: "Oswald", "Arial Narrow", sans-serif;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: 0.035em;
+}
+
+.clip-time-row output:nth-child(2) {
+    color: var(--clip-muted);
+}
+
+.clip-transport {
+    height: 44px;
+    justify-content: center;
+    gap: 2px;
+}
+
+.clip-tool {
+    color: #f7f8fa;
+}
+
+.clip-tool--play {
+    color: #071015;
+}
+
+.clip-tool--play::before {
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--clip-selection);
+}
+
+.clip-tool--play:hover::before,
+.clip-tool--play:focus-visible::before {
+    background: color-mix(in srgb, var(--clip-selection) 84%, white);
+}
+
+.clip-status {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    left: 8px;
+    z-index: 20;
+    box-sizing: border-box;
+    min-height: 22px;
+    margin: 0;
+    padding: 4px 8px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: rgba(5, 6, 8, 0.94);
+    color: #fff;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.clip-status--error {
+    color: #ffadb3;
+}
+
+.clip-progress {
+    position: absolute;
+    right: 8px;
+    bottom: 0;
+    left: 8px;
+    z-index: 21;
+    height: 2px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.clip-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--clip-selection);
+    transition: width 100ms linear;
+}
+
+body.clip-timeline-dragging {
+    user-select: none;
+}
+
+@media screen and (max-width: 760px) {
+    body.clip-editor-active {
+        overflow: hidden;
+    }
+
+    #video-frame .plyr.clip-editor-open {
+        position: fixed;
+        inset: 0;
+        z-index: 5000;
+        width: 100vw;
+        height: 100dvh;
+        background: #000;
+    }
+
+    #video-frame .plyr.clip-editor-open video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .clip-editor {
+        position: fixed;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
+    }
+
+    .clip-overview,
+    .clip-timeline {
+        margin-right: 18px;
+        margin-left: 18px;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .clip-editor {
+        padding-right: max(3px, env(safe-area-inset-right));
+        padding-left: max(3px, env(safe-area-inset-left));
+    }
+
+    .clip-overview,
+    .clip-timeline {
+        margin-right: 14px;
+        margin-left: 14px;
+    }
+
+    .clip-transport {
+        gap: 0;
+    }
+
+    .clip-clock {
+        gap: 3px;
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-height: 470px) and (orientation: landscape) {
+    .clip-editor {
+        position: fixed;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
+    }
+}
+
+@media (hover: none) {
+    .clip-tooltip {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .clip-tooltip,
+    .clip-progress span {
+        transition: none;
+    }
+}

@@ -741,6 +741,13 @@ class ChunkPlayerApp {
         let firstTapTime = 0;
         document.body.addEventListener("click", () => {
             const currentTime = new Date().getTime();
+            if (document.body.classList.contains('clip-editor-active')) {
+                // Trimming uses repeated clicks and taps; never carry those
+                // gestures into the hidden Morb easter-egg counter.
+                tapCount = 0;
+                firstTapTime = 0;
+                return;
+            }
             if (this.graffitiService?.isEditing) return;
 
             if (tapCount === 0) {

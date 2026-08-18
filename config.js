@@ -140,8 +140,8 @@ const CONFIG = {
         baseUrl: AppConfig.API_BASE_URL
     },
     features: {
-        // Exporter code is retained, but disabled until its mobile behavior is revisited.
-        clipExport: false
+        // Rollout switch for the capability-gated Mediabunny MP4 clip editor.
+        clipExport: true
     },
     debug: new DebugConfig(),
     movieData: null,
