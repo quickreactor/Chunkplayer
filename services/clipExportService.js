@@ -8,7 +8,10 @@ class ClipExportService {
     static DEFAULT_SECONDS = 3;
     static MAX_HEIGHT = 480;
     static LIBRARY_URL = 'vendor/mediabunny-1.52.2.min.js';
+    static AAC_ENCODER_URL = 'vendor/mediabunny-aac-encoder-1.52.2.min.js';
     static libraryPromise = null;
+    static aacEncoderPromise = null;
+    static aacEncoderRegistered = false;
 
     static hasBaseCapabilities(scope = globalThis) {
         const userAgent = scope.navigator?.userAgent || '';
@@ -57,6 +60,52 @@ class ClipExportService {
         }
 
         return this.libraryPromise;
+    }
+
+    static async ensureAacEncoder(library) {
+        if (this.aacEncoderRegistered || await library.canEncodeAudio('aac')) return;
+        if (typeof document === 'undefined') {
+            throw new Error('The AAC export fallback is only loaded in the browser.');
+        }
+
+        if (!this.aacEncoderPromise) {
+            this.aacEncoderPromise = new Promise((resolve, reject) => {
+                const existing = document.querySelector('script[data-mediabunny-aac-encoder-version="1.52.2"]');
+                const script = existing || document.createElement('script');
+                const register = () => {
+                    const encoder = globalThis.MediabunnyAacEncoder;
+                    if (!encoder?.registerAacEncoder) {
+                        script.remove();
+                        reject(new Error('The AAC export fallback did not start correctly.'));
+                        return;
+                    }
+                    encoder.registerAacEncoder();
+                    this.aacEncoderRegistered = true;
+                    resolve();
+                };
+                const handleError = () => {
+                    script.remove();
+                    reject(new Error('The AAC export fallback could not be loaded.'));
+                };
+
+                if (globalThis.MediabunnyAacEncoder) {
+                    register();
+                    return;
+                }
+                script.addEventListener('load', register, { once: true });
+                script.addEventListener('error', handleError, { once: true });
+                if (!existing) {
+                    script.src = new URL(this.AAC_ENCODER_URL, document.baseURI).toString();
+                    script.dataset.mediabunnyAacEncoderVersion = '1.52.2';
+                    document.head.appendChild(script);
+                }
+            }).catch(error => {
+                this.aacEncoderPromise = null;
+                throw error;
+            });
+        }
+
+        await this.aacEncoderPromise;
     }
 
     static fitWithin(width, height, maxHeight = this.MAX_HEIGHT) {
@@ -403,7 +452,7 @@ class ClipExportService {
         walk(8, moovBytes.length, 'moov');
     }
 
-    static buildConversionOptions({ startTime, endTime, width, height, quality }) {
+    static buildConversionOptions({ startTime, endTime, width, height, quality, includeAudio = false }) {
         return {
             tracks: 'primary',
             trim: { start: startTime, end: endTime },
@@ -414,9 +463,26 @@ class ClipExportService {
                 codec: 'avc',
                 quality
             },
-            audio: { discard: true },
+            audio: includeAudio
+                // Leave audio unconfigured: Mediabunny then copies the source
+                // audio when possible and only transcodes for a precise trim.
+                ? {}
+                : { discard: true },
             tags: {}
         };
+    }
+
+    static isAudioTrack(track) {
+        return track?.type === 'audio' || track?.isAudioTrack?.() === true;
+    }
+
+    static describeAudioDiscard(conversion) {
+        const discardedAudio = conversion.discardedTracks?.find(({ track }) => this.isAudioTrack(track));
+        if (!discardedAudio) return 'The conversion did not create an audio track.';
+        const reason = String(discardedAudio.reason || '').replace(/_/g, ' ');
+        return reason
+            ? `The conversion discarded the audio track (${reason}).`
+            : 'The conversion discarded the audio track.';
     }
 
     static abortError() {
@@ -445,7 +511,10 @@ class ClipExportService {
         });
 
         try {
-            const track = await input.getPrimaryVideoTrack();
+            const [track, audioTrack] = await Promise.all([
+                input.getPrimaryVideoTrack(),
+                input.getPrimaryAudioTrack()
+            ]);
             if (!track || !(await track.canDecode())) {
                 throw new Error('This video cannot be decoded for clip export.');
             }
@@ -468,6 +537,7 @@ class ClipExportService {
             const duration = Number.isFinite(metadataDuration) && metadataDuration > 0
                 ? metadataDuration
                 : await track.computeDuration({ skipLiveWait: true });
+            const audioAvailable = await this.canExportAudio(library, audioTrack);
             return new MediabunnyClipSession({
                 library,
                 sourceUrl,
@@ -477,7 +547,9 @@ class ClipExportService {
                 width,
                 height,
                 duration,
-                firstTimestamp: Math.max(0, firstTimestamp)
+                firstTimestamp: Math.max(0, firstTimestamp),
+                hasSourceAudio: Boolean(audioTrack),
+                audioAvailable
             });
         } catch (error) {
             input.dispose();
@@ -488,9 +560,25 @@ class ClipExportService {
         }
     }
 
-    async exportClip({ session, startSample, endSample, signal, onProgress = () => {} }) {
+    async canExportAudio(library, audioTrack) {
+        if (!audioTrack) return false;
+        try {
+            if (!(await audioTrack.canDecode())) return false;
+            await ClipExportService.ensureAacEncoder(library);
+            return await library.canEncodeAudio('aac', {
+                quality: new library.Quality('medium')
+            });
+        } catch (error) {
+            return false;
+        }
+    }
+
+    async exportClip({ session, startSample, endSample, signal, onProgress = () => {}, includeAudio = false }) {
         const selection = ClipExportService.validateSelection(startSample, endSample, session.duration);
         if (!selection.valid) throw new Error(selection.message);
+        if (includeAudio && !session.audioAvailable) {
+            throw new Error('Source audio is not available for MP4 export in this browser.');
+        }
         if (signal?.aborted) throw ClipExportService.abortError();
 
         const library = session.library;
@@ -528,12 +616,16 @@ class ClipExportService {
                 endTime: ClipExportService.inclusiveEnd(endSample, session.duration),
                 width: outputSize.width,
                 height: outputSize.height,
-                quality
+                quality,
+                includeAudio
             });
             conversion = await library.Conversion.init({ input, output, ...options });
             if (signal?.aborted) throw ClipExportService.abortError();
             if (!conversion.isValid) {
                 throw new Error('This video could not be prepared as an H.264 MP4 clip.');
+            }
+            if (includeAudio && !conversion.utilizedTracks?.some(track => ClipExportService.isAudioTrack(track))) {
+                throw new Error(`Sound could not be included. ${ClipExportService.describeAudioDiscard(conversion)}`);
             }
 
             conversion.onProgress = progress => onProgress(Math.max(0, Math.min(1, progress)));
@@ -568,8 +660,8 @@ class ClipExportService {
 }
 
 class MediabunnyClipSession {
-    constructor({ library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp }) {
-        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp });
+    constructor({ library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp, hasSourceAudio = false, audioAvailable = false }) {
+        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp, hasSourceAudio, audioAvailable });
         this.frameWindow = [];
         this.disposed = false;
     }

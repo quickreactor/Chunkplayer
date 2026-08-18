@@ -9,6 +9,7 @@
         play: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5 11 7-11 7V5Z"/></svg>`,
         pause: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg>`,
         loop: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>`,
+        volume: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`,
         markIn: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6v16h4M18 12H9M12 9l-3 3 3 3"/></svg>`,
         markOut: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h4v16h-4M6 12h9M12 9l3 3-3 3"/></svg>`,
         trimStart: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M20 2h-8v20h8"/></svg>`,
@@ -40,6 +41,7 @@
             this.currentSample = null;
             this.isOpen = false;
             this.isLooping = true;
+            this.includeAudio = true;
             this.isExporting = false;
             this.isBusy = false;
             this.originalState = null;
@@ -97,6 +99,7 @@
             this.removeControl();
             this.session?.dispose();
             this.session = null;
+            this.includeAudio = true;
             this.sourceUrl = nextUrl;
             if (!nextUrl || !Number.isFinite(this.media.duration) || this.media.duration < ClipExportService.MIN_SECONDS) return;
 
@@ -159,6 +162,9 @@
                     <div class="clip-secondary-actions">
                         <button type="button" class="clip-icon-button" data-clip="loop" aria-label="Loop selected range" aria-pressed="true" title="Loop selected range">
                             ${ICONS.loop}<span class="clip-tooltip" role="tooltip">Loop</span>
+                        </button>
+                        <button type="button" class="clip-icon-button" data-clip="audio" aria-label="Export with source audio" aria-pressed="true" title="Sound on">
+                            ${ICONS.volume}<span class="clip-tooltip" role="tooltip">Sound on</span>
                         </button>
                         <button type="button" class="clip-icon-button" data-clip="cancel-export" aria-label="Cancel export" title="Cancel export" hidden>
                             ${ICONS.stop}<span class="clip-tooltip" role="tooltip">Cancel export</span>
@@ -228,6 +234,8 @@
                 duration: panel.querySelector('[data-clip-output="duration"]'),
                 status: panel.querySelector('[data-clip-output="status"]'),
                 loop: panel.querySelector('[data-clip="loop"]'),
+                audio: panel.querySelector('[data-clip="audio"]'),
+                audioTooltip: panel.querySelector('[data-clip="audio"] .clip-tooltip'),
                 play: panel.querySelector('[data-clip="play"]'),
                 progress: panel.querySelector('[data-clip="progress"]'),
                 progressBar: panel.querySelector('[data-clip="progress"] span'),
@@ -240,6 +248,7 @@
             panel.querySelector('[data-clip="next"]').addEventListener('click', () => this.stepFrame(1));
             panel.querySelector('[data-clip="play"]').addEventListener('click', () => this.togglePlayback());
             panel.querySelector('[data-clip="loop"]').addEventListener('click', () => this.toggleLoop());
+            panel.querySelector('[data-clip="audio"]').addEventListener('click', () => this.toggleAudio());
             panel.querySelector('[data-clip="start"]').addEventListener('click', () => this.setMarker('start'));
             panel.querySelector('[data-clip="end"]').addEventListener('click', () => this.setMarker('end'));
             panel.querySelector('[data-clip="export"]').addEventListener('click', () => this.export());
@@ -277,6 +286,7 @@
             this.container.classList.add('clip-editor-open');
             document.body.classList.add('clip-editor-active');
             this.updateLoopButton();
+            this.updateAudioButton();
             this.setStatus('Reading exact frame timing…');
 
             try {
@@ -823,6 +833,39 @@
             this.elements.loop.classList.toggle('clip-loop--active', this.isLooping);
         }
 
+        toggleAudio() {
+            if (!this.session?.audioAvailable || this.isExporting) return;
+            this.includeAudio = !this.includeAudio;
+            this.updateAudioButton();
+            this.setStatus('');
+        }
+
+        updateAudioButton() {
+            if (!this.elements?.audio) return;
+            const hasSourceAudio = Boolean(this.session?.hasSourceAudio);
+            const available = Boolean(this.session?.audioAvailable);
+            const enabled = available && this.includeAudio;
+            const label = !hasSourceAudio
+                ? 'This video has no source audio'
+                : !available
+                    ? 'Audio export is unavailable in this browser'
+                    : enabled
+                        ? 'Export with source audio'
+                        : 'Export without source audio';
+
+            this.elements.audio.disabled = !available || this.isBusy;
+            this.elements.audio.setAttribute('aria-pressed', String(enabled));
+            this.elements.audio.setAttribute('aria-label', label);
+            this.elements.audio.setAttribute('title', label);
+            this.elements.audioTooltip.textContent = !hasSourceAudio
+                ? 'No source audio'
+                : !available
+                    ? 'Sound unavailable here'
+                    : enabled
+                        ? 'Sound on'
+                        : 'Include sound';
+        }
+
         updatePlaybackButton() {
             if (!this.elements?.play) return;
             const isPlaying = !this.media.paused || this.loopRestartPending;
@@ -942,6 +985,7 @@
                     startSample: this.startSample,
                     endSample: this.endSample,
                     signal: this.abortController.signal,
+                    includeAudio: this.includeAudio,
                     onProgress: progress => {
                         const percent = Math.round(progress * 100);
                         if (this.elements?.progressBar) this.elements.progressBar.style.width = `${percent}%`;
@@ -996,6 +1040,7 @@
                 this.endSample,
                 this.session.duration
             ).valid;
+            this.updateAudioButton();
             this.updatePlaybackButton();
         }
 

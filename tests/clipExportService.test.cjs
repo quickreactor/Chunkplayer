@@ -153,6 +153,40 @@ test('conversion options preserve source timing by omitting frameRate', () => {
     assert.deepEqual(options.audio, { discard: true });
 });
 
+test('conversion options use Mediabunny automatic audio handling only when requested', () => {
+    const quality = { level: 'medium' };
+    const options = ClipExportService.buildConversionOptions({
+        startTime: 1,
+        endTime: 4,
+        width: 852,
+        height: 480,
+        quality,
+        includeAudio: true
+    });
+
+    assert.deepEqual(options.audio, {});
+    assert.equal(Object.hasOwn(options.audio, 'codec'), false);
+    assert.equal(Object.hasOwn(options.audio, 'quality'), false);
+});
+
+test('reports a discarded audio track instead of silently exporting video only', () => {
+    const audioTrack = { type: 'audio' };
+    assert.equal(ClipExportService.isAudioTrack(audioTrack), true);
+    assert.equal(
+        ClipExportService.describeAudioDiscard({
+            discardedTracks: [{ track: audioTrack, reason: 'no_encodable_target_codec' }]
+        }),
+        'The conversion discarded the audio track (no encodable target codec).'
+    );
+});
+
+test('keeps the official local AAC fallback ready for browsers without a native encoder', () => {
+    assert.equal(ClipExportService.AAC_ENCODER_URL, 'vendor/mediabunny-aac-encoder-1.52.2.min.js');
+    assert.match(ClipExportService.ensureAacEncoder.toString(), /canEncodeAudio\('aac'\)/);
+    assert.match(ClipExportService.ensureAacEncoder.toString(), /MediabunnyAacEncoder/);
+    assert.match(ClipExportService.ensureAacEncoder.toString(), /registerAacEncoder/);
+});
+
 function mp4Box(type, payload) {
     const bytes = new Uint8Array(8 + payload.length);
     new DataView(bytes.buffer).setUint32(0, bytes.length);

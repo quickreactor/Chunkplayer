@@ -30,11 +30,13 @@ test('transport and secondary actions use the consistent local icon set', () => 
     assert.match(plugin, /data-clip="play"/);
     assert.match(plugin, /data-clip="next"/);
     assert.match(plugin, /data-clip="end"/);
+    assert.match(plugin, /data-clip="audio"/);
     assert.match(plugin, /ICONS\.markIn/);
     assert.match(plugin, /ICONS\.markOut/);
     assert.match(plugin, /ICONS\.trimStart/);
     assert.match(plugin, /ICONS\.trimEnd/);
     assert.match(plugin, /ICONS\.pause/);
+    assert.match(plugin, /ICONS\.volume/);
     assert.match(plugin, /ICONS\.download/);
     assert.match(plugin, /ICONS\.stop/);
     assert.match(plugin, /ICONS\.close/);
@@ -43,6 +45,17 @@ test('transport and secondary actions use the consistent local icon set', () => 
     assert.doesNotMatch(plugin, /clip-action/);
     assert.doesNotMatch(plugin, /data-clip="cancel-edit"/);
     assert.doesNotMatch(plugin, /export-loop-atom/);
+});
+
+test('source sound is a capability-gated export toggle', () => {
+    assert.match(plugin, /toggleAudio\(\)/);
+    assert.match(plugin, /this\.session\?\.audioAvailable/);
+    assert.match(plugin, /this\.includeAudio = true/);
+    assert.match(plugin, /this\.includeAudio = !this\.includeAudio/);
+    assert.match(plugin, /includeAudio:\s*this\.includeAudio/);
+    assert.match(plugin, /hasSourceAudio/);
+    assert.match(plugin, /Audio export is unavailable in this browser/);
+    assert.match(plugin, /title="Sound on"/);
 });
 
 test('Plyr clip control uses the official balanced Lucide scissors geometry', () => {

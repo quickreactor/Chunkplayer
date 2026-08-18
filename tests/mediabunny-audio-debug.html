@@ -1,0 +1,83 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mediabunny audio diagnostic</title>
+<pre id="output">Preparing audio diagnostic…</pre>
+<script src="../vendor/mediabunny-1.52.2.min.js"></script>
+<script src="../vendor/mediabunny-aac-encoder-1.52.2.min.js"></script>
+<script src="../services/clipExportService.js"></script>
+<script>
+    (async () => {
+        const output = document.querySelector('#output');
+        const sourceUrl = 'https://chunkplayer.barnaby.tv/mockchunks/chunks/mock08.mp4';
+        const summary = async track => ({
+            type: track.type,
+            codec: track.getCodec ? await track.getCodec() : null,
+            decodable: track.canDecode ? await track.canDecode() : null
+        });
+        const formatTracks = async tracks => Promise.all(tracks.map(summary));
+        try {
+            const input = new Mediabunny.Input({
+                formats: Mediabunny.ALL_FORMATS,
+                source: new Mediabunny.UrlSource(sourceUrl, { requestInit: { mode: 'cors' } })
+            });
+            const [video, audio, inputTracks] = await Promise.all([
+                input.getPrimaryVideoTrack(),
+                input.getPrimaryAudioTrack(),
+                input.getTracks()
+            ]);
+            const width = await video.getDisplayWidth();
+            const height = await video.getDisplayHeight();
+            const quality = new Mediabunny.Quality('medium');
+            const nativeAac = await Mediabunny.canEncodeAudio('aac');
+            if (!nativeAac) MediabunnyAacEncoder.registerAacEncoder();
+
+            const target = new Mediabunny.BufferTarget();
+            const conversion = await Mediabunny.Conversion.init({
+                input,
+                output: new Mediabunny.Output({
+                    format: new Mediabunny.Mp4OutputFormat({ fastStart: 'in-memory' }),
+                    target
+                }),
+                tracks: 'primary',
+                trim: { start: 258.467, end: 261.467 },
+                video: { width, height, fit: 'contain', codec: 'avc', quality },
+                audio: {}
+            });
+            const before = {
+                sourceUrl,
+                primaryVideo: video ? await summary(video) : null,
+                primaryAudio: audio ? await summary(audio) : null,
+                inputTracks: await formatTracks(inputTracks),
+                nativeAac,
+                aacEncodable: await Mediabunny.canEncodeAudio('aac'),
+                acceptedTracks: await formatTracks(conversion.utilizedTracks),
+                discardedTracks: conversion.discardedTracks.map(({ track, reason }) => ({ type: track.type, reason }))
+            };
+            await conversion.execute();
+
+            const exported = new Mediabunny.Input({
+                formats: Mediabunny.ALL_FORMATS,
+                source: new Mediabunny.BufferSource(new Uint8Array(target.buffer))
+            });
+            const exportedTracks = await exported.getTracks();
+            const repairedBytes = ClipExportService.repairAvcConfigurationRecordsToBytes(target.buffer);
+            const repaired = new Mediabunny.Input({
+                formats: Mediabunny.ALL_FORMATS,
+                source: new Mediabunny.BufferSource(repairedBytes)
+            });
+            const repairedTracks = await repaired.getTracks();
+            output.textContent = JSON.stringify({
+                ...before,
+                outputBytes: target.buffer.byteLength,
+                outputTracks: await formatTracks(exportedTracks),
+                repairChangedBytes: repairedBytes.byteLength - target.buffer.byteLength,
+                repairedOutputTracks: await formatTracks(repairedTracks)
+            }, null, 2);
+            repaired.dispose();
+            exported.dispose();
+            input.dispose();
+        } catch (error) {
+            output.textContent = `${error.name}: ${error.message}\n\n${error.stack || ''}`;
+        }
+    })();
+</script>

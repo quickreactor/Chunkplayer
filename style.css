@@ -273,7 +273,9 @@ h1 {
     max-width: 100%;
 
     background-color: var(--poster-color);
-    object-fit: cover;
+    /* Preserve the whole frame for portrait reward clips. Standard 16:9
+       chunks still fill the player, while vertical sources pillarbox. */
+    object-fit: contain;
     /* clip-path: inset(0% 0% 0% 0% round 7px); */
     /* border-radius: 7px; */
     /* box-shadow : 8px 8px 20px rgba( 0, 0, 0, 0.8 ); */
