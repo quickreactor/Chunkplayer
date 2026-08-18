@@ -245,15 +245,25 @@ h1 {
 
 #video-frame {
     z-index: 500;
-    width: 70vw;
-    aspect-ratio: 16 / 9;
+    /* The loaded source supplies these variables.  The width cap keeps a
+       portrait reward clip from consuming the entire viewport. */
+    width: min(70vw, var(--video-frame-max-width, 70vw));
+    aspect-ratio: var(--video-aspect-ratio, 16 / 9);
     margin-bottom: 35px;
 }
 
 #video-frame .plyr,
+#video-frame .plyr__video-wrapper,
 #video-frame #videoPlayer {
     width: 100%;
     height: 100%;
+}
+
+/* Plyr normally assumes a 16:9 wrapper. The frame above is the source of
+   truth so each loaded clip can retain its native shape. */
+#video-frame .plyr__video-wrapper {
+    aspect-ratio: inherit;
+    padding-bottom: 0;
 }
 
 /* Clean Plyr skin: no lower control gradient. */

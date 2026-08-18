@@ -144,6 +144,24 @@ class DOMService {
             controls,
         });
 
+        // Keep the player frame aligned with the actual source rather than
+        // forcing every chunk into a 16:9 box.  The height cap retains a
+        // sensible mobile layout for portrait reward clips.
+        const videoFrame = document.getElementById('video-frame');
+        const updateVideoFrameAspect = () => {
+            const media = this.elements.videoPlayer;
+            if (!videoFrame || !media.videoWidth || !media.videoHeight) return;
+
+            const ratio = media.videoWidth / media.videoHeight;
+            const maxHeight = window.innerHeight * 0.75;
+            videoFrame.style.setProperty('--video-aspect-ratio', `${media.videoWidth} / ${media.videoHeight}`);
+            videoFrame.style.setProperty('--video-frame-max-width', `${Math.round(maxHeight * ratio)}px`);
+        };
+
+        this.elements.videoPlayer.addEventListener('loadedmetadata', updateVideoFrameAspect);
+        window.addEventListener('resize', updateVideoFrameAspect);
+        updateVideoFrameAspect();
+
         this.player.on('ready', () => {
             const videoSurface = document.querySelector('#video-frame .plyr__video-wrapper');
             if (!videoSurface || videoSurface.dataset.tapToPlayBound === 'true') return;
