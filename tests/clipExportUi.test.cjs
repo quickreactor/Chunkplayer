@@ -7,6 +7,10 @@ const projectRoot = path.resolve(__dirname, '..');
 const plugin = fs.readFileSync(path.join(projectRoot, 'utils', 'plyr-plugin-clip-export.js'), 'utf8');
 const styles = fs.readFileSync(path.join(projectRoot, 'clip-export.css'), 'utf8');
 const app = fs.readFileSync(path.join(projectRoot, 'app.js'), 'utf8');
+const domService = fs.readFileSync(path.join(projectRoot, 'services', 'domService.js'), 'utf8');
+const adminService = fs.readFileSync(path.join(projectRoot, 'services', 'adminService.js'), 'utf8');
+const mainStyles = fs.readFileSync(path.join(projectRoot, 'style.css'), 'utf8');
+const index = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
 
 test('clip editor exposes a full overview plus separate In, Out, and CTI drag controls', () => {
     assert.match(plugin, /data-clip="overview"/);
@@ -136,4 +140,40 @@ test('the precision rail continuously crops and enlarges the overview colour map
 test('clip editing taps cannot increment or carry into the Morb multiclick trigger', () => {
     assert.match(app, /classList\.contains\('clip-editor-active'\)/);
     assert.match(app, /tapCount = 0;\s*firstTapTime = 0;\s*return;/);
+});
+
+test('clip control mounts before source validation and validates lazily when opened', () => {
+    const refreshSource = plugin.match(/async refreshSource\(\)\s*\{[\s\S]*?\n        \}/)?.[0] || '';
+    const open = plugin.match(/async open\(\)\s*\{[\s\S]*?\n        \}/)?.[0] || '';
+    assert.match(refreshSource, /this\.mountControl\(\)/);
+    assert.doesNotMatch(refreshSource, /openSource\(/);
+    assert.match(open, /await this\.service\.openSource\(openingUrl\)/);
+    assert.match(open, /this\.setStatus\('Checking video and H\.264 export support…'\)/);
+    assert.match(open, /this\.showPersistentErrorToast\(error\)/);
+});
+
+test('lazy source validation discards stale sessions after rapid source changes', () => {
+    assert.match(plugin, /openingGeneration !== this\.sourceGeneration/);
+    assert.match(plugin, /openingUrl !== \(this\.media\.currentSrc \|\| this\.media\.src\)/);
+    assert.match(plugin, /session\.dispose\(\);\s*return;/);
+});
+
+test('clip failures dispatch a persistent reportable toast', () => {
+    assert.match(plugin, /new CustomEvent\('chunkplayer:toast'/);
+    assert.match(plugin, /persistent:\s*true/);
+    assert.match(plugin, /AVC checks:/);
+    assert.match(domService, /event\.detail\?\.persistent === true/);
+    assert.match(domService, /toastClose\?\.toggleAttribute\('hidden', !persistent\)/);
+    assert.match(adminService, /this\.domService\.showToast\(message, type\)/);
+    assert.match(index, /id="toast-close"/);
+    assert.match(mainStyles, /\.toast\s*\{[\s\S]*z-index:\s*7000/);
+});
+
+test('video surface keeps its theme until first playback then stays black for that source', () => {
+    assert.match(domService, /addEventListener\('loadstart', resetVideoSurface\)/);
+    assert.match(domService, /addEventListener\('emptied', resetVideoSurface\)/);
+    assert.match(domService, /addEventListener\('playing', markVideoSurfacePlayed/);
+    assert.match(mainStyles, /#video-frame\s*\{[\s\S]*--video-surface-background:\s*var\(--poster-color\)/);
+    assert.match(mainStyles, /#video-frame\.video-has-played\s*\{\s*--video-surface-background:\s*#000/);
+    assert.match(mainStyles, /#videoPlayer\s*\{[\s\S]*background-color:\s*var\(--video-surface-background\)/);
 });

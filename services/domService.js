@@ -9,6 +9,14 @@ class DOMService {
     constructor() {
         this.elements = this.getElements();
         this.player = null;
+        this.toastTimer = null;
+        this.boundToastRequest = event => this.showToast(
+            event.detail?.message || '',
+            event.detail?.type || 'info',
+            { persistent: event.detail?.persistent === true }
+        );
+        document.addEventListener('chunkplayer:toast', this.boundToastRequest);
+        this.elements.toastClose?.addEventListener('click', () => this.hideToast());
         this.setupPlayer();
     }
 
@@ -108,8 +116,33 @@ class DOMService {
             confirmYes: document.getElementById("confirm-yes"),
             confirmNo: document.getElementById("confirm-no"),
             toast: document.getElementById("toast"),
-            toastMessage: document.getElementById("toast-message")
+            toastMessage: document.getElementById("toast-message"),
+            toastClose: document.getElementById("toast-close")
         };
+    }
+
+    showToast(message, type = 'success', { persistent = false } = {}) {
+        const { toast, toastMessage, toastClose } = this.elements;
+        if (!toast || !toastMessage) return;
+
+        clearTimeout(this.toastTimer);
+        this.toastTimer = null;
+        toastMessage.textContent = message;
+        toast.className = `toast ${type}${persistent ? ' toast--persistent' : ''}`;
+        toast.dataset.persistent = String(persistent);
+        toastClose?.toggleAttribute('hidden', !persistent);
+
+        if (!persistent) {
+            this.toastTimer = setTimeout(() => this.hideToast(), 3000);
+        }
+    }
+
+    hideToast() {
+        clearTimeout(this.toastTimer);
+        this.toastTimer = null;
+        this.elements.toast?.classList.add('hidden');
+        this.elements.toast?.removeAttribute('data-persistent');
+        this.elements.toastClose?.setAttribute('hidden', '');
     }
 
     /**
@@ -148,6 +181,8 @@ class DOMService {
         // forcing every chunk into a 16:9 box.  The height cap retains a
         // sensible mobile layout for portrait reward clips.
         const videoFrame = document.getElementById('video-frame');
+        const resetVideoSurface = () => videoFrame?.classList.remove('video-has-played');
+        const markVideoSurfacePlayed = () => videoFrame?.classList.add('video-has-played');
         const updateVideoFrameAspect = () => {
             const media = this.elements.videoPlayer;
             if (!videoFrame || !media.videoWidth || !media.videoHeight) return;
@@ -159,6 +194,9 @@ class DOMService {
         };
 
         this.elements.videoPlayer.addEventListener('loadedmetadata', updateVideoFrameAspect);
+        this.elements.videoPlayer.addEventListener('loadstart', resetVideoSurface);
+        this.elements.videoPlayer.addEventListener('emptied', resetVideoSurface);
+        this.elements.videoPlayer.addEventListener('playing', markVideoSurfacePlayed, { once: false });
         window.addEventListener('resize', updateVideoFrameAspect);
         updateVideoFrameAspect();
 

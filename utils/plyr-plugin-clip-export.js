@@ -1,6 +1,10 @@
 (function initMediabunnyClipPlugin(document) {
     if (!document || typeof CONFIG === 'undefined' || !CONFIG.features?.clipExport || !globalThis.ClipExportService) return;
-    if (!ClipExportService.hasBaseCapabilities()) return;
+    const baseCapabilityReport = ClipExportService.getCapabilityReport();
+    if (!baseCapabilityReport.supported) {
+        console.info('[Clip Export] Base capabilities unavailable:', baseCapabilityReport);
+        return;
+    }
 
     const ICONS = {
         scissors: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>`,
@@ -93,31 +97,17 @@
         async refreshSource() {
             const nextUrl = this.media.currentSrc || this.media.src || '';
             const generation = ++this.sourceGeneration;
-            if (nextUrl === this.sourceUrl && this.session && !this.session.disposed) return;
+            if (nextUrl === this.sourceUrl && this.button?.isConnected) return;
 
             await this.close({ restore: false });
+            if (generation !== this.sourceGeneration) return;
             this.removeControl();
             this.session?.dispose();
             this.session = null;
             this.includeAudio = true;
             this.sourceUrl = nextUrl;
             if (!nextUrl || !Number.isFinite(this.media.duration) || this.media.duration < ClipExportService.MIN_SECONDS) return;
-
-            try {
-                const session = await this.service.openSource(nextUrl);
-                if (generation !== this.sourceGeneration || nextUrl !== (this.media.currentSrc || this.media.src)) {
-                    session.dispose();
-                    return;
-                }
-                if (session.duration < ClipExportService.MIN_SECONDS) {
-                    session.dispose();
-                    return;
-                }
-                this.session = session;
-                this.mountControl();
-            } catch (error) {
-                console.info('[Clip Export] Unavailable for this video:', error.message);
-            }
+            this.mountControl();
         }
 
         mountControl() {
@@ -271,8 +261,10 @@
         }
 
         async open() {
-            if (!this.session || this.isOpen || this.isExporting) return;
+            if (this.isOpen || this.isExporting || !this.sourceUrl) return;
             if (!this.panel) this.buildPanel();
+            const openingGeneration = this.sourceGeneration;
+            const openingUrl = this.sourceUrl;
 
             this.originalState = {
                 time: this.media.currentTime,
@@ -287,9 +279,26 @@
             document.body.classList.add('clip-editor-active');
             this.updateLoopButton();
             this.updateAudioButton();
-            this.setStatus('Reading exact frame timing…');
+            this.setBusy(true);
+            this.setStatus('Checking video and H.264 export support…');
 
             try {
+                if (!this.session || this.session.disposed) {
+                    const session = await this.service.openSource(openingUrl);
+                    if (!this.isOpen
+                        || openingGeneration !== this.sourceGeneration
+                        || openingUrl !== (this.media.currentSrc || this.media.src)) {
+                        session.dispose();
+                        return;
+                    }
+                    if (session.duration < ClipExportService.MIN_SECONDS) {
+                        session.dispose();
+                        throw new Error('This video is too short to make a clip.');
+                    }
+                    this.session = session;
+                }
+
+                this.setStatus('Reading exact frame timing…');
                 const latestStart = Math.max(this.session.firstTimestamp, this.session.duration - ClipExportService.DEFAULT_SECONDS);
                 const startTarget = Math.min(latestStart, Math.max(this.session.firstTimestamp, this.media.currentTime - ClipExportService.DEFAULT_SECONDS / 2));
                 this.startSample = await this.session.resolveSample(startTarget);
@@ -301,10 +310,36 @@
                 this.elements.total.textContent = this.formatTime(this.session.duration);
                 this.updateUi();
                 this.setStatus('');
+                this.setBusy(false);
                 this.elements.play.focus({ preventScroll: true });
             } catch (error) {
+                if (!this.isOpen || openingGeneration !== this.sourceGeneration) return;
                 this.setStatus(error.message, true);
+                this.showPersistentErrorToast(error);
+                console.info('[Clip Export] Capability report:', this.service.getCapabilityReport());
             }
+        }
+
+        showPersistentErrorToast(error, stageOverride = '') {
+            const report = this.service.getCapabilityReport();
+            const stage = stageOverride || report.failureStage || 'editor';
+            const platform = [
+                report.iosVersion ? `iOS ${report.iosVersion}` : '',
+                report.browser ? `${report.browser}${report.browserVersion ? ` ${report.browserVersion}` : ''}` : ''
+            ].filter(Boolean).join(' · ');
+            const attempts = report.encoderAttempts?.length
+                ? ` · AVC checks: ${report.encoderAttempts.map(attempt => (
+                    `${attempt.width}×${attempt.height}=${attempt.supported ? 'yes' : 'no'}`
+                )).join(', ')}`
+                : '';
+            const message = [
+                `Clip maker error [${stage}]: ${error?.message || 'Unknown error.'}`,
+                platform ? `Device: ${platform}${attempts}` : attempts.replace(/^ · /, '')
+            ].filter(Boolean).join('\n');
+
+            document.dispatchEvent(new CustomEvent('chunkplayer:toast', {
+                detail: { message, type: 'error', persistent: true }
+            }));
         }
 
         async close({ restore = true } = {}) {
@@ -315,6 +350,7 @@
             this.media.pause();
             this.isOpen = false;
             this.isLooping = false;
+            this.isBusy = false;
             this.loopRestartPending = false;
             this.isExporting = false;
             this.container.classList.remove('clip-editor-open');
@@ -1014,6 +1050,7 @@
                     !wasCancelled,
                     { autoHide: wasCancelled }
                 );
+                if (!wasCancelled) this.showPersistentErrorToast(error, 'export');
             } finally {
                 this.isExporting = false;
                 this.abortController = null;

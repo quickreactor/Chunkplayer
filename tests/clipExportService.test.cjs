@@ -8,10 +8,22 @@ test('capability gate hides insecure and Firefox Android clients', () => {
         VideoDecoder: class {},
         VideoEncoder: class {},
         fetch() {},
-        navigator: { userAgent: 'Mozilla/5.0 Chrome/140.0' }
+        navigator: {
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 CriOS/152.0.0.0 Mobile/15E148 Safari/604.1'
+        }
     };
     assert.equal(ClipExportService.hasBaseCapabilities(capable), true);
+    assert.deepEqual(
+        {
+            supported: ClipExportService.getCapabilityReport(capable).supported,
+            browser: ClipExportService.getCapabilityReport(capable).browser,
+            iosVersion: ClipExportService.getCapabilityReport(capable).iosVersion,
+            videoEncoder: ClipExportService.getCapabilityReport(capable).videoEncoder
+        },
+        { supported: true, browser: 'Chrome iOS', iosVersion: '27.0', videoEncoder: true }
+    );
     assert.equal(ClipExportService.hasBaseCapabilities({ ...capable, isSecureContext: false }), false);
+    assert.equal(ClipExportService.hasBaseCapabilities({ ...capable, VideoEncoder: undefined }), false);
     assert.equal(ClipExportService.hasBaseCapabilities({
         ...capable,
         navigator: { userAgent: 'Mozilla/5.0 (Android 16) Firefox/142.0' }
@@ -128,6 +140,29 @@ test('fits video to a 480px maximum height without enlarging and uses even dimen
     assert.deepEqual(ClipExportService.fitWithin(1920, 1012), { width: 910, height: 480 });
     assert.deepEqual(ClipExportService.fitWithin(1080, 1920), { width: 270, height: 480 });
     assert.deepEqual(ClipExportService.fitWithin(638, 359), { width: 638, height: 358 });
+    assert.deepEqual(ClipExportService.fitWithin(1920, 1012, 360, 640), { width: 640, height: 336 });
+});
+
+test('falls back through smaller AVC sizes and records the phone-confirmed configuration', async () => {
+    const service = new ClipExportService();
+    const checked = [];
+    const library = {
+        Quality: class {},
+        async canEncodeVideo(codec, options) {
+            checked.push({ codec, width: options.width, height: options.height });
+            return options.width <= 640;
+        }
+    };
+
+    const selected = await service.selectAvcOutput(library, 1920, 1012);
+    assert.deepEqual(selected, { width: 640, height: 336 });
+    assert.deepEqual(checked, [
+        { codec: 'avc', width: 910, height: 480 },
+        { codec: 'avc', width: 640, height: 336 }
+    ]);
+    assert.deepEqual(service.getCapabilityReport().selectedEncoder, {
+        codec: 'avc', width: 640, height: 336
+    });
 });
 
 test('creates a safe MP4 filename from title and inclusive timestamps', () => {

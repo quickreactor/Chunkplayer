@@ -245,11 +245,17 @@ h1 {
 
 #video-frame {
     z-index: 500;
+    --video-surface-background: var(--poster-color);
+    --plyr-video-background: var(--video-surface-background);
     /* The loaded source supplies these variables.  The width cap keeps a
        portrait reward clip from consuming the entire viewport. */
     width: min(70vw, var(--video-frame-max-width, 70vw));
     aspect-ratio: var(--video-aspect-ratio, 16 / 9);
     margin-bottom: 35px;
+}
+
+#video-frame.video-has-played {
+    --video-surface-background: #000;
 }
 
 #video-frame .plyr,
@@ -264,6 +270,7 @@ h1 {
 #video-frame .plyr__video-wrapper {
     aspect-ratio: inherit;
     padding-bottom: 0;
+    background-color: var(--video-surface-background);
 }
 
 /* Clean Plyr skin: no lower control gradient. */
@@ -282,7 +289,7 @@ h1 {
     display: block;
     max-width: 100%;
 
-    background-color: var(--poster-color);
+    background-color: var(--video-surface-background);
     /* Preserve the whole frame for portrait reward clips. Standard 16:9
        chunks still fill the player, while vertical sources pillarbox. */
     object-fit: contain;
@@ -1067,11 +1074,17 @@ option {
     position: fixed;
     top: 20px;
     right: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: min(520px, calc(100vw - 40px));
     background: #4CAF50;
     color: white;
     padding: 15px 25px;
     border-radius: 8px;
-    z-index: 2000;
+    z-index: 7000;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .toast:not(.hidden) {
@@ -1084,6 +1097,21 @@ option {
 
 .toast.info {
     background: #2196F3;
+}
+
+.toast-close {
+    flex: 0 0 auto;
+    min-width: 32px;
+    min-height: 32px;
+    margin: -7px -17px -7px 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.2);
+    color: inherit;
+    font: inherit;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
 }
 
 @keyframes slideIn {

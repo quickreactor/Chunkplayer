@@ -13,14 +13,49 @@ class ClipExportService {
     static aacEncoderPromise = null;
     static aacEncoderRegistered = false;
 
-    static hasBaseCapabilities(scope = globalThis) {
+    constructor() {
+        this.capabilityReport = ClipExportService.getCapabilityReport();
+    }
+
+    static getCapabilityReport(scope = globalThis) {
         const userAgent = scope.navigator?.userAgent || '';
         const isFirefoxAndroid = /Android/i.test(userAgent) && /Firefox|FxiOS/i.test(userAgent);
-        return scope.isSecureContext === true
-            && !isFirefoxAndroid
-            && typeof scope.VideoDecoder !== 'undefined'
-            && typeof scope.VideoEncoder !== 'undefined'
-            && typeof scope.fetch === 'function';
+        const iosMatch = userAgent.match(/(?:CPU(?: iPhone)? OS|iPhone OS)\s+(\d+(?:[_\.]\d+)*)/i);
+        const chromeMatch = userAgent.match(/CriOS\/(\d+(?:\.\d+)*)/i);
+        const secureContext = scope.isSecureContext === true;
+        const videoDecoder = typeof scope.VideoDecoder !== 'undefined';
+        const videoEncoder = typeof scope.VideoEncoder !== 'undefined';
+        const fetch = typeof scope.fetch === 'function';
+
+        return {
+            supported: secureContext && !isFirefoxAndroid && videoDecoder && videoEncoder && fetch,
+            secureContext,
+            videoDecoder,
+            videoEncoder,
+            fetch,
+            isFirefoxAndroid,
+            browser: chromeMatch ? 'Chrome iOS' : '',
+            browserVersion: chromeMatch?.[1] || '',
+            iosVersion: iosMatch?.[1]?.replace(/_/g, '.') || '',
+            userAgent,
+            sourceUrl: '',
+            sourceReadable: null,
+            sourceDecodable: null,
+            h264Encodable: null,
+            encoderAttempts: [],
+            selectedEncoder: null,
+            audioEncodable: null,
+            failureStage: null,
+            failure: null
+        };
+    }
+
+    static hasBaseCapabilities(scope = globalThis) {
+        return this.getCapabilityReport(scope).supported;
+    }
+
+    getCapabilityReport() {
+        return { ...this.capabilityReport };
     }
 
     static async loadLibrary() {
@@ -108,17 +143,54 @@ class ClipExportService {
         await this.aacEncoderPromise;
     }
 
-    static fitWithin(width, height, maxHeight = this.MAX_HEIGHT) {
+    static fitWithin(width, height, maxHeight = this.MAX_HEIGHT, maxWidth = Infinity) {
         if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
             throw new Error('The video dimensions are not available yet.');
         }
 
-        const scale = Math.min(1, maxHeight / height);
+        const scale = Math.min(1, maxHeight / height, maxWidth / width);
         const makeEven = value => Math.max(2, Math.floor(value / 2) * 2);
         return {
             width: makeEven(width * scale),
             height: makeEven(height * scale)
         };
+    }
+
+    static getAvcOutputCandidates(width, height) {
+        const candidates = [
+            this.fitWithin(width, height, 480),
+            this.fitWithin(width, height, 360, 640),
+            this.fitWithin(width, height, 240, 426)
+        ];
+        return candidates.filter((candidate, index) => (
+            candidates.findIndex(other => other.width === candidate.width && other.height === candidate.height) === index
+        ));
+    }
+
+    async selectAvcOutput(library, width, height) {
+        const quality = new library.Quality('medium');
+        const attempts = [];
+        for (const candidate of ClipExportService.getAvcOutputCandidates(width, height)) {
+            let supported = false;
+            let error = '';
+            try {
+                supported = await library.canEncodeVideo('avc', {
+                    width: candidate.width,
+                    height: candidate.height,
+                    quality
+                });
+            } catch (candidateError) {
+                error = candidateError?.message || String(candidateError);
+            }
+            attempts.push({ codec: 'avc', ...candidate, supported, error });
+            if (supported) {
+                this.capabilityReport.encoderAttempts = attempts;
+                this.capabilityReport.selectedEncoder = { codec: 'avc', ...candidate };
+                return candidate;
+            }
+        }
+        this.capabilityReport.encoderAttempts = attempts;
+        return null;
     }
 
     static sampleDetails(sample) {
@@ -496,26 +568,39 @@ class ClipExportService {
 
     async openSource(sourceUrl) {
         if (!sourceUrl) throw new Error('There is no video to edit yet.');
-        if (!ClipExportService.hasBaseCapabilities()) {
-            throw new Error('Clip export is not supported in this browser.');
+        this.capabilityReport = {
+            ...ClipExportService.getCapabilityReport(),
+            sourceUrl
+        };
+        if (!this.capabilityReport.supported) {
+            this.capabilityReport.failureStage = 'base';
+            this.capabilityReport.failure = 'Clip export is not supported in this browser.';
+            throw new Error(this.capabilityReport.failure);
         }
 
-        const library = await ClipExportService.loadLibrary();
-        const input = new library.Input({
-            formats: library.ALL_FORMATS,
-            source: new library.UrlSource(sourceUrl, {
-                maxCacheSize: 8 * 1024 * 1024,
-                parallelism: 2,
-                requestInit: { mode: 'cors' }
-            })
-        });
-
+        let input = null;
+        let stage = 'library';
         try {
+            const library = await ClipExportService.loadLibrary();
+            stage = 'source';
+            input = new library.Input({
+                formats: library.ALL_FORMATS,
+                source: new library.UrlSource(sourceUrl, {
+                    maxCacheSize: 8 * 1024 * 1024,
+                    parallelism: 2,
+                    requestInit: { mode: 'cors' }
+                })
+            });
             const [track, audioTrack] = await Promise.all([
                 input.getPrimaryVideoTrack(),
                 input.getPrimaryAudioTrack()
             ]);
-            if (!track || !(await track.canDecode())) {
+            this.capabilityReport.sourceReadable = true;
+
+            stage = 'decode';
+            const sourceDecodable = Boolean(track && await track.canDecode());
+            this.capabilityReport.sourceDecodable = sourceDecodable;
+            if (!sourceDecodable) {
                 throw new Error('This video cannot be decoded for clip export.');
             }
 
@@ -525,19 +610,19 @@ class ClipExportService {
                 track.getFirstTimestamp(),
                 track.getDurationFromMetadata({ skipLiveWait: true })
             ]);
-            const outputSize = ClipExportService.fitWithin(width, height);
-            if (!(await library.canEncodeVideo('avc', {
-                width: outputSize.width,
-                height: outputSize.height,
-                quality: new library.Quality('medium')
-            }))) {
+            stage = 'encode';
+            const outputSize = await this.selectAvcOutput(library, width, height);
+            this.capabilityReport.h264Encodable = Boolean(outputSize);
+            if (!outputSize) {
                 throw new Error('This browser cannot create H.264 MP4 clips.');
             }
 
             const duration = Number.isFinite(metadataDuration) && metadataDuration > 0
                 ? metadataDuration
                 : await track.computeDuration({ skipLiveWait: true });
+            stage = 'audio';
             const audioAvailable = await this.canExportAudio(library, audioTrack);
+            this.capabilityReport.audioEncodable = audioAvailable;
             return new MediabunnyClipSession({
                 library,
                 sourceUrl,
@@ -546,17 +631,22 @@ class ClipExportService {
                 sink: new library.VideoSampleSink(track),
                 width,
                 height,
+                outputSize,
                 duration,
                 firstTimestamp: Math.max(0, firstTimestamp),
                 hasSourceAudio: Boolean(audioTrack),
                 audioAvailable
             });
         } catch (error) {
-            input.dispose();
-            if (/fetch|cors|network|load|read/i.test(error?.message || '')) {
-                throw new Error('The video storage did not allow the clip editor to read this video.');
+            input?.dispose();
+            let visibleError = error;
+            if (stage !== 'library' && /fetch|cors|network|load|read/i.test(error?.message || '')) {
+                this.capabilityReport.sourceReadable = false;
+                visibleError = new Error('The video storage did not allow the clip editor to read this video.');
             }
-            throw error;
+            this.capabilityReport.failureStage = stage;
+            this.capabilityReport.failure = visibleError?.message || 'Clip export is unavailable for this video.';
+            throw visibleError;
         }
     }
 
@@ -582,7 +672,7 @@ class ClipExportService {
         if (signal?.aborted) throw ClipExportService.abortError();
 
         const library = session.library;
-        const outputSize = ClipExportService.fitWithin(session.width, session.height);
+        const outputSize = session.outputSize || ClipExportService.fitWithin(session.width, session.height);
         const input = new library.Input({
             formats: library.ALL_FORMATS,
             source: new library.UrlSource(session.sourceUrl, {
@@ -660,8 +750,8 @@ class ClipExportService {
 }
 
 class MediabunnyClipSession {
-    constructor({ library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp, hasSourceAudio = false, audioAvailable = false }) {
-        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, duration, firstTimestamp, hasSourceAudio, audioAvailable });
+    constructor({ library, sourceUrl, input, track, sink, width, height, outputSize = null, duration, firstTimestamp, hasSourceAudio = false, audioAvailable = false }) {
+        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, outputSize, duration, firstTimestamp, hasSourceAudio, audioAvailable });
         this.frameWindow = [];
         this.disposed = false;
     }

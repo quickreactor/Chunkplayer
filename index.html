@@ -7,7 +7,7 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=adaptive-video-frame-20260819">
+    <link rel="stylesheet" href="style.css?v=black-playback-surface-20260822">
     <link rel="stylesheet" href="clip-export.css?v=plyr-marker-specificity-20260818">
 
     <!-- Google Fonts for Graffiti -->
@@ -36,16 +36,16 @@
     <script src="services/apiService.js?v=admin-logo-color-20260730"></script>
     <script src="services/audioService.js?v=joker-impact-audio-volume-20260809"></script>
     <script src="services/dateService.js"></script>
-    <script src="services/clipExportService.js?v=aac-audio-fallback-20260818"></script>
-    <script src="utils/plyr-plugin-clip-export.js?v=sound-on-by-default-20260818"></script>
-    <script src="services/domService.js?v=mediabunny-clip-export-20260818"></script>
+    <script src="services/clipExportService.js?v=ios-avc-fallback-20260822"></script>
+    <script src="utils/plyr-plugin-clip-export.js?v=ios-visible-errors-20260822"></script>
+    <script src="services/domService.js?v=persistent-clip-toast-20260822"></script>
     <script src="services/effectService.js"></script>
     <script src="services/posterService.js?v=poster-preload-20260818"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
     <script src="services/jokerPhysicsService.js?v=joker-impact-audio-20260809"></script>
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js?v=media-cleanup-20260724-2"></script>
-    <script src="services/adminService.js"></script>
+    <script src="services/adminService.js?v=shared-toast-20260822"></script>
     <script src="services/drawingService.js?v=poster-eyedropper-i-20260811"></script>
     <script src="services/graffitiService.js?v=firefox-picker-20260730"></script>
 
@@ -391,8 +391,9 @@
         </div>
 
         <!-- Toast Notification -->
-        <div id="toast" class="toast hidden">
+        <div id="toast" class="toast hidden" role="status" aria-live="polite">
             <span id="toast-message"></span>
+            <button id="toast-close" class="toast-close" type="button" aria-label="Dismiss notification" hidden>&times;</button>
         </div>
 
         <!-- Confirmation Dialog -->

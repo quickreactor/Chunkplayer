@@ -70,16 +70,7 @@ class AdminService {
      * @param {string} type - 'success', 'error', or 'info'
      */
     showToast(message, type = 'success') {
-        const toast = this.domService.elements.toast;
-        const toastMessage = this.domService.elements.toastMessage;
-
-        toastMessage.textContent = message;
-        toast.className = `toast ${type}`;
-        toast.classList.remove('hidden');
-
-        setTimeout(() => {
-            toast.classList.add('hidden');
-        }, 3000);
+        this.domService.showToast(message, type);
     }
 
     /**
