@@ -181,7 +181,7 @@ test('critical-fail release freezes tilt and restores downward gravity', () => {
     assert.equal(service.engine.gravity.y, 1);
 });
 
-test('tilt UI is non-layout positioning and fades from the centralized roll flow', () => {
+test('tilt UI joins the fixed utility dock as a phone icon and fades from the roll flow', () => {
     const index = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
     const styles = fs.readFileSync(path.join(projectRoot, 'style.css'), 'utf8');
     const diceFlow = fs.readFileSync(
@@ -190,7 +190,12 @@ test('tilt UI is non-layout positioning and fades from the centralized roll flow
     );
 
     assert.match(index, /id="joker-tilt-control"/);
-    assert.match(styles, /#joker-tilt-control\s*\{[\s\S]*position:\s*absolute/);
+    assert.match(index, /class="admin-icon-button tilt-icon-button"/);
+    assert.match(index, /class="tilt-phone-icon"/);
+    assert.match(index, /data-tilt-label/);
+    assert.match(styles, /\.admin-section\s*\{[\s\S]*position:\s*fixed/);
+    assert.match(styles, /\.tilt-phone-body/);
+    assert.match(styles, /@keyframes tilt-phone-listen/);
     assert.match(styles, /tilt-control--fading/);
     assert.match(styles, /prefers-reduced-motion:\s*reduce/);
     assert.match(diceFlow, /jokerPhysicsService\.fadeTiltControl\(\)/);

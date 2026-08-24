@@ -129,6 +129,26 @@ test('navigates exact variable-rate sample timestamps', () => {
     ], 1, 1), null);
 });
 
+test('formats Premiere-style non-drop timecode at the measured frame rate', () => {
+    assert.equal(ClipExportService.formatTimecode(0, 24), '00:00:00');
+    assert.equal(ClipExportService.formatTimecode(299 + (23 / 24), 24), '04:59:23');
+    assert.equal(ClipExportService.formatTimecode(60, 30), '01:00:00');
+    assert.equal(ClipExportService.formatTimecode(60, 24000 / 1001), '00:59:22');
+});
+
+test('measures source frame rate from a bounded packet sample', async () => {
+    let receivedArguments = null;
+    const track = {
+        async computePacketStats(...args) {
+            receivedArguments = args;
+            return { averagePacketRate: 24000 / 1001 };
+        }
+    };
+
+    assert.equal(await ClipExportService.measureFrameRate(track), 24000 / 1001);
+    assert.deepEqual(receivedArguments, [256, { skipLiveWait: true }]);
+});
+
 test('frame stepping ignores stale cached samples from a distant timeline position', async () => {
     let closed = 0;
     const localFrames = [

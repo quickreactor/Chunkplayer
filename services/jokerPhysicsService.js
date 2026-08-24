@@ -253,11 +253,17 @@ class JokerPhysicsService {
     setTiltControlState(state, label) {
         if (!this.tiltControl) return;
         this.tiltControl.dataset.state = state;
-        this.tiltControl.textContent = label;
-        this.tiltControl.setAttribute(
-            'aria-label',
-            state === 'active' ? 'Tilt active. Tap to recenter.' : label
-        );
+        const accessibleLabel = state === 'active' ? 'Tilt active. Tap to recenter.' : label;
+        const labelElement = this.tiltControl.querySelector?.('[data-tilt-label]');
+        if (labelElement) {
+            labelElement.textContent = label;
+        } else {
+            // Preserve simple test and non-HTML host compatibility.
+            this.tiltControl.textContent = label;
+        }
+        this.tiltControl.setAttribute('aria-label', accessibleLabel);
+        this.tiltControl.setAttribute('aria-pressed', String(state === 'active'));
+        this.tiltControl.setAttribute('title', accessibleLabel);
     }
 
     startTiltListening() {

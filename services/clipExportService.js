@@ -304,6 +304,37 @@ class ClipExportService {
         };
     }
 
+    static normalizeFrameRate(frameRate, fallback = 30) {
+        const numericRate = Number(frameRate);
+        return Number.isFinite(numericRate) && numericRate >= 1 && numericRate <= 240
+            ? numericRate
+            : fallback;
+    }
+
+    static formatTimecode(seconds, frameRate = 30) {
+        const safeSeconds = Math.max(0, Number(seconds) || 0);
+        const actualFrameRate = this.normalizeFrameRate(frameRate);
+        const timebase = Math.max(1, Math.round(actualFrameRate));
+        const totalFrames = Math.floor(safeSeconds * actualFrameRate + 0.000001);
+        const frames = totalFrames % timebase;
+        const totalWholeSeconds = Math.floor(totalFrames / timebase);
+        const minutes = Math.floor(totalWholeSeconds / 60);
+        const wholeSeconds = totalWholeSeconds % 60;
+
+        return [minutes, wholeSeconds, frames]
+            .map(value => String(value).padStart(2, '0'))
+            .join(':');
+    }
+
+    static async measureFrameRate(track) {
+        try {
+            const stats = await track.computePacketStats(256, { skipLiveWait: true });
+            return this.normalizeFrameRate(stats?.averagePacketRate);
+        } catch (error) {
+            return 30;
+        }
+    }
+
     static inclusiveEnd(sample, mediaDuration = Infinity) {
         if (!sample) return NaN;
         return Math.min(mediaDuration, sample.timestamp + sample.duration);
@@ -716,11 +747,12 @@ class ClipExportService {
                 throw new Error('This video cannot be decoded for clip export.');
             }
 
-            const [width, height, firstTimestamp, metadataDuration] = await Promise.all([
+            const [width, height, firstTimestamp, metadataDuration, frameRate] = await Promise.all([
                 track.getDisplayWidth(),
                 track.getDisplayHeight(),
                 track.getFirstTimestamp(),
-                track.getDurationFromMetadata({ skipLiveWait: true })
+                track.getDurationFromMetadata({ skipLiveWait: true }),
+                ClipExportService.measureFrameRate(track)
             ]);
             stage = 'encode';
             const outputSize = await this.selectVideoOutput(library, width, height);
@@ -750,6 +782,7 @@ class ClipExportService {
                 height,
                 outputSize,
                 duration,
+                frameRate,
                 firstTimestamp: Math.max(0, firstTimestamp),
                 hasSourceAudio: Boolean(audioTrack),
                 audioAvailable
@@ -869,8 +902,8 @@ class ClipExportService {
 }
 
 class MediabunnyClipSession {
-    constructor({ library, sourceUrl, input, track, sink, width, height, outputSize = null, duration, firstTimestamp, hasSourceAudio = false, audioAvailable = false }) {
-        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, outputSize, duration, firstTimestamp, hasSourceAudio, audioAvailable });
+    constructor({ library, sourceUrl, input, track, sink, width, height, outputSize = null, duration, frameRate = 30, firstTimestamp, hasSourceAudio = false, audioAvailable = false }) {
+        Object.assign(this, { library, sourceUrl, input, track, sink, width, height, outputSize, duration, frameRate, firstTimestamp, hasSourceAudio, audioAvailable });
         this.frameWindow = [];
         this.disposed = false;
     }

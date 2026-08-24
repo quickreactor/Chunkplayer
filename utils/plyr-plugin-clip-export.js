@@ -68,6 +68,7 @@
             this.loopRestartPending = false;
             this.viewStart = 0;
             this.viewEnd = 1;
+            this.frameRate = 30;
 
             this.boundSourceChange = () => this.queueSourceRefresh();
             this.boundPlaybackTick = () => this.handlePlaybackTick();
@@ -108,6 +109,7 @@
             this.removeControl();
             this.session?.dispose();
             this.session = null;
+            this.frameRate = 30;
             this.includeAudio = true;
             this.sourceUrl = nextUrl;
             if (!nextUrl || !Number.isFinite(this.media.duration) || this.media.duration < ClipExportService.MIN_SECONDS) return;
@@ -149,9 +151,9 @@
             panel.innerHTML = `
                 <div class="clip-topbar">
                     <div class="clip-clock" aria-label="Current time and total duration">
-                        <output data-clip-output="current" aria-live="off">0:00.000</output>
+                        <output data-clip-output="current" aria-live="off">00:00:00</output>
                         <span aria-hidden="true">/</span>
-                        <output data-clip-output="total" aria-live="off">0:00.000</output>
+                        <output data-clip-output="total" aria-live="off">00:00:00</output>
                     </div>
                     <div class="clip-secondary-actions">
                         <button type="button" class="clip-icon-button" data-clip="loop" aria-label="Loop selected range" aria-pressed="true" title="Loop selected range">
@@ -193,9 +195,9 @@
                 </div>
 
                 <div class="clip-time-row">
-                    <output data-clip-output="start" aria-label="Clip start">0:00.000</output>
-                    <output data-clip-output="duration" aria-label="Clip duration">0.000s</output>
-                    <output data-clip-output="end" aria-label="Final included frame">0:00.000</output>
+                    <output data-clip-output="start" aria-label="Clip start">00:00:00</output>
+                    <output data-clip-output="duration" aria-label="Clip duration">00:00:00</output>
+                    <output data-clip-output="end" aria-label="Final included frame">00:00:00</output>
                 </div>
 
                 <div class="clip-transport" aria-label="Clip transport controls">
@@ -311,6 +313,7 @@
                         throw new Error('This video is too short to make a clip.');
                     }
                     this.session = session;
+                    this.frameRate = session.frameRate;
                 }
 
                 this.setStatus('Reading exact frame timing…');
@@ -683,7 +686,7 @@
             this.setOverviewPositions(startTime, endBoundary, playheadTime);
             this.elements.start.textContent = this.formatTime(startTime);
             this.elements.end.textContent = this.formatTime(Math.max(startTime, endBoundary - 0.000001));
-            this.elements.duration.textContent = `${Math.max(0, endBoundary - startTime).toFixed(3)}s`;
+            this.elements.duration.textContent = this.formatTime(Math.max(0, endBoundary - startTime));
             this.elements.playhead.textContent = this.formatTime(playheadTime);
         }
 
@@ -1206,7 +1209,7 @@
             this.ensureSelectionVisible(this.startSample.timestamp, endBoundary);
             this.elements.start.textContent = this.formatTime(this.startSample.timestamp);
             this.elements.end.textContent = this.formatTime(this.endSample.timestamp);
-            this.elements.duration.textContent = `${duration.toFixed(3)}s`;
+            this.elements.duration.textContent = this.formatTime(duration);
             this.setTimelinePositions(this.startSample.timestamp, endBoundary, this.currentSample?.timestamp ?? this.media.currentTime);
             this.setOverviewPositions(this.startSample.timestamp, endBoundary, this.currentSample?.timestamp ?? this.media.currentTime);
             this.getCurrentCompletedExport();
@@ -1341,9 +1344,7 @@
         }
 
         formatTime(seconds) {
-            const safe = Math.max(0, Number(seconds) || 0);
-            const minutes = Math.floor(safe / 60);
-            return `${minutes}:${(safe % 60).toFixed(3).padStart(6, '0')}`;
+            return ClipExportService.formatTimecode(seconds, this.frameRate);
         }
 
         clamp(value, minimum, maximum) {

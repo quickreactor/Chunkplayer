@@ -423,25 +423,24 @@ option {
 }
 
 #joker-tilt-control {
-    position: absolute;
-    left: 50%;
-    bottom: -16px;
-    z-index: 2;
-    min-width: 72px;
-    padding: 4px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    border-radius: 999px;
-    background: rgba(12, 12, 16, 0.78);
-    color: rgba(255, 255, 255, 0.9);
-    font: 700 8px/1.1 Arial, sans-serif;
-    letter-spacing: 0.08em;
-    white-space: nowrap;
-    cursor: pointer;
+    flex: 0 0 44px;
     opacity: 1;
-    transform: translateX(-50%);
-    transition: opacity 400ms ease, border-color 200ms ease, color 200ms ease;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    transition: opacity 400ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+#joker-tilt-control .tilt-phone-icon {
+    width: 25px;
+    height: 25px;
+    overflow: visible;
+}
+
+#joker-tilt-control .tilt-phone-body {
+    transform: rotate(-12deg);
+    transform-origin: 12px 12px;
+}
+
+#joker-tilt-control .tilt-motion-mark {
+    opacity: 0.68;
 }
 
 #joker-tilt-control[hidden] {
@@ -449,14 +448,20 @@ option {
 }
 
 #joker-tilt-control[data-state="active"] {
-    border-color: rgba(93, 255, 164, 0.72);
     color: rgb(154, 255, 197);
+    background: rgba(93, 255, 164, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(93, 255, 164, 0.42);
+}
+
+#joker-tilt-control[data-state="waiting"] .tilt-phone-body {
+    animation: tilt-phone-listen 700ms ease-in-out 2;
 }
 
 #joker-tilt-control[data-state="blocked"],
 #joker-tilt-control[data-state="unavailable"] {
-    border-color: rgba(255, 110, 110, 0.72);
     color: rgb(255, 164, 164);
+    background: rgba(255, 110, 110, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(255, 110, 110, 0.36);
 }
 
 #joker-tilt-control:focus-visible {
@@ -467,6 +472,11 @@ option {
 #joker-tilt-control.tilt-control--fading {
     pointer-events: none;
     opacity: 0;
+}
+
+@keyframes tilt-phone-listen {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(12deg); }
 }
 
 @media screen and (min-width: 769px), (prefers-reduced-motion: reduce) {
@@ -802,14 +812,18 @@ option {
 
 /* Admin Section - Centered at Bottom of Container */
 .admin-section {
-    width: 100%;
+    position: fixed;
+    right: auto;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 50%;
+    z-index: 2100;
+    width: auto;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin-top: 10px;
-    position: relative;
-    z-index: 2100;
+    margin: 0;
+    transform: translateX(-50%);
 }
 
 .admin-icon-button {
@@ -846,6 +860,18 @@ option {
     font-family: Arial, sans-serif;
     font-size: 22px;
     filter: grayscale(1);
+}
+
+.admin-icon-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .admin-panel {

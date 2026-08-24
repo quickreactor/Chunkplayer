@@ -281,6 +281,15 @@ class ChunkPlayerApp {
      * Setup event listeners
      */
     setupEventListeners() {
+        // This dock is shared by the pre-roll poster and the post-roll player,
+        // so lift it (and its portal-style feedback UI) out of the hidden player container.
+        [
+            this.domService.elements.adminSection,
+            this.domService.elements.toast,
+            this.domService.elements.confirmDialog
+        ].forEach(element => {
+            if (element && element.parentElement !== document.body) document.body.appendChild(element);
+        });
         this.initializeAdminLogoColorPicker();
 
         this.domService.elements.rollButton.addEventListener("click", () => {
@@ -367,13 +376,8 @@ class ChunkPlayerApp {
 
         // Admin toggle button
         this.domService.elements.adminToggleBtn?.addEventListener("click", () => {
-            this.domService.elements.adminPanel.classList.toggle('hidden');
-            const panelIsOpen = !this.domService.elements.adminPanel.classList.contains('hidden');
-            this.domService.elements.adminToggleBtn.setAttribute('aria-expanded', String(panelIsOpen));
-            this.domService.elements.adminToggleBtn.setAttribute(
-                'aria-label',
-                panelIsOpen ? 'Close admin controls' : 'Open admin controls'
-            );
+            const panelIsOpen = this.domService.elements.adminPanel.classList.contains('hidden');
+            this.setAdminPanelOpen(panelIsOpen);
             if (panelIsOpen) {
                 this.positionAdminPanel();
                 this.domService.elements.adminPassword?.focus({ preventScroll: true });
@@ -397,6 +401,23 @@ class ChunkPlayerApp {
                 }
             }
         });
+
+        // The Level 2 panel can fill most of a phone screen, so do not require
+        // the user to find and reach the cog again just to dismiss it.
+        document.addEventListener('pointerdown', (event) => {
+            const panel = this.domService.elements.adminPanel;
+            const toggle = this.domService.elements.adminToggleBtn;
+            if (!panel || panel.classList.contains('hidden')) return;
+
+            const eventPath = event.composedPath?.() || [];
+            const target = event.target instanceof Element ? event.target : null;
+            const isInsideAdmin = eventPath.includes(panel) || panel.contains(target);
+            const isAdminToggle = eventPath.includes(toggle) || toggle?.contains(target);
+            const isColourPicker = Boolean(target?.closest('.pcr-app'));
+            if (isInsideAdmin || isAdminToggle || isColourPicker) return;
+
+            this.setAdminPanelOpen(false);
+        }, { capture: true });
 
         // Admin login
         this.domService.elements.adminLoginBtn?.addEventListener("click", async () => {
@@ -846,6 +867,7 @@ class ChunkPlayerApp {
     showPosterJokers(count = this.currentJokerCount || 0) {
         document.getElementById('flip-counter-wrapper')?.classList.add('poster-pile-active');
         document.getElementById('joker-image-row')?.replaceChildren();
+        this.showAdminSection();
         this.jokerPhysicsService.mount(count);
     }
 
@@ -1239,6 +1261,21 @@ class ChunkPlayerApp {
             this.domService.elements.forcedRollDateInput.value = this.getAucklandDateInput();
             this.showForcedRollStatus(null);
         }
+    }
+
+    /**
+     * Keep the admin panel's visible and accessible states in sync.
+     * @param {boolean} isOpen
+     */
+    setAdminPanelOpen(isOpen) {
+        const panel = this.domService.elements.adminPanel;
+        const toggle = this.domService.elements.adminToggleBtn;
+        if (!panel || !toggle) return;
+
+        panel.classList.toggle('hidden', !isOpen);
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        toggle.setAttribute('aria-label', isOpen ? 'Close admin controls' : 'Open admin controls');
+        if (!isOpen) this.logoBgPickr?.hide?.();
     }
 
     /**

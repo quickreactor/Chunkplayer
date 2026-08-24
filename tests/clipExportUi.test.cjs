@@ -112,6 +112,17 @@ test('dual rails use restrained Resolve-inspired colour and non-console timecode
     assert.doesNotMatch(styles, /Consolas/);
 });
 
+test('all clip maker readouts use source-rate MM:SS:FF timecode', () => {
+    assert.match(plugin, /data-clip-output="current"[^>]*>00:00:00</);
+    assert.match(plugin, /data-clip-output="total"[^>]*>00:00:00</);
+    assert.match(plugin, /data-clip-output="start"[^>]*>00:00:00</);
+    assert.match(plugin, /data-clip-output="duration"[^>]*>00:00:00</);
+    assert.match(plugin, /data-clip-output="end"[^>]*>00:00:00</);
+    assert.match(plugin, /this\.frameRate = session\.frameRate/);
+    assert.match(plugin, /ClipExportService\.formatTimecode\(seconds, this\.frameRate\)/);
+    assert.doesNotMatch(plugin, /data-clip-output="duration"[^>]*>0\.000s</);
+});
+
 test('Resolve-style trim surfaces use bare brackets, orange CTIs, and restrained cursors', () => {
     assert.match(styles, /\.clip-overview__playhead::before/);
     assert.match(styles, /\.clip-editor button\.clip-trim-handle\s*\{\s*cursor:\s*ew-resize/s);
