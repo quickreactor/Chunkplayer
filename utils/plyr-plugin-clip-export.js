@@ -280,7 +280,7 @@
             this.updateLoopButton();
             this.updateAudioButton();
             this.setBusy(true);
-            this.setStatus('Checking video and H.264 export support…');
+            this.setStatus('Checking compatible MP4 export support…');
 
             try {
                 if (!this.session || this.session.disposed) {
@@ -327,10 +327,17 @@
                 report.iosVersion ? `iOS ${report.iosVersion}` : '',
                 report.browser ? `${report.browser}${report.browserVersion ? ` ${report.browserVersion}` : ''}` : ''
             ].filter(Boolean).join(' · ');
-            const attempts = report.encoderAttempts?.length
-                ? ` · AVC ${report.encoderAttempts[0].profile || 'profile'} (${report.encoderAttempts[0].codecString || 'automatic'}) checks: ${report.encoderAttempts.map(attempt => (
-                    `${attempt.width}×${attempt.height}=${attempt.supported ? 'yes' : 'no'}`
-                )).join(', ')}`
+            const attemptGroups = report.encoderAttempts?.reduce((groups, attempt) => {
+                const label = `${attempt.codec.toUpperCase()} ${attempt.profile || ''} (${attempt.codecString || 'automatic'})`.trim();
+                if (!groups[label]) groups[label] = [];
+                const error = attempt.error ? `:${attempt.error.slice(0, 80)}` : '';
+                groups[label].push(`${attempt.width}×${attempt.height}=${attempt.supported ? 'yes' : `no${error}`}`);
+                return groups;
+            }, {}) || {};
+            const attempts = Object.keys(attemptGroups).length
+                ? ` · Encoder checks: ${Object.entries(attemptGroups).map(([label, checks]) => (
+                    `${label}: ${checks.join(', ')}`
+                )).join(' · ')}`
                 : '';
             const message = [
                 `Clip maker error [${stage}]: ${error?.message || 'Unknown error.'}`,

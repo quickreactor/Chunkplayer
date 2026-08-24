@@ -145,49 +145,72 @@ test('fits video to a 480px maximum height without enlarging and uses even dimen
     assert.deepEqual(ClipExportService.fitWithin(1920, 1012, 360, 640), { width: 640, height: 336 });
 });
 
-test('falls back through smaller AVC sizes and records the phone-confirmed configuration', async () => {
+test('uses ordinary bitrate mode and falls back through smaller constrained-baseline AVC sizes', async () => {
     const service = new ClipExportService();
     const checked = [];
     const library = {
-        Quality: class {},
         async canEncodeVideo(codec, options) {
             checked.push({
                 codec,
                 codecString: options.fullCodecString,
                 width: options.width,
-                height: options.height
+                height: options.height,
+                bitrate: options.bitrate,
+                hasQuality: Object.hasOwn(options, 'quality')
             });
             return options.width <= 640;
         }
     };
 
-    const selected = await service.selectAvcOutput(library, 1920, 1012);
-    assert.deepEqual(selected, { width: 640, height: 336 });
+    const selected = await service.selectVideoOutput(library, 1920, 1012);
+    assert.equal(selected.codec, 'avc');
+    assert.equal(selected.codecString, 'avc1.42e01f');
+    assert.equal(selected.profile, 'constrained baseline');
+    assert.equal(selected.width, 640);
+    assert.equal(selected.height, 336);
+    assert.equal(selected.bitrate, 860160);
     assert.deepEqual(checked, [
-        { codec: 'avc', codecString: 'avc1.42001f', width: 910, height: 480 },
-        { codec: 'avc', codecString: 'avc1.42001f', width: 640, height: 336 }
+        {
+            codec: 'avc', codecString: 'avc1.42e01f', width: 910, height: 480,
+            bitrate: 1747200, hasQuality: false
+        },
+        {
+            codec: 'avc', codecString: 'avc1.42e01f', width: 640, height: 336,
+            bitrate: 860160, hasQuality: false
+        }
     ]);
-    assert.deepEqual(service.getCapabilityReport().selectedEncoder, {
-        codec: 'avc',
-        codecString: 'avc1.42001f',
-        profile: 'baseline',
-        width: 640,
-        height: 336
-    });
+    assert.equal(service.getCapabilityReport().selectedEncoder.codec, 'avc');
+    assert.equal(service.getCapabilityReport().selectedEncoder.supported, true);
 });
 
-test('uses the iPhone-compatible H.264 Baseline profile', () => {
-    assert.equal(ClipExportService.AVC_BASELINE_CODEC, 'avc1.42001f');
+test('falls back to HEVC Main in MP4 when every AVC configuration is rejected', async () => {
+    const service = new ClipExportService();
+    const library = {
+        async canEncodeVideo(codec, options) {
+            return codec === 'hevc' && options.width <= 640;
+        }
+    };
+
+    const selected = await service.selectVideoOutput(library, 1920, 1012);
+    assert.equal(selected.codec, 'hevc');
+    assert.equal(selected.profile, 'main');
+    assert.equal(selected.width, 640);
+    assert.equal(selected.height, 336);
+    assert.equal(service.getCapabilityReport().encoderAttempts.length, 5);
+});
+
+test('uses the iPhone-compatible H.264 Constrained Baseline profile', () => {
+    assert.equal(ClipExportService.AVC_CONSTRAINED_BASELINE_CODEC, 'avc1.42e01f');
     assert.equal(
         ClipExportService.LIBRARY_URL,
-        'vendor/mediabunny-1.52.2.min.js?v=ios-avc-baseline-20260824'
+        'vendor/mediabunny-1.52.2.min.js?v=ios-mp4-fallback-20260824-2'
     );
     const bundle = fs.readFileSync(
         path.join(__dirname, '..', 'vendor', 'mediabunny-1.52.2.min.js'),
         'utf8'
     );
-    assert.match(bundle, /u="42"\.padStart\(2,"0"\)/);
-    assert.doesNotMatch(bundle, /u="64"\.padStart\(2,"0"\)/);
+    assert.match(bundle, /u="42"\.padStart\(2,"0"\),l="e0"/);
+    assert.doesNotMatch(bundle, /u="64"\.padStart\(2,"0"\),l="00"/);
 });
 
 test('creates a safe MP4 filename from title and inclusive timestamps', () => {
@@ -203,27 +226,31 @@ test('conversion options preserve source timing by omitting frameRate', () => {
         endTime: 4,
         width: 852,
         height: 480,
-        quality: { level: 'medium' }
+        bitrate: 1_500_000
     });
     assert.equal(options.video.codec, 'avc');
     assert.equal(options.video.width, 852);
     assert.equal(options.video.height, 480);
     assert.equal(options.video.fit, 'contain');
+    assert.equal(options.video.bitrate, 1_500_000);
+    assert.equal(Object.hasOwn(options.video, 'quality'), false);
     assert.equal(Object.hasOwn(options.video, 'frameRate'), false);
     assert.deepEqual(options.audio, { discard: true });
 });
 
-test('conversion options use Mediabunny automatic audio handling only when requested', () => {
-    const quality = { level: 'medium' };
+test('conversion options use HEVC hardware encoding and automatic audio handling when requested', () => {
     const options = ClipExportService.buildConversionOptions({
         startTime: 1,
         endTime: 4,
         width: 852,
         height: 480,
-        quality,
+        codec: 'hevc',
+        bitrate: 1_500_000,
         includeAudio: true
     });
 
+    assert.equal(options.video.codec, 'hevc');
+    assert.equal(options.video.hardwareAcceleration, 'prefer-hardware');
     assert.deepEqual(options.audio, {});
     assert.equal(Object.hasOwn(options.audio, 'codec'), false);
     assert.equal(Object.hasOwn(options.audio, 'quality'), false);
@@ -327,7 +354,7 @@ test('sample and input resources are closed after use', async () => {
     assert.equal(inputDisposals, 1);
 });
 
-function createFakeExportSession({ waitForCancel = false } = {}) {
+function createFakeExportSession({ waitForCancel = false, outputSize = null } = {}) {
     let disposed = 0;
     let cancelled = 0;
     let capturedOptions = null;
@@ -388,6 +415,7 @@ function createFakeExportSession({ waitForCancel = false } = {}) {
             sourceUrl: 'https://example.test/video.mp4',
             width: 1920,
             height: 1080,
+            outputSize,
             duration: 20
         },
         inspect: () => ({ disposed, cancelled, capturedOptions })
@@ -405,6 +433,30 @@ test('successful export cleans up its network input', async () => {
     assert.equal(result.blob.type, 'video/mp4');
     assert.equal(fake.inspect().disposed, 1);
     assert.equal(Object.hasOwn(fake.inspect().capturedOptions.video, 'frameRate'), false);
+    assert.equal(Object.hasOwn(fake.inspect().capturedOptions.video, 'quality'), false);
+    assert.ok(fake.inspect().capturedOptions.video.bitrate > 0);
+});
+
+test('exports the selected HEVC fallback inside an MP4', async () => {
+    const fake = createFakeExportSession({
+        outputSize: {
+            codec: 'hevc',
+            profile: 'main',
+            width: 640,
+            height: 336,
+            bitrate: 860160
+        }
+    });
+    const result = await new ClipExportService().exportClip({
+        session: fake.session,
+        startSample: { timestamp: 1, duration: 0.04 },
+        endSample: { timestamp: 1.48, duration: 0.04 }
+    });
+
+    assert.equal(result.blob.type, 'video/mp4');
+    assert.equal(fake.inspect().capturedOptions.video.codec, 'hevc');
+    assert.equal(fake.inspect().capturedOptions.video.bitrate, 860160);
+    assert.equal(fake.inspect().capturedOptions.video.hardwareAcceleration, 'prefer-hardware');
 });
 
 test('cancellation stops conversion and disposes its input', async () => {

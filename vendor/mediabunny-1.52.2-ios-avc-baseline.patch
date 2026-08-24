@@ -3,4 +3,6 @@ diff --git a/src/codec.ts b/src/codec.ts
 +++ b/src/codec.ts
 @@
 -        const profile = '64'.padStart(2, '0'); // High profile
-+        const profile = '42'.padStart(2, '0'); // Baseline profile for iOS WebKit compatibility
+-        const compatibility = '00';
++        const profile = '42'.padStart(2, '0'); // Constrained Baseline profile
++        const compatibility = 'e0'; // iOS WebKit compatibility

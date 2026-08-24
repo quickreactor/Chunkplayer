@@ -35,6 +35,7 @@ class DOMService {
             sundayDiv: document.querySelector(".sunday-div"),
             poster1: document.getElementById("poster-image-1"),
             poster2: document.getElementById("poster-image-2"),
+            jokerTiltControl: document.getElementById("joker-tilt-control"),
             todaysPoster: document.querySelector("#todays-poster"),
             rollButton: document.getElementById("roll-button"),
             deyeIdleVideo: document.getElementById("deye-idle"),

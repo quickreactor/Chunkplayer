@@ -8,10 +8,11 @@
  * while matching Matter bodies provide collision, stacking, and sleeping.
  */
 class JokerPhysicsService {
-    constructor(posterContainer, posterImage, audioService) {
+    constructor(posterContainer, posterImage, audioService, tiltControl = null) {
         this.posterContainer = posterContainer;
         this.posterImage = posterImage;
         this.audioService = audioService;
+        this.tiltControl = tiltControl;
         this.viewportLayer = null;
         this.overlay = null;
         this.engine = null;
@@ -31,6 +32,21 @@ class JokerPhysicsService {
         this.height = 0;
         this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         this.resizeObserver = null;
+        this.tiltListening = false;
+        this.tiltEnabled = false;
+        this.tiltFrozen = false;
+        this.tiltBaselineAngle = null;
+        this.tiltSmoothedAngle = 0;
+        this.tiltAppliedAngle = 0;
+        this.tiltHorizontalStrength = 1.5;
+        this.lastRawTiltAngle = null;
+        this.tiltReadingTimer = null;
+        this.tiltStatusTimer = null;
+        this.tiltFadeTimer = null;
+        this.boundDeviceMotion = event => this.handleDeviceMotion(event);
+        this.boundTiltControlClick = () => void this.handleTiltControlClick();
+
+        this.tiltControl?.addEventListener('click', this.boundTiltControlClick);
 
         this.imageSources = [
             'images/jokers/jokerhammil.jpg',
@@ -58,6 +74,35 @@ class JokerPhysicsService {
         ];
     }
 
+    static normalizeAngle(angle) {
+        let normalized = angle;
+        while (normalized > Math.PI) normalized -= Math.PI * 2;
+        while (normalized <= -Math.PI) normalized += Math.PI * 2;
+        return normalized;
+    }
+
+    static smoothAngle(current, target, amount = 0.18) {
+        const difference = JokerPhysicsService.normalizeAngle(target - current);
+        return JokerPhysicsService.normalizeAngle(current + difference * amount);
+    }
+
+    static remapGravityForScreen(x, y, orientationAngle = 0) {
+        const angle = ((Number(orientationAngle) || 0) % 360 + 360) % 360;
+        if (angle === 90) return { x: -y, y: x };
+        if (angle === 180) return { x: -x, y: -y };
+        if (angle === 270) return { x: y, y: -x };
+        return { x, y };
+    }
+
+    static getSteeringAngle(x, y) {
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+        if (Math.hypot(x, y) < 2.5) return null;
+        // Device acceleration and the poster's visual x-axis have opposite
+        // handedness: leaning the phone left should pull the pile left.
+        const angle = Math.atan2(-x, y);
+        return Object.is(angle, -0) ? 0 : angle;
+    }
+
     async mount(count) {
         if (!this.posterContainer || !this.posterImage) return;
         if (typeof Matter === 'undefined') {
@@ -68,6 +113,7 @@ class JokerPhysicsService {
         this.unmount();
         this.active = true;
         this.floorEnabled = true;
+        this.tiltFrozen = false;
         this.targetCount = Math.max(0, Number(count) || 0);
         await this.waitForPoster();
         if (!this.active) return;
@@ -82,6 +128,7 @@ class JokerPhysicsService {
         this.positionOverlay();
         this.createWorld();
         this.startAnchorTracking();
+        this.setupTiltControl();
 
         this.resizeObserver = new ResizeObserver(() => this.handleResize());
         this.resizeObserver.observe(this.posterImage);
@@ -177,6 +224,191 @@ class JokerPhysicsService {
             this.handleLandingContacts(event.pairs);
         });
         this.rebuildBoundaries();
+    }
+
+    isTiltLayoutSupported() {
+        return !this.reducedMotion &&
+            window.matchMedia('(max-width: 768px)').matches &&
+            typeof window.DeviceMotionEvent !== 'undefined';
+    }
+
+    setupTiltControl() {
+        if (!this.tiltControl) return;
+
+        clearTimeout(this.tiltFadeTimer);
+        this.tiltFadeTimer = null;
+        this.tiltControl.classList.remove('tilt-control--fading');
+        this.tiltControl.disabled = false;
+        this.tiltControl.hidden = !this.isTiltLayoutSupported();
+        this.setTiltControlState('idle', 'ENABLE TILT');
+
+        if (!this.tiltControl.hidden) {
+            // Firefox Android and browsers with an existing grant can begin
+            // delivering events immediately. Permission-gated browsers stay
+            // idle until the same listener is authorized by the button tap.
+            this.startTiltListening();
+        }
+    }
+
+    setTiltControlState(state, label) {
+        if (!this.tiltControl) return;
+        this.tiltControl.dataset.state = state;
+        this.tiltControl.textContent = label;
+        this.tiltControl.setAttribute(
+            'aria-label',
+            state === 'active' ? 'Tilt active. Tap to recenter.' : label
+        );
+    }
+
+    startTiltListening() {
+        if (this.tiltListening || !this.isTiltLayoutSupported()) return;
+        window.addEventListener('devicemotion', this.boundDeviceMotion, { passive: true });
+        this.tiltListening = true;
+    }
+
+    stopTiltListening() {
+        if (this.tiltListening) {
+            window.removeEventListener('devicemotion', this.boundDeviceMotion);
+        }
+        this.tiltListening = false;
+        clearTimeout(this.tiltReadingTimer);
+        this.tiltReadingTimer = null;
+    }
+
+    async handleTiltControlClick() {
+        if (!this.active || !this.isTiltLayoutSupported() || this.tiltFrozen) return;
+
+        if (this.tiltEnabled) {
+            this.recalibrateTilt();
+            return;
+        }
+
+        try {
+            const requestPermission = window.DeviceMotionEvent?.requestPermission;
+            if (typeof requestPermission === 'function') {
+                const permission = await requestPermission.call(window.DeviceMotionEvent);
+                if (permission !== 'granted') {
+                    this.showTemporaryTiltStatus('blocked', 'TILT BLOCKED');
+                    return;
+                }
+            }
+
+            this.startTiltListening();
+            this.setTiltControlState('waiting', 'MOVE PHONE');
+            clearTimeout(this.tiltReadingTimer);
+            this.tiltReadingTimer = setTimeout(() => {
+                if (!this.tiltEnabled) {
+                    this.showTemporaryTiltStatus('unavailable', 'TILT UNAVAILABLE');
+                }
+            }, 1800);
+        } catch (error) {
+            console.warn('Unable to enable Joker tilt control.', error);
+            this.showTemporaryTiltStatus('blocked', 'TILT BLOCKED');
+        }
+    }
+
+    showTemporaryTiltStatus(state, label) {
+        this.setTiltControlState(state, label);
+        clearTimeout(this.tiltStatusTimer);
+        this.tiltStatusTimer = setTimeout(() => {
+            if (!this.tiltEnabled && this.active && this.tiltControl) {
+                this.setTiltControlState('idle', 'ENABLE TILT');
+            }
+        }, 1800);
+    }
+
+    getScreenOrientationAngle() {
+        return window.screen?.orientation?.angle ?? window.orientation ?? 0;
+    }
+
+    handleDeviceMotion(event) {
+        if (!this.active || !this.engine || this.tiltFrozen) return;
+
+        const acceleration = event.accelerationIncludingGravity;
+        if (!acceleration) return;
+        const remapped = JokerPhysicsService.remapGravityForScreen(
+            acceleration.x,
+            acceleration.y,
+            this.getScreenOrientationAngle()
+        );
+        const rawAngle = JokerPhysicsService.getSteeringAngle(remapped.x, remapped.y);
+        if (rawAngle === null) return;
+
+        this.lastRawTiltAngle = rawAngle;
+        clearTimeout(this.tiltReadingTimer);
+        this.tiltReadingTimer = null;
+
+        if (this.tiltBaselineAngle === null) {
+            this.tiltBaselineAngle = rawAngle;
+            this.tiltSmoothedAngle = 0;
+            this.tiltAppliedAngle = 0;
+        }
+
+        const relativeAngle = JokerPhysicsService.normalizeAngle(
+            rawAngle - this.tiltBaselineAngle
+        );
+        this.tiltSmoothedAngle = JokerPhysicsService.smoothAngle(
+            this.tiltSmoothedAngle,
+            relativeAngle
+        );
+
+        if (!this.tiltEnabled) {
+            this.tiltEnabled = true;
+            this.setTiltControlState('active', 'TILT ACTIVE');
+        }
+        this.applyTiltGravity();
+    }
+
+    recalibrateTilt() {
+        if (this.lastRawTiltAngle === null) return;
+        this.tiltBaselineAngle = this.lastRawTiltAngle;
+        this.tiltSmoothedAngle = 0;
+        this.tiltAppliedAngle = 0;
+        this.applyTiltGravity(true);
+        this.setTiltControlState('active', 'TILT ACTIVE');
+    }
+
+    hasIncomingJokers() {
+        return this.pendingSpawns > 0 || this.bodies.some(
+            record => record.body.plugin?.isEntering
+        );
+    }
+
+    applyTiltGravity(force = false) {
+        if (!this.engine || !this.tiltEnabled || this.tiltFrozen) return;
+        const change = Math.abs(JokerPhysicsService.normalizeAngle(
+            this.tiltSmoothedAngle - this.tiltAppliedAngle
+        ));
+        if (!force && change < Math.PI / 240) return; // Three quarters of a degree.
+
+        const angle = this.tiltSmoothedAngle;
+        this.engine.gravity.x = Math.sin(angle) * this.tiltHorizontalStrength;
+        this.engine.gravity.y = this.hasIncomingJokers()
+            ? Math.max(0.18, Math.cos(angle))
+            : Math.cos(angle);
+        this.tiltAppliedAngle = angle;
+
+        for (const record of this.bodies) {
+            Matter.Sleeping.set(record.body, false);
+        }
+        this.startLoop();
+    }
+
+    resetGravity() {
+        if (!this.engine) return;
+        this.engine.gravity.x = 0;
+        this.engine.gravity.y = 1;
+        this.tiltAppliedAngle = 0;
+    }
+
+    fadeTiltControl() {
+        if (!this.tiltControl || this.tiltControl.hidden) return;
+        this.tiltControl.disabled = true;
+        this.tiltControl.classList.add('tilt-control--fading');
+        clearTimeout(this.tiltFadeTimer);
+        this.tiltFadeTimer = setTimeout(() => {
+            if (this.tiltControl) this.tiltControl.hidden = true;
+        }, 450);
     }
 
     handleEnteringContacts(pairs) {
@@ -352,6 +584,7 @@ class JokerPhysicsService {
 
     scheduleSpawn(delay) {
         this.pendingSpawns += 1;
+        this.applyTiltGravity(true);
         const timer = setTimeout(() => {
             this.pendingSpawns -= 1;
             this.spawn(this.reducedMotion);
@@ -494,11 +727,13 @@ class JokerPhysicsService {
     }
 
     stabilizeIncomingBodies() {
+        let jokerFinishedEntering = false;
         for (const record of this.bodies) {
             const body = record.body;
             if (!body.plugin.isEntering) continue;
             if (body.bounds.max.y >= 0) {
                 body.plugin.isEntering = false;
+                jokerFinishedEntering = true;
                 continue;
             }
 
@@ -511,6 +746,10 @@ class JokerPhysicsService {
                 y: body.velocity.y
             });
         }
+
+        if (jokerFinishedEntering && !this.hasIncomingJokers()) {
+            this.applyTiltGravity(true);
+        }
     }
 
     render() {
@@ -522,16 +761,24 @@ class JokerPhysicsService {
         }
 
         const overlayTop = this.overlay.getBoundingClientRect().top;
-        const escaped = this.bodies.filter(
-            record => overlayTop + record.body.bounds.min.y > window.innerHeight + 40
-        );
+        const escaped = this.bodies.filter(record => {
+            const escapedBelow =
+                overlayTop + record.body.bounds.min.y > window.innerHeight + 40;
+            const escapedAbove = !record.body.plugin?.isEntering &&
+                overlayTop + record.body.bounds.max.y < -40;
+            return escapedBelow || escapedAbove;
+        });
         for (const record of escaped) {
             Matter.Composite.remove(this.engine.world, record.body);
             record.element.remove();
         }
-        this.bodies = this.bodies.filter(
-            record => overlayTop + record.body.bounds.min.y <= window.innerHeight + 40
-        );
+        this.bodies = this.bodies.filter(record => {
+            const remainsAboveBottom =
+                overlayTop + record.body.bounds.min.y <= window.innerHeight + 40;
+            const remainsBelowTop = record.body.plugin?.isEntering ||
+                overlayTop + record.body.bounds.max.y >= -40;
+            return remainsAboveBottom && remainsBelowTop;
+        });
     }
 
     renderRecord(record) {
@@ -543,6 +790,9 @@ class JokerPhysicsService {
 
     release() {
         if (!this.active || !this.engine) return;
+        this.tiltFrozen = true;
+        this.stopTiltListening();
+        this.resetGravity();
         this.floorEnabled = false;
         this.clearSpawnTimers();
         this.rebuildBoundaries();
@@ -579,7 +829,23 @@ class JokerPhysicsService {
 
     unmount() {
         this.active = false;
+        this.stopTiltListening();
         this.clearSpawnTimers();
+        clearTimeout(this.tiltStatusTimer);
+        clearTimeout(this.tiltFadeTimer);
+        this.tiltStatusTimer = null;
+        this.tiltFadeTimer = null;
+        this.tiltEnabled = false;
+        this.tiltFrozen = false;
+        this.tiltBaselineAngle = null;
+        this.tiltSmoothedAngle = 0;
+        this.tiltAppliedAngle = 0;
+        this.lastRawTiltAngle = null;
+        if (this.tiltControl) {
+            this.tiltControl.hidden = true;
+            this.tiltControl.disabled = true;
+            this.tiltControl.classList.remove('tilt-control--fading');
+        }
         if (this.frameId) cancelAnimationFrame(this.frameId);
         this.frameId = null;
         if (this.anchorFrameId) cancelAnimationFrame(this.anchorFrameId);

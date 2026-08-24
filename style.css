@@ -422,6 +422,59 @@ option {
     position: relative;
 }
 
+#joker-tilt-control {
+    position: absolute;
+    left: 50%;
+    bottom: -16px;
+    z-index: 2;
+    min-width: 72px;
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.42);
+    border-radius: 999px;
+    background: rgba(12, 12, 16, 0.78);
+    color: rgba(255, 255, 255, 0.9);
+    font: 700 8px/1.1 Arial, sans-serif;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    cursor: pointer;
+    opacity: 1;
+    transform: translateX(-50%);
+    transition: opacity 400ms ease, border-color 200ms ease, color 200ms ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+#joker-tilt-control[hidden] {
+    display: none !important;
+}
+
+#joker-tilt-control[data-state="active"] {
+    border-color: rgba(93, 255, 164, 0.72);
+    color: rgb(154, 255, 197);
+}
+
+#joker-tilt-control[data-state="blocked"],
+#joker-tilt-control[data-state="unavailable"] {
+    border-color: rgba(255, 110, 110, 0.72);
+    color: rgb(255, 164, 164);
+}
+
+#joker-tilt-control:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+#joker-tilt-control.tilt-control--fading {
+    pointer-events: none;
+    opacity: 0;
+}
+
+@media screen and (min-width: 769px), (prefers-reduced-motion: reduce) {
+    #joker-tilt-control {
+        display: none !important;
+    }
+}
+
 .winner {
     transition: all 1s ease-in-out;
     z-index: 999;

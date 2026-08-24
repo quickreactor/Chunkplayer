@@ -7,8 +7,8 @@ class ClipExportService {
     static MAX_SECONDS = 8;
     static DEFAULT_SECONDS = 3;
     static MAX_HEIGHT = 480;
-    static AVC_BASELINE_CODEC = 'avc1.42001f';
-    static LIBRARY_URL = 'vendor/mediabunny-1.52.2.min.js?v=ios-avc-baseline-20260824';
+    static AVC_CONSTRAINED_BASELINE_CODEC = 'avc1.42e01f';
+    static LIBRARY_URL = 'vendor/mediabunny-1.52.2.min.js?v=ios-mp4-fallback-20260824-2';
     static AAC_ENCODER_URL = 'vendor/mediabunny-aac-encoder-1.52.2.min.js';
     static libraryPromise = null;
     static aacEncoderPromise = null;
@@ -43,6 +43,7 @@ class ClipExportService {
             sourceReadable: null,
             sourceDecodable: null,
             h264Encodable: null,
+            hevcEncodable: null,
             encoderAttempts: [],
             selectedEncoder: null,
             audioEncodable: null,
@@ -157,7 +158,7 @@ class ClipExportService {
         };
     }
 
-    static getAvcOutputCandidates(width, height) {
+    static getVideoOutputCandidates(width, height) {
         const candidates = [
             this.fitWithin(width, height, 480),
             this.fitWithin(width, height, 360, 640),
@@ -168,39 +169,62 @@ class ClipExportService {
         ));
     }
 
-    async selectAvcOutput(library, width, height) {
-        const quality = new library.Quality('medium');
+    static getVideoBitrate(width, height) {
+        return Math.max(300_000, Math.min(2_000_000, Math.round(width * height * 4)));
+    }
+
+    async selectVideoOutput(library, width, height) {
         const attempts = [];
-        for (const candidate of ClipExportService.getAvcOutputCandidates(width, height)) {
-            let supported = false;
-            let error = '';
-            try {
-                supported = await library.canEncodeVideo('avc', {
-                    width: candidate.width,
-                    height: candidate.height,
-                    quality,
-                    fullCodecString: ClipExportService.AVC_BASELINE_CODEC
-                });
-            } catch (candidateError) {
-                error = candidateError?.message || String(candidateError);
-            }
-            attempts.push({
+        const formats = [
+            {
                 codec: 'avc',
-                codecString: ClipExportService.AVC_BASELINE_CODEC,
-                profile: 'baseline',
-                ...candidate,
-                supported,
-                error
-            });
-            if (supported) {
-                this.capabilityReport.encoderAttempts = attempts;
-                this.capabilityReport.selectedEncoder = {
-                    codec: 'avc',
-                    codecString: ClipExportService.AVC_BASELINE_CODEC,
-                    profile: 'baseline',
-                    ...candidate
+                codecString: ClipExportService.AVC_CONSTRAINED_BASELINE_CODEC,
+                profile: 'constrained baseline',
+                options: {
+                    fullCodecString: ClipExportService.AVC_CONSTRAINED_BASELINE_CODEC
+                }
+            },
+            {
+                codec: 'hevc',
+                codecString: 'automatic',
+                profile: 'main',
+                options: { hardwareAcceleration: 'prefer-hardware' }
+            }
+        ];
+
+        for (const format of formats) {
+            for (const candidate of ClipExportService.getVideoOutputCandidates(width, height)) {
+                const bitrate = ClipExportService.getVideoBitrate(candidate.width, candidate.height);
+                let supported = false;
+                let error = '';
+                try {
+                    // A numeric bitrate deliberately avoids Mediabunny's quantizer
+                    // candidate, which older iOS WebKit builds reject as an invalid
+                    // VideoEncoder bitrateMode before trying the normal VBR fallback.
+                    supported = await library.canEncodeVideo(format.codec, {
+                        width: candidate.width,
+                        height: candidate.height,
+                        bitrate,
+                        ...format.options
+                    });
+                } catch (candidateError) {
+                    error = candidateError?.message || String(candidateError);
+                }
+                const attempt = {
+                    codec: format.codec,
+                    codecString: format.codecString,
+                    profile: format.profile,
+                    ...candidate,
+                    bitrate,
+                    supported,
+                    error
                 };
-                return candidate;
+                attempts.push(attempt);
+                if (supported) {
+                    this.capabilityReport.encoderAttempts = attempts;
+                    this.capabilityReport.selectedEncoder = { ...attempt };
+                    return attempt;
+                }
             }
         }
         this.capabilityReport.encoderAttempts = attempts;
@@ -538,7 +562,15 @@ class ClipExportService {
         walk(8, moovBytes.length, 'moov');
     }
 
-    static buildConversionOptions({ startTime, endTime, width, height, quality, includeAudio = false }) {
+    static buildConversionOptions({
+        startTime,
+        endTime,
+        width,
+        height,
+        codec = 'avc',
+        bitrate,
+        includeAudio = false
+    }) {
         return {
             tracks: 'primary',
             trim: { start: startTime, end: endTime },
@@ -546,8 +578,9 @@ class ClipExportService {
                 width,
                 height,
                 fit: 'contain',
-                codec: 'avc',
-                quality
+                codec,
+                bitrate,
+                hardwareAcceleration: codec === 'hevc' ? 'prefer-hardware' : 'no-preference'
             },
             audio: includeAudio
                 // Leave audio unconfigured: Mediabunny then copies the source
@@ -625,10 +658,15 @@ class ClipExportService {
                 track.getDurationFromMetadata({ skipLiveWait: true })
             ]);
             stage = 'encode';
-            const outputSize = await this.selectAvcOutput(library, width, height);
-            this.capabilityReport.h264Encodable = Boolean(outputSize);
+            const outputSize = await this.selectVideoOutput(library, width, height);
+            this.capabilityReport.h264Encodable = outputSize?.codec === 'avc';
+            this.capabilityReport.hevcEncodable = outputSize?.codec === 'hevc';
             if (!outputSize) {
-                throw new Error('This browser cannot create H.264 MP4 clips.');
+                this.capabilityReport.h264Encodable = false;
+                this.capabilityReport.hevcEncodable = false;
+                throw new Error(this.capabilityReport.browser === 'Chrome iOS'
+                    ? 'Chrome on this iOS beta rejected both H.264 and HEVC MP4 encoders. Open this page in Safari to make the clip.'
+                    : 'This browser cannot create a compatible MP4 clip.');
             }
 
             const duration = Number.isFinite(metadataDuration) && metadataDuration > 0
@@ -714,19 +752,19 @@ class ClipExportService {
         signal?.addEventListener('abort', handleAbort, { once: true });
 
         try {
-            const quality = new library.Quality('medium');
             const options = ClipExportService.buildConversionOptions({
                 startTime: startSample.timestamp,
                 endTime: ClipExportService.inclusiveEnd(endSample, session.duration),
                 width: outputSize.width,
                 height: outputSize.height,
-                quality,
+                codec: outputSize.codec || 'avc',
+                bitrate: outputSize.bitrate || ClipExportService.getVideoBitrate(outputSize.width, outputSize.height),
                 includeAudio
             });
             conversion = await library.Conversion.init({ input, output, ...options });
             if (signal?.aborted) throw ClipExportService.abortError();
             if (!conversion.isValid) {
-                throw new Error('This video could not be prepared as an H.264 MP4 clip.');
+                throw new Error('This video could not be prepared as a compatible MP4 clip.');
             }
             if (includeAudio && !conversion.utilizedTracks?.some(track => ClipExportService.isAudioTrack(track))) {
                 throw new Error(`Sound could not be included. ${ClipExportService.describeAudioDiscard(conversion)}`);
@@ -737,7 +775,9 @@ class ClipExportService {
             if (signal?.aborted) throw ClipExportService.abortError();
             if (!target.buffer?.byteLength) throw new Error('The exported clip was empty.');
 
-            const outputBytes = ClipExportService.repairAvcConfigurationRecordsToBytes(target.buffer);
+            const outputBytes = outputSize.codec === 'hevc'
+                ? target.buffer
+                : ClipExportService.repairAvcConfigurationRecordsToBytes(target.buffer);
             const blob = new Blob([outputBytes], { type: 'video/mp4' });
 
             return {

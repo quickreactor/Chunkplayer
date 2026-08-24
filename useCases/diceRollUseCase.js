@@ -32,6 +32,8 @@ class DiceRollUseCase {
      * @returns {Promise<void>}
      */
     async execute(movieData, currentDate, debugForceRoll = null) {
+        this.app.jokerPhysicsService.fadeTiltControl();
+
         // Setup dice video playing event
         this.dom.elements.d20RollerVideo.addEventListener("playing", () => {
             this.audio.playDiceSound();

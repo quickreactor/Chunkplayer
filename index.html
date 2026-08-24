@@ -7,7 +7,7 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=black-playback-surface-20260822">
+    <link rel="stylesheet" href="style.css?v=joker-tilt-control-20260824">
     <link rel="stylesheet" href="clip-export.css?v=plyr-marker-specificity-20260818">
 
     <!-- Google Fonts for Graffiti -->
@@ -36,13 +36,13 @@
     <script src="services/apiService.js?v=admin-logo-color-20260730"></script>
     <script src="services/audioService.js?v=joker-impact-audio-volume-20260809"></script>
     <script src="services/dateService.js"></script>
-    <script src="services/clipExportService.js?v=ios-avc-baseline-20260824"></script>
-    <script src="utils/plyr-plugin-clip-export.js?v=ios-avc-baseline-errors-20260824"></script>
-    <script src="services/domService.js?v=persistent-clip-toast-20260822"></script>
+    <script src="services/clipExportService.js?v=ios-mp4-fallback-20260824-2"></script>
+    <script src="utils/plyr-plugin-clip-export.js?v=ios-codec-report-20260824-2"></script>
+    <script src="services/domService.js?v=joker-tilt-control-20260824"></script>
     <script src="services/effectService.js"></script>
     <script src="services/posterService.js?v=poster-preload-20260818"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
-    <script src="services/jokerPhysicsService.js?v=joker-impact-audio-20260809"></script>
+    <script src="services/jokerPhysicsService.js?v=joker-tilt-strength-20260824"></script>
     <script src="services/soundBoardService.js"></script>
     <script src="services/videoService.js?v=media-cleanup-20260724-2"></script>
     <script src="services/adminService.js?v=shared-toast-20260822"></script>
@@ -52,7 +52,7 @@
     <!-- Use Cases -->
     <script src="useCases/dailyFlowUseCase.js"></script>
     <script src="useCases/coinFlipUseCase.js"></script>
-    <script src="useCases/diceRollUseCase.js"></script>
+    <script src="useCases/diceRollUseCase.js?v=joker-tilt-control-20260824"></script>
     <script src="useCases/lockdownUseCase.js"></script>
     <script src="useCases/videoPlaybackUseCase.js"></script>
 
@@ -70,7 +70,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=clip-editor-morb-guard-20260818" defer></script>
+    <script src="app.js?v=joker-tilt-control-20260824" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
@@ -104,7 +104,9 @@
         </div>
         <div id="flip-button" style="display: none;">FLIP</div>
         <div id="poster-container-2" class="poster-container"><img class="poster-image" src="" alt=""
-                id="poster-image-2" crossorigin="anonymous" decoding="async"></div>
+                id="poster-image-2" crossorigin="anonymous" decoding="async">
+            <button id="joker-tilt-control" type="button" hidden>ENABLE TILT</button>
+        </div>
     </div>
     <div class="container hidden">
         <div id="top-bar">

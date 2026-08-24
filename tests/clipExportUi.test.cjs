@@ -148,7 +148,7 @@ test('clip control mounts before source validation and validates lazily when ope
     assert.match(refreshSource, /this\.mountControl\(\)/);
     assert.doesNotMatch(refreshSource, /openSource\(/);
     assert.match(open, /await this\.service\.openSource\(openingUrl\)/);
-    assert.match(open, /this\.setStatus\('Checking video and H\.264 export support…'\)/);
+    assert.match(open, /this\.setStatus\('Checking compatible MP4 export support…'\)/);
     assert.match(open, /this\.showPersistentErrorToast\(error\)/);
 });
 
@@ -161,7 +161,8 @@ test('lazy source validation discards stale sessions after rapid source changes'
 test('clip failures dispatch a persistent reportable toast', () => {
     assert.match(plugin, /new CustomEvent\('chunkplayer:toast'/);
     assert.match(plugin, /persistent:\s*true/);
-    assert.match(plugin, /AVC \$\{report\.encoderAttempts\[0\]\.profile/);
+    assert.match(plugin, /Encoder checks:/);
+    assert.match(plugin, /attempt\.codec\.toUpperCase/);
     assert.match(plugin, /codecString/);
     assert.match(domService, /event\.detail\?\.persistent === true/);
     assert.match(domService, /toastClose\?\.toggleAttribute\('hidden', !persistent\)/);
