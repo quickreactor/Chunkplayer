@@ -41,6 +41,8 @@ test('transport and secondary actions use the consistent local icon set', () => 
     assert.match(plugin, /ICONS\.trimEnd/);
     assert.match(plugin, /ICONS\.pause/);
     assert.match(plugin, /ICONS\.volume/);
+    assert.match(plugin, /ICONS\.prepare/);
+    assert.match(plugin, /ICONS\.share/);
     assert.match(plugin, /ICONS\.download/);
     assert.match(plugin, /ICONS\.stop/);
     assert.match(plugin, /ICONS\.close/);
@@ -49,6 +51,28 @@ test('transport and secondary actions use the consistent local icon set', () => 
     assert.doesNotMatch(plugin, /clip-action/);
     assert.doesNotMatch(plugin, /data-clip="cancel-edit"/);
     assert.doesNotMatch(plugin, /export-loop-atom/);
+});
+
+test('completed encoding reveals native Share and Download controls without auto-downloading', () => {
+    const exportMethod = plugin.match(/async export\(\)\s*\{[\s\S]*?\n        \}/)?.[0] || '';
+    assert.match(plugin, /data-clip="share"/);
+    assert.match(plugin, /data-clip="download"/);
+    assert.match(plugin, /data-clip="export"[\s\S]*?Prepare MP4/);
+    assert.match(plugin, /this\.completedExport = \{/);
+    assert.match(plugin, /navigator\.share\(\{ files: \[completed\.file\] \}\)/);
+    assert.match(plugin, /Clip ready — Share or Download/);
+    assert.doesNotMatch(exportMethod, /link\.click\(\)/);
+    assert.match(styles, /\.clip-icon-button--ready::before/);
+    assert.match(styles, /@keyframes clip-delivery-awaken/);
+    assert.match(styles, /prefers-reduced-motion:[\s\S]*?\.clip-icon-button--awaken::before[\s\S]*?animation:\s*none/s);
+});
+
+test('prepared output is invalidated when trim or audio settings change', () => {
+    assert.match(plugin, /signature:\s*this\.getExportSignature\(\)/);
+    assert.match(plugin, /this\.completedExport\.signature === this\.getExportSignature\(\)/);
+    assert.match(plugin, /this\.updateAudioButton\(\);\s*this\.updateUi\(\);/);
+    assert.match(plugin, /this\.getCurrentCompletedExport\(\);\s*this\.updateDeliveryActions\(\);/);
+    assert.match(plugin, /this\.completedExport = null/);
 });
 
 test('source sound is a capability-gated export toggle', () => {

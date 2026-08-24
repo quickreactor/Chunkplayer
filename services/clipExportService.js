@@ -56,6 +56,71 @@ class ClipExportService {
         return this.getCapabilityReport(scope).supported;
     }
 
+    static getSharePlatform(scope = globalThis) {
+        const navigator = scope.navigator || {};
+        const userAgent = navigator.userAgent || '';
+        const isTouchMac = /Macintosh/i.test(userAgent) && Number(navigator.maxTouchPoints) > 1;
+        const os = /iPhone|iPad|iPod/i.test(userAgent) || isTouchMac
+            ? 'iOS'
+            : /Android/i.test(userAgent)
+                ? 'Android'
+                : /Windows/i.test(userAgent)
+                    ? 'Windows'
+                    : /Macintosh|Mac OS X/i.test(userAgent)
+                        ? 'macOS'
+                        : 'this device';
+        const browser = /CriOS/i.test(userAgent)
+            ? 'Chrome'
+            : /FxiOS|Firefox/i.test(userAgent)
+                ? 'Firefox'
+                : /EdgiOS|EdgA|Edg\//i.test(userAgent)
+                    ? 'Edge'
+                    : /Chrome|Chromium/i.test(userAgent)
+                        ? 'Chrome'
+                        : /Safari/i.test(userAgent)
+                            ? 'Safari'
+                            : 'this browser';
+
+        return { os, browser, label: `${browser} on ${os}` };
+    }
+
+    static createShareFile(blob, filename, scope = globalThis) {
+        if (typeof scope.File !== 'function') return null;
+        return new scope.File([blob], filename, {
+            type: blob?.type || 'video/mp4',
+            lastModified: Date.now()
+        });
+    }
+
+    static getFileShareCapability(file, scope = globalThis) {
+        const platform = this.getSharePlatform(scope);
+        const navigator = scope.navigator || {};
+        if (!file || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') {
+            return {
+                ...platform,
+                supported: false,
+                reason: `${platform.label} does not provide native video file sharing. Use Download instead.`
+            };
+        }
+
+        try {
+            const supported = navigator.canShare({ files: [file] }) === true;
+            return {
+                ...platform,
+                supported,
+                reason: supported
+                    ? ''
+                    : `${platform.label} cannot share this MP4 file. Use Download instead.`
+            };
+        } catch (error) {
+            return {
+                ...platform,
+                supported: false,
+                reason: `${platform.label} rejected the native share check. Use Download instead.`
+            };
+        }
+    }
+
     getCapabilityReport() {
         return { ...this.capabilityReport };
     }

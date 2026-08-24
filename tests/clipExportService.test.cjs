@@ -32,6 +32,86 @@ test('capability gate hides insecure and Firefox Android clients', () => {
     }), false);
 });
 
+test('native MP4 sharing is capability-detected across phone and desktop browsers', () => {
+    class TestFile {
+        constructor(parts, name, options) {
+            Object.assign(this, { parts, name, type: options.type, lastModified: options.lastModified });
+        }
+    }
+    const blob = new Blob(['mp4'], { type: 'video/mp4' });
+    const clients = [
+        {
+            expected: 'Chrome on iOS',
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 CriOS/152.0 Mobile Safari/604.1',
+            share: true
+        },
+        {
+            expected: 'Safari on iOS',
+            userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 Version/27.0 Mobile Safari/604.1',
+            share: true
+        },
+        {
+            expected: 'Chrome on Android',
+            userAgent: 'Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/152.0 Mobile Safari/537.36',
+            share: true
+        },
+        {
+            expected: 'Chrome on macOS',
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/537.36 Chrome/152.0 Safari/537.36',
+            share: true
+        },
+        {
+            expected: 'Safari on macOS',
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15',
+            share: true
+        },
+        {
+            expected: 'Firefox on macOS',
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 15.0; rv:142.0) Gecko/20100101 Firefox/142.0',
+            share: false
+        },
+        {
+            expected: 'Chrome on Windows',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152.0 Safari/537.36',
+            share: true
+        },
+        {
+            expected: 'Firefox on Windows',
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0',
+            share: false
+        }
+    ];
+
+    for (const client of clients) {
+        const scope = {
+            File: TestFile,
+            navigator: {
+                userAgent: client.userAgent,
+                ...(client.share ? { share() {}, canShare: data => data.files?.[0]?.type === 'video/mp4' } : {})
+            }
+        };
+        const file = ClipExportService.createShareFile(blob, 'clip.mp4', scope);
+        const capability = ClipExportService.getFileShareCapability(file, scope);
+        assert.equal(capability.label, client.expected);
+        assert.equal(capability.supported, client.share);
+        if (!client.share) assert.match(capability.reason, /Use Download instead/);
+    }
+});
+
+test('native file share rejects a browser that exposes share but cannot share the MP4', () => {
+    const scope = {
+        File: class TestFile {},
+        navigator: {
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0) Chrome/152.0 Safari/537.36',
+            share() {},
+            canShare() { return false; }
+        }
+    };
+    const capability = ClipExportService.getFileShareCapability(new scope.File(), scope);
+    assert.equal(capability.supported, false);
+    assert.match(capability.reason, /cannot share this MP4 file/);
+});
+
 test('navigates exact variable-rate sample timestamps', () => {
     const frames = [
         { timestamp: 0, duration: 0.041708 },

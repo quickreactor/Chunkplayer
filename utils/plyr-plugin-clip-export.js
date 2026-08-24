@@ -19,6 +19,8 @@
         trimStart: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M20 2h-8v20h8"/></svg>`,
         trimEnd: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 2h8v20H4"/></svg>`,
         close: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>`,
+        prepare: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></svg>`,
+        share: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>`,
         download: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg>`,
         stop: `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>`
     };
@@ -51,12 +53,14 @@
             this.originalState = null;
             this.abortController = null;
             this.downloadUrl = null;
+            this.completedExport = null;
             this.seekGeneration = 0;
             this.refreshTimer = null;
             this.activeDrag = null;
             this.activeOverviewDrag = null;
             this.dragSeekFrame = null;
             this.statusTimer = null;
+            this.deliveryAnimationTimer = null;
             this.playbackMonitorId = null;
             this.playbackMonitorType = null;
             this.playbackMonitorGeneration = 0;
@@ -159,8 +163,14 @@
                         <button type="button" class="clip-icon-button" data-clip="cancel-export" aria-label="Cancel export" title="Cancel export" hidden>
                             ${ICONS.stop}<span class="clip-tooltip" role="tooltip">Cancel export</span>
                         </button>
-                        <button type="button" class="clip-icon-button clip-icon-button--export" data-clip="export" aria-label="Export MP4" title="Export MP4">
-                            ${ICONS.download}<span class="clip-tooltip" role="tooltip">Export MP4</span>
+                        <button type="button" class="clip-icon-button clip-icon-button--export" data-clip="export" aria-label="Prepare MP4" title="Prepare MP4">
+                            ${ICONS.prepare}<span class="clip-tooltip" role="tooltip">Prepare MP4</span>
+                        </button>
+                        <button type="button" class="clip-icon-button clip-icon-button--delivery" data-clip="share" aria-label="Share prepared MP4" title="Share" hidden disabled>
+                            ${ICONS.share}<span class="clip-tooltip" role="tooltip">Share</span>
+                        </button>
+                        <button type="button" class="clip-icon-button clip-icon-button--delivery" data-clip="download" aria-label="Download prepared MP4" title="Download" hidden disabled>
+                            ${ICONS.download}<span class="clip-tooltip" role="tooltip">Download</span>
                         </button>
                         <button type="button" class="clip-icon-button" data-clip="close" aria-label="Close clip editor" title="Close">
                             ${ICONS.close}<span class="clip-tooltip" role="tooltip">Close</span>
@@ -230,6 +240,9 @@
                 progress: panel.querySelector('[data-clip="progress"]'),
                 progressBar: panel.querySelector('[data-clip="progress"] span'),
                 export: panel.querySelector('[data-clip="export"]'),
+                share: panel.querySelector('[data-clip="share"]'),
+                shareTooltip: panel.querySelector('[data-clip="share"] .clip-tooltip'),
+                download: panel.querySelector('[data-clip="download"]'),
                 cancelExport: panel.querySelector('[data-clip="cancel-export"]')
             };
 
@@ -242,6 +255,8 @@
             panel.querySelector('[data-clip="start"]').addEventListener('click', () => this.setMarker('start'));
             panel.querySelector('[data-clip="end"]').addEventListener('click', () => this.setMarker('end'));
             panel.querySelector('[data-clip="export"]').addEventListener('click', () => this.export());
+            panel.querySelector('[data-clip="share"]').addEventListener('click', () => this.shareCompletedClip());
+            panel.querySelector('[data-clip="download"]').addEventListener('click', () => this.downloadCompletedClip());
             panel.querySelector('[data-clip="cancel-export"]').addEventListener('click', () => this.abortController?.abort());
 
             this.elements.timeline.addEventListener('pointerdown', event => {
@@ -880,6 +895,7 @@
             if (!this.session?.audioAvailable || this.isExporting) return;
             this.includeAudio = !this.includeAudio;
             this.updateAudioButton();
+            this.updateUi();
             this.setStatus('');
         }
 
@@ -1014,14 +1030,16 @@
             }
 
             this.media.pause();
+            this.revokeDownload();
             this.isExporting = true;
             this.abortController = new AbortController();
             this.setBusy(true);
             this.elements.progress.hidden = false;
             this.elements.progressBar.style.width = '0%';
-            this.elements.cancelExport.hidden = false;
+            this.updateDeliveryActions();
             this.setStatus('Preparing your MP4…');
 
+            let deliveryReady = false;
             try {
                 const result = await this.service.exportClip({
                     session: this.session,
@@ -1035,21 +1053,25 @@
                         this.setStatus(`Exporting MP4… ${percent}%`);
                     }
                 });
-                this.revokeDownload();
                 this.downloadUrl = URL.createObjectURL(result.blob);
                 const filename = ClipExportService.createFilename(
                     this.getSourceTitle(),
                     result.startTime,
                     result.endTime
                 );
-                const link = document.createElement('a');
-                link.href = this.downloadUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
+                const file = ClipExportService.createShareFile(result.blob, filename);
+                this.completedExport = {
+                    blob: result.blob,
+                    file,
+                    filename,
+                    signature: this.getExportSignature()
+                };
+                deliveryReady = true;
                 if (this.elements?.progressBar) this.elements.progressBar.style.width = '100%';
-                this.setStatus(`Downloaded ${filename}`, false, { autoHide: true });
+                const shareCapability = ClipExportService.getFileShareCapability(file);
+                this.setStatus(shareCapability.supported
+                    ? 'Clip ready — Share or Download.'
+                    : `Clip ready — Download available. ${shareCapability.browser} has no native file share.`);
             } catch (error) {
                 const wasCancelled = error.name === 'AbortError';
                 this.setStatus(
@@ -1062,10 +1084,118 @@
                 this.isExporting = false;
                 this.abortController = null;
                 if (this.elements) {
-                    this.elements.cancelExport.hidden = true;
                     this.elements.progress.hidden = true;
                 }
                 this.setBusy(false);
+                this.updateDeliveryActions({ animate: deliveryReady });
+            }
+        }
+
+        async shareCompletedClip() {
+            const completed = this.getCurrentCompletedExport();
+            if (!completed) {
+                this.setStatus('Prepare the MP4 before sharing.', true);
+                return;
+            }
+
+            const capability = ClipExportService.getFileShareCapability(completed.file);
+            if (!capability.supported) {
+                this.setStatus(capability.reason, true);
+                return;
+            }
+
+            try {
+                // Keep the payload file-only: WebKit is most reliable when it is
+                // not also asked to combine an MP4 with title/text share fields.
+                await navigator.share({ files: [completed.file] });
+                this.setStatus('Shared. The clip is still ready to download.');
+            } catch (error) {
+                if (error?.name === 'AbortError') {
+                    this.setStatus('Share cancelled — the clip is still ready.');
+                    return;
+                }
+                this.setStatus(error?.message || 'The share sheet could not be opened.', true);
+                this.showPersistentErrorToast(error, 'share');
+            }
+        }
+
+        downloadCompletedClip() {
+            const completed = this.getCurrentCompletedExport();
+            if (!completed || !this.downloadUrl) {
+                this.setStatus('Prepare the MP4 before downloading.', true);
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = this.downloadUrl;
+            link.download = completed.filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            this.setStatus(`Download started — ${completed.filename}`);
+        }
+
+        getExportSignature() {
+            if (!this.startSample || !this.endSample) return '';
+            return [
+                this.sourceGeneration,
+                this.sourceUrl,
+                this.startSample.timestamp,
+                this.startSample.duration,
+                this.endSample.timestamp,
+                this.endSample.duration,
+                this.includeAudio
+            ].join('|');
+        }
+
+        getCurrentCompletedExport() {
+            if (!this.completedExport) return null;
+            if (this.completedExport.signature === this.getExportSignature()) return this.completedExport;
+            this.revokeDownload();
+            return null;
+        }
+
+        updateDeliveryActions({ animate = false } = {}) {
+            if (!this.elements) return;
+            const completed = this.getCurrentCompletedExport();
+            const ready = Boolean(completed);
+            const shareCapability = ready
+                ? ClipExportService.getFileShareCapability(completed.file)
+                : { supported: false, reason: '' };
+            const selectionValid = Boolean(this.session && ClipExportService.validateSelection(
+                this.startSample,
+                this.endSample,
+                this.session.duration
+            ).valid);
+
+            this.elements.export.hidden = ready || this.isExporting;
+            this.elements.cancelExport.hidden = !this.isExporting;
+            this.elements.share.hidden = !ready;
+            this.elements.download.hidden = !ready;
+            this.elements.export.disabled = this.isBusy || !selectionValid;
+            this.elements.download.disabled = this.isBusy || !ready;
+            this.elements.share.disabled = this.isBusy || !ready || !shareCapability.supported;
+
+            const shareLabel = shareCapability.supported ? 'Share MP4' : (shareCapability.reason || 'Share unavailable');
+            this.elements.share.setAttribute('aria-label', shareLabel);
+            this.elements.share.setAttribute('title', shareLabel);
+            this.elements.shareTooltip.textContent = shareCapability.supported ? 'Share' : 'Share unavailable';
+            this.elements.share.classList.toggle('clip-icon-button--ready', ready && shareCapability.supported && !this.isBusy);
+            this.elements.share.classList.toggle('clip-icon-button--unavailable', ready && !shareCapability.supported);
+            this.elements.download.classList.toggle('clip-icon-button--ready', ready && !this.isBusy);
+
+            clearTimeout(this.deliveryAnimationTimer);
+            this.deliveryAnimationTimer = null;
+            this.elements.share.classList.remove('clip-icon-button--awaken');
+            this.elements.download.classList.remove('clip-icon-button--awaken');
+            if (animate && ready) {
+                if (shareCapability.supported) this.elements.share.classList.add('clip-icon-button--awaken');
+                this.elements.download.classList.add('clip-icon-button--awaken');
+                this.deliveryAnimationTimer = setTimeout(() => {
+                    this.elements?.share?.classList.remove('clip-icon-button--awaken');
+                    this.elements?.download?.classList.remove('clip-icon-button--awaken');
+                    this.deliveryAnimationTimer = null;
+                }, 900);
             }
         }
 
@@ -1079,11 +1209,8 @@
             this.elements.duration.textContent = `${duration.toFixed(3)}s`;
             this.setTimelinePositions(this.startSample.timestamp, endBoundary, this.currentSample?.timestamp ?? this.media.currentTime);
             this.setOverviewPositions(this.startSample.timestamp, endBoundary, this.currentSample?.timestamp ?? this.media.currentTime);
-            this.elements.export.disabled = !ClipExportService.validateSelection(
-                this.startSample,
-                this.endSample,
-                this.session.duration
-            ).valid;
+            this.getCurrentCompletedExport();
+            this.updateDeliveryActions();
             this.updateAudioButton();
             this.updatePlaybackButton();
         }
@@ -1224,14 +1351,15 @@
         }
 
         revokeDownload() {
-            if (!this.downloadUrl) return;
-            URL.revokeObjectURL(this.downloadUrl);
+            if (this.downloadUrl) URL.revokeObjectURL(this.downloadUrl);
             this.downloadUrl = null;
+            this.completedExport = null;
         }
 
         destroy() {
             clearTimeout(this.refreshTimer);
             clearTimeout(this.statusTimer);
+            clearTimeout(this.deliveryAnimationTimer);
             this.stopPlaybackMonitor();
             this.close({ restore: false });
             this.session?.dispose();
