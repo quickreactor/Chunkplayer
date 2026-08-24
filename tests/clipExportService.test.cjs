@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { ClipExportService, MediabunnyClipSession } = require('../services/clipExportService.js');
 
 test('capability gate hides insecure and Firefox Android clients', () => {
@@ -149,7 +151,12 @@ test('falls back through smaller AVC sizes and records the phone-confirmed confi
     const library = {
         Quality: class {},
         async canEncodeVideo(codec, options) {
-            checked.push({ codec, width: options.width, height: options.height });
+            checked.push({
+                codec,
+                codecString: options.fullCodecString,
+                width: options.width,
+                height: options.height
+            });
             return options.width <= 640;
         }
     };
@@ -157,12 +164,30 @@ test('falls back through smaller AVC sizes and records the phone-confirmed confi
     const selected = await service.selectAvcOutput(library, 1920, 1012);
     assert.deepEqual(selected, { width: 640, height: 336 });
     assert.deepEqual(checked, [
-        { codec: 'avc', width: 910, height: 480 },
-        { codec: 'avc', width: 640, height: 336 }
+        { codec: 'avc', codecString: 'avc1.42001f', width: 910, height: 480 },
+        { codec: 'avc', codecString: 'avc1.42001f', width: 640, height: 336 }
     ]);
     assert.deepEqual(service.getCapabilityReport().selectedEncoder, {
-        codec: 'avc', width: 640, height: 336
+        codec: 'avc',
+        codecString: 'avc1.42001f',
+        profile: 'baseline',
+        width: 640,
+        height: 336
     });
+});
+
+test('uses the iPhone-compatible H.264 Baseline profile', () => {
+    assert.equal(ClipExportService.AVC_BASELINE_CODEC, 'avc1.42001f');
+    assert.equal(
+        ClipExportService.LIBRARY_URL,
+        'vendor/mediabunny-1.52.2.min.js?v=ios-avc-baseline-20260824'
+    );
+    const bundle = fs.readFileSync(
+        path.join(__dirname, '..', 'vendor', 'mediabunny-1.52.2.min.js'),
+        'utf8'
+    );
+    assert.match(bundle, /u="42"\.padStart\(2,"0"\)/);
+    assert.doesNotMatch(bundle, /u="64"\.padStart\(2,"0"\)/);
 });
 
 test('creates a safe MP4 filename from title and inclusive timestamps', () => {

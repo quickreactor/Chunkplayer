@@ -328,7 +328,7 @@
                 report.browser ? `${report.browser}${report.browserVersion ? ` ${report.browserVersion}` : ''}` : ''
             ].filter(Boolean).join(' · ');
             const attempts = report.encoderAttempts?.length
-                ? ` · AVC checks: ${report.encoderAttempts.map(attempt => (
+                ? ` · AVC ${report.encoderAttempts[0].profile || 'profile'} (${report.encoderAttempts[0].codecString || 'automatic'}) checks: ${report.encoderAttempts.map(attempt => (
                     `${attempt.width}×${attempt.height}=${attempt.supported ? 'yes' : 'no'}`
                 )).join(', ')}`
                 : '';

@@ -7,7 +7,8 @@ class ClipExportService {
     static MAX_SECONDS = 8;
     static DEFAULT_SECONDS = 3;
     static MAX_HEIGHT = 480;
-    static LIBRARY_URL = 'vendor/mediabunny-1.52.2.min.js';
+    static AVC_BASELINE_CODEC = 'avc1.42001f';
+    static LIBRARY_URL = 'vendor/mediabunny-1.52.2.min.js?v=ios-avc-baseline-20260824';
     static AAC_ENCODER_URL = 'vendor/mediabunny-aac-encoder-1.52.2.min.js';
     static libraryPromise = null;
     static aacEncoderPromise = null;
@@ -177,15 +178,28 @@ class ClipExportService {
                 supported = await library.canEncodeVideo('avc', {
                     width: candidate.width,
                     height: candidate.height,
-                    quality
+                    quality,
+                    fullCodecString: ClipExportService.AVC_BASELINE_CODEC
                 });
             } catch (candidateError) {
                 error = candidateError?.message || String(candidateError);
             }
-            attempts.push({ codec: 'avc', ...candidate, supported, error });
+            attempts.push({
+                codec: 'avc',
+                codecString: ClipExportService.AVC_BASELINE_CODEC,
+                profile: 'baseline',
+                ...candidate,
+                supported,
+                error
+            });
             if (supported) {
                 this.capabilityReport.encoderAttempts = attempts;
-                this.capabilityReport.selectedEncoder = { codec: 'avc', ...candidate };
+                this.capabilityReport.selectedEncoder = {
+                    codec: 'avc',
+                    codecString: ClipExportService.AVC_BASELINE_CODEC,
+                    profile: 'baseline',
+                    ...candidate
+                };
                 return candidate;
             }
         }

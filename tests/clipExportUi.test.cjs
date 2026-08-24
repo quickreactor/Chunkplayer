@@ -161,7 +161,8 @@ test('lazy source validation discards stale sessions after rapid source changes'
 test('clip failures dispatch a persistent reportable toast', () => {
     assert.match(plugin, /new CustomEvent\('chunkplayer:toast'/);
     assert.match(plugin, /persistent:\s*true/);
-    assert.match(plugin, /AVC checks:/);
+    assert.match(plugin, /AVC \$\{report\.encoderAttempts\[0\]\.profile/);
+    assert.match(plugin, /codecString/);
     assert.match(domService, /event\.detail\?\.persistent === true/);
     assert.match(domService, /toastClose\?\.toggleAttribute\('hidden', !persistent\)/);
     assert.match(adminService, /this\.domService\.showToast\(message, type\)/);
