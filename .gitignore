@@ -2,6 +2,7 @@ _tools/
 refactored-js-code.js
 _archive/
 .claude/
+docs/clip-export-storage-cors.md
 
 # Worker development
 worker/
@@ -15,3 +16,8 @@ README.md
 worker/.dev.vars.example
 SELF_REPORT_FEATURE.md
 .DS_Store
+.vscode/settings.json
+docs/clip-export-storage-cors.md
+docs/clip-export-storage-cors.md
+docs/clip-export-storage-cors.md
+docs/clip-export-storage-cors.md

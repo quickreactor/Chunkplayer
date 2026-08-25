@@ -528,6 +528,13 @@ body.clip-timeline-dragging {
     user-select: none;
 }
 
+/* The fixed utility dock and the clip editor both occupy the bottom of the
+   viewport. Remove the dock from the visual and pointer layers while editing
+   so its buttons cannot overlap the clip transport in either orientation. */
+body.clip-editor-active .admin-section {
+    display: none !important;
+}
+
 @media screen and (max-width: 760px) {
     body.clip-editor-active {
         overflow: hidden;

@@ -423,7 +423,11 @@ option {
 }
 
 #joker-tilt-control {
-    flex: 0 0 44px;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: 2100;
+    transform: translateX(-50%);
     opacity: 1;
     transition: opacity 400ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }
@@ -812,18 +816,14 @@ option {
 
 /* Admin Section - Centered at Bottom of Container */
 .admin-section {
-    position: fixed;
-    right: auto;
-    bottom: max(10px, env(safe-area-inset-bottom));
-    left: 50%;
-    z-index: 2100;
-    width: auto;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin: 0;
-    transform: translateX(-50%);
+    margin-top: 10px;
+    position: relative;
+    z-index: 2100;
 }
 
 .admin-icon-button {

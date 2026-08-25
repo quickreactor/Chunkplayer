@@ -7,8 +7,8 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=utility-dock-20260825">
-    <link rel="stylesheet" href="clip-export.css?v=share-delivery-20260824">
+    <link rel="stylesheet" href="style.css?v=admin-layout-restore-20260825">
+    <link rel="stylesheet" href="clip-export.css?v=mobile-control-clearance-20260825">
 
     <!-- Google Fonts for Graffiti -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +70,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=utility-dock-20260825" defer></script>
+    <script src="app.js?v=admin-layout-restore-20260825" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
@@ -104,7 +104,20 @@
         </div>
         <div id="flip-button" style="display: none;">FLIP</div>
         <div id="poster-container-2" class="poster-container"><img class="poster-image" src="" alt=""
-                id="poster-image-2" crossorigin="anonymous" decoding="async"></div>
+                id="poster-image-2" crossorigin="anonymous" decoding="async">
+            <button id="joker-tilt-control" class="admin-icon-button tilt-icon-button" type="button" hidden
+                aria-label="Enable tilt" aria-pressed="false" title="Enable tilt">
+                <svg class="tilt-phone-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <g class="tilt-phone-body">
+                        <rect x="7.5" y="3" width="9" height="18" rx="2"></rect>
+                        <path d="M10.5 18h3"></path>
+                    </g>
+                    <path class="tilt-motion-mark" d="M4.5 8.5a6 6 0 0 0 0 7M19.5 8.5a6 6 0 0 1 0 7"></path>
+                </svg>
+                <span class="admin-icon-label" data-tilt-label>Enable tilt</span>
+            </button>
+        </div>
     </div>
     <div class="container hidden">
         <div id="top-bar">
@@ -152,18 +165,6 @@
                 aria-label="Open the movie archive constellation" title="Archive">
                 <span aria-hidden="true">✦</span>
             </a>
-            <button id="joker-tilt-control" class="admin-icon-button tilt-icon-button" type="button" hidden
-                aria-label="Enable tilt" aria-pressed="false" title="Enable tilt">
-                <svg class="tilt-phone-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <g class="tilt-phone-body">
-                        <rect x="7.5" y="3" width="9" height="18" rx="2"></rect>
-                        <path d="M10.5 18h3"></path>
-                    </g>
-                    <path class="tilt-motion-mark" d="M4.5 8.5a6 6 0 0 0 0 7M19.5 8.5a6 6 0 0 1 0 7"></path>
-                </svg>
-                <span class="admin-icon-label" data-tilt-label>Enable tilt</span>
-            </button>
             <div id="admin-panel" class="admin-panel hidden">
                 <!-- Password Entry -->
                 <div id="admin-login" class="admin-login">

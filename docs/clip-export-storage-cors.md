@@ -23,7 +23,12 @@ different one):
       "https://chunkplayer.barnaby.tv",
       "https://quickreactor.github.io",
       "http://localhost:5500",
-      "http://127.0.0.1:5500"
+      "http://127.0.0.1:5500",
+      "https://localhost:5500",
+      "https://127.0.0.1:5500",
+      "https://192.168.1.99:5500",
+      "https://100.100.1.99:5500",
+      "https://chipmunk-mermaid.ts.net:5500"
     ],
     "allowedHeaders": ["Range"],
     "allowedOperations": [

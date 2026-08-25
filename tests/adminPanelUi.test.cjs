@@ -22,11 +22,13 @@ test('admin panel helper synchronizes visibility, accessibility, and picker clea
     assert.match(app, /panel\.classList\.toggle\('hidden', !isOpen\)/);
     assert.match(app, /toggle\.setAttribute\('aria-expanded', String\(isOpen\)\)/);
     assert.match(app, /this\.logoBgPickr\?\.hide\?\.\(\)/);
-    assert.match(index, /app\.js\?v=utility-dock-20260825/);
+    assert.match(index, /app\.js\?v=admin-layout-restore-20260825/);
 });
 
-test('admin controls are lifted into the shared pre-roll and post-roll utility dock', () => {
-    assert.match(app, /this\.domService\.elements\.adminSection,[\s\S]*?document\.body\.appendChild\(element\)/);
-    assert.match(app, /showPosterJokers\([\s\S]*?this\.showAdminSection\(\);[\s\S]*?this\.jokerPhysicsService\.mount\(count\)/);
-    assert.match(index, /id="admin-section"[\s\S]*?id="admin-toggle-btn"[\s\S]*?archive-map-link[\s\S]*?id="joker-tilt-control"/);
+test('admin controls remain in their original in-page section', () => {
+    const showPosterJokersMethod = app.match(/showPosterJokers\([^)]*\)\s*\{[\s\S]*?\n    \}/)?.[0] || '';
+    assert.doesNotMatch(app, /this\.domService\.elements\.adminSection,[\s\S]*?document\.body\.appendChild\(element\)/);
+    assert.doesNotMatch(showPosterJokersMethod, /this\.showAdminSection\(\)/);
+    assert.match(showPosterJokersMethod, /this\.jokerPhysicsService\.mount\(count\)/);
+    assert.match(index, /class="container hidden"[\s\S]*?id="admin-section"[\s\S]*?id="admin-toggle-btn"[\s\S]*?archive-map-link/);
 });

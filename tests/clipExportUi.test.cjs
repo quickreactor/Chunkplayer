@@ -103,6 +103,10 @@ test('mobile editor stays compact, bottom-mounted, and touch enabled', () => {
     assert.doesNotMatch(styles, /left:\s*auto/);
 });
 
+test('clip editor removes the fixed utility dock from its visual and pointer area', () => {
+    assert.match(styles, /body\.clip-editor-active \.admin-section\s*\{\s*display:\s*none !important;/s);
+});
+
 test('dual rails use restrained Resolve-inspired colour and non-console timecodes', () => {
     assert.match(styles, /--clip-overview:\s*#6fa6d8/);
     assert.match(styles, /--clip-selection:\s*#4f8cc9/);

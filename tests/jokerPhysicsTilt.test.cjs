@@ -181,7 +181,7 @@ test('critical-fail release freezes tilt and restores downward gravity', () => {
     assert.equal(service.engine.gravity.y, 1);
 });
 
-test('tilt UI joins the fixed utility dock as a phone icon and fades from the roll flow', () => {
+test('tilt UI sits beneath the punishment poster and fades from the roll flow', () => {
     const index = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
     const styles = fs.readFileSync(path.join(projectRoot, 'style.css'), 'utf8');
     const diceFlow = fs.readFileSync(
@@ -193,7 +193,9 @@ test('tilt UI joins the fixed utility dock as a phone icon and fades from the ro
     assert.match(index, /class="admin-icon-button tilt-icon-button"/);
     assert.match(index, /class="tilt-phone-icon"/);
     assert.match(index, /data-tilt-label/);
-    assert.match(styles, /\.admin-section\s*\{[\s\S]*position:\s*fixed/);
+    assert.match(index, /id="poster-container-2"[\s\S]*?id="joker-tilt-control"[\s\S]*?<\/div>[\s\S]*?<\/div>\s*<div class="container hidden">/);
+    assert.match(styles, /#joker-tilt-control\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*100%;/);
+    assert.match(styles, /\.admin-section\s*\{[\s\S]*?position:\s*relative/);
     assert.match(styles, /\.tilt-phone-body/);
     assert.match(styles, /@keyframes tilt-phone-listen/);
     assert.match(styles, /tilt-control--fading/);

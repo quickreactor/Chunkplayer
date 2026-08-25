@@ -281,10 +281,9 @@ class ChunkPlayerApp {
      * Setup event listeners
      */
     setupEventListeners() {
-        // This dock is shared by the pre-roll poster and the post-roll player,
-        // so lift it (and its portal-style feedback UI) out of the hidden player container.
+        // Feedback UI must remain visible across the pre-roll and player views.
+        // The admin section deliberately stays in its original in-page position.
         [
-            this.domService.elements.adminSection,
             this.domService.elements.toast,
             this.domService.elements.confirmDialog
         ].forEach(element => {
@@ -867,7 +866,6 @@ class ChunkPlayerApp {
     showPosterJokers(count = this.currentJokerCount || 0) {
         document.getElementById('flip-counter-wrapper')?.classList.add('poster-pile-active');
         document.getElementById('joker-image-row')?.replaceChildren();
-        this.showAdminSection();
         this.jokerPhysicsService.mount(count);
     }
 
