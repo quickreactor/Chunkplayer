@@ -423,11 +423,7 @@ option {
 }
 
 #joker-tilt-control {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    z-index: 2100;
-    transform: translateX(-50%);
+    flex: 0 0 44px;
     opacity: 1;
     transition: opacity 400ms ease, background 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }

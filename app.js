@@ -282,7 +282,7 @@ class ChunkPlayerApp {
      */
     setupEventListeners() {
         // Feedback UI must remain visible across the pre-roll and player views.
-        // The admin section deliberately stays in its original in-page position.
+        // The controls move between in-page slots for the roll and player views.
         [
             this.domService.elements.toast,
             this.domService.elements.confirmDialog
@@ -971,6 +971,7 @@ class ChunkPlayerApp {
      * Handle first visit of the day - route based on coin-flip mode
      */
     async handleFirstVisit() {
+        this.showAdminSection(true);
         if (CONFIG.movieData.isCoinFlip) {
             await this.handleCoinFlipFirstVisit();
         } else {
@@ -1209,9 +1210,19 @@ class ChunkPlayerApp {
     }
 
     /**
-     * Show admin section (call when entering after-roll state)
+     * Show the shared controls beneath the posters or in the player container.
      */
-    showAdminSection() {
+    showAdminSection(isPreroll = false) {
+        if (!isPreroll) {
+            this.domService.elements.jokerTiltControl.hidden = true;
+            this.domService.elements.jokerTiltControl.disabled = true;
+        }
+        const parent = isPreroll
+            ? document.getElementById('preroll-controls')
+            : this.domService.elements.container;
+        if (this.domService.elements.adminSection.parentElement !== parent) {
+            parent.appendChild(this.domService.elements.adminSection);
+        }
         this.domService.elements.adminSection.classList.remove('hidden');
 
         // If user has stored clearance, skip login

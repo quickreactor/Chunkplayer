@@ -22,13 +22,43 @@ test('admin panel helper synchronizes visibility, accessibility, and picker clea
     assert.match(app, /panel\.classList\.toggle\('hidden', !isOpen\)/);
     assert.match(app, /toggle\.setAttribute\('aria-expanded', String\(isOpen\)\)/);
     assert.match(app, /this\.logoBgPickr\?\.hide\?\.\(\)/);
-    assert.match(index, /app\.js\?v=admin-layout-restore-20260825/);
+    assert.match(index, /app\.js\?v=roll-screen-controls-20260831/);
 });
 
-test('admin controls remain in their original in-page section', () => {
+test('admin controls use in-page slots without becoming a floating dock', () => {
     const showPosterJokersMethod = app.match(/showPosterJokers\([^)]*\)\s*\{[\s\S]*?\n    \}/)?.[0] || '';
     assert.doesNotMatch(app, /this\.domService\.elements\.adminSection,[\s\S]*?document\.body\.appendChild\(element\)/);
     assert.doesNotMatch(showPosterJokersMethod, /this\.showAdminSection\(\)/);
     assert.match(showPosterJokersMethod, /this\.jokerPhysicsService\.mount\(count\)/);
     assert.match(index, /class="container hidden"[\s\S]*?id="admin-section"[\s\S]*?id="admin-toggle-btn"[\s\S]*?archive-map-link/);
+});
+
+test('controls move from the roll screen to the player with tilt hidden and disabled', () => {
+    const vm = require('node:vm');
+    const method = app.match(/    showAdminSection\([^)]*\)\s*\{[\s\S]*?\n    \}/)[0];
+    const makeSlot = () => ({ appendChild(element) { element.parentElement = this; } });
+    const prerollSlot = makeSlot();
+    const playerSlot = makeSlot();
+    const hidden = new Set(['hidden']);
+    const elements = {
+        container: playerSlot,
+        adminSection: { parentElement: playerSlot, classList: { remove(name) { hidden.delete(name); } } },
+        jokerTiltControl: { hidden: false, disabled: false }
+    };
+    const controls = vm.runInNewContext(`({ ${method} })`, {
+        document: { getElementById(id) { assert.equal(id, 'preroll-controls'); return prerollSlot; } }
+    });
+    controls.domService = { elements };
+    controls.adminService = { getClearance: () => 0 };
+
+    controls.showAdminSection(true);
+    assert.equal(elements.adminSection.parentElement, prerollSlot);
+    assert.equal(hidden.has('hidden'), false);
+    assert.equal(elements.jokerTiltControl.hidden, false);
+
+    controls.showAdminSection();
+    assert.equal(elements.adminSection.parentElement, playerSlot);
+    assert.equal(hidden.has('hidden'), false);
+    assert.equal(elements.jokerTiltControl.hidden, true);
+    assert.equal(elements.jokerTiltControl.disabled, true);
 });
