@@ -243,9 +243,9 @@ class AdminService {
             const result = await this.apiService.uploadPoster(file, movieName);
 
             if (result.success) {
-                statusEl.textContent = 'Poster updated!';
+                statusEl.textContent = 'Poster saved! It may take a minute or more to reach everyone.';
                 statusEl.className = 'upload-status success';
-                this.showToast('Poster uploaded successfully!', 'success');
+                this.showToast('Poster saved! Updates may take a minute or more to reach everyone.', 'success');
 
                 // 6. Reload page to show new poster
                 setTimeout(() => location.reload(), 1500);
