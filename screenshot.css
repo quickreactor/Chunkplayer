@@ -1,0 +1,79 @@
+/* MediaBunny still capture: capture first, then reveal delivery actions. */
+
+.screenshot-capture-control,
+.screenshot-delivery-control {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.screenshot-capture-control svg,
+.screenshot-delivery-control svg {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+}
+
+.screenshot-capture-control[aria-busy='true'] svg {
+    animation: screenshot-focus-pulse 850ms ease-in-out infinite alternate;
+}
+
+.screenshot-delivery-control {
+    color: #fff !important;
+}
+
+.screenshot-delivery-control[hidden] {
+    display: none !important;
+}
+
+.screenshot-delivery-control::before {
+    position: absolute;
+    inset: 5px;
+    border: 1px solid color-mix(in srgb, #6fa6d8 78%, white);
+    border-radius: 5px;
+    background: color-mix(in srgb, #4f8cc9 48%, transparent);
+    box-shadow: 0 0 13px color-mix(in srgb, #4f8cc9 62%, transparent);
+    content: '';
+}
+
+.screenshot-delivery-control:hover::before,
+.screenshot-delivery-control:focus-visible::before {
+    background: color-mix(in srgb, #4f8cc9 72%, white);
+}
+
+.screenshot-delivery-control:disabled {
+    color: rgba(255, 255, 255, 0.62) !important;
+    cursor: not-allowed;
+}
+
+.screenshot-delivery-control:disabled::before {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+.screenshot-delivery-control--awaken::before {
+    animation: screenshot-delivery-awaken 850ms ease-out both;
+}
+
+@keyframes screenshot-focus-pulse {
+    from { opacity: 0.45; transform: scale(0.88); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes screenshot-delivery-awaken {
+    0% { transform: scale(0.78); box-shadow: 0 0 0 rgba(79, 140, 201, 0); }
+    45% { transform: scale(1.06); box-shadow: 0 0 20px rgba(79, 140, 201, 0.92); }
+    100% { transform: scale(1); box-shadow: 0 0 13px rgba(79, 140, 201, 0.62); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .screenshot-capture-control[aria-busy='true'] svg,
+    .screenshot-delivery-control--awaken::before {
+        animation: none;
+    }
+}
