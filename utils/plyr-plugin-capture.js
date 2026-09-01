@@ -119,7 +119,23 @@
                 return await ScreenshotService.captureFrame(sourceUrl, timestamp);
             } catch (error) {
                 console.info('[Capture] MediaBunny capture unavailable; using displayed frame.', error);
-                return ScreenshotService.captureDisplayedFrame(this.media, document);
+                try {
+                    const webglFallback = await ScreenshotService.captureDisplayedFrameWebGL(
+                        this.media,
+                        sourceUrl,
+                        timestamp,
+                        document
+                    );
+                    return webglFallback;
+                } catch (webglError) {
+                    console.info('[Capture] WebGL capture unavailable; using 2D displayed frame.', webglError);
+                    try {
+                        const fallback = await ScreenshotService.captureDisplayedFrame(this.media, document);
+                        return fallback;
+                    } catch (fallbackError) {
+                        throw fallbackError;
+                    }
+                }
             }
         }
 

@@ -186,6 +186,7 @@ test('capture starts clipboard delivery with the pending MediaBunny PNG promise'
     assert.match(plugin, /new ClipboardItem\(\{ 'image\/png': blobPromise \}\)/);
     assert.match(plugin, /navigator\.clipboard\.write\(\[item\]\)/);
     assert.match(plugin, /ScreenshotService\.captureFrame\(sourceUrl, timestamp\)/);
+    assert.match(plugin, /ScreenshotService\.captureDisplayedFrameWebGL/);
     assert.match(plugin, /ScreenshotService\.captureDisplayedFrame/);
 });
 
