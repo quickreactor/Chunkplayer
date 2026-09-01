@@ -3,7 +3,7 @@
 // ====================
 
 class ScreenshotService {
-    static async captureFrame(sourceUrl, timestamp) {
+    static async captureFrame(sourceUrl, timestamp, scope = globalThis) {
         if (!sourceUrl) throw new Error('There is no video source to capture.');
         if (!globalThis.ClipExportService) throw new Error('The media toolkit is unavailable.');
 
@@ -23,7 +23,15 @@ class ScreenshotService {
                 throw new Error('This video cannot be decoded for a screenshot.');
             }
 
-            const sink = new library.CanvasSink(track, { alpha: false });
+            const userAgent = scope.navigator?.userAgent || '';
+            const isFirefoxAndroid = /Android/i.test(userAgent) && /Firefox/i.test(userAgent);
+            const sinkOptions = { alpha: false };
+            if (isFirefoxAndroid) {
+                // Firefox Android can expose hardware-decoded H.264/VP9 frames
+                // as black pixels when they are copied to a canvas.
+                sinkOptions.decoderOptions = { hardwareAcceleration: 'prefer-software' };
+            }
+            const sink = new library.CanvasSink(track, sinkOptions);
             const firstTimestamp = await track.getFirstTimestamp();
             const requestedTimestamp = Number.isFinite(timestamp)
                 ? Math.max(firstTimestamp, timestamp)

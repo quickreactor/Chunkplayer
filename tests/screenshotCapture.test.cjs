@@ -106,6 +106,79 @@ test('capture service clamps requests before the track first timestamp', async (
     }
 });
 
+test('Firefox Android requests software decoding to avoid black canvas frames', async () => {
+    let sinkOptions = null;
+    class FakeInput {
+        async getPrimaryVideoTrack() {
+            return { canDecode: async () => true, getFirstTimestamp: async () => 0 };
+        }
+        dispose() {}
+    }
+    globalThis.ClipExportService = {
+        loadLibrary: async () => ({
+            ALL_FORMATS: [],
+            Input: FakeInput,
+            UrlSource: class {},
+            CanvasSink: class {
+                constructor(_track, options) { sinkOptions = options; }
+                async getCanvas(timestamp) {
+                    return {
+                        timestamp,
+                        canvas: { width: 1, height: 1, convertToBlob: async () => new Blob(['x'], { type: 'image/png' }) }
+                    };
+                }
+            }
+        })
+    };
+
+    try {
+        await ScreenshotService.captureFrame('movie.mp4', 1, {
+            navigator: { userAgent: 'Mozilla/5.0 (Android 15; Mobile; rv:153.0) Gecko/153.0 Firefox/153.0' }
+        });
+        assert.deepEqual(sinkOptions, {
+            alpha: false,
+            decoderOptions: { hardwareAcceleration: 'prefer-software' }
+        });
+    } finally {
+        delete globalThis.ClipExportService;
+    }
+});
+
+test('other browsers retain the default decoder preference', async () => {
+    let sinkOptions = null;
+    class FakeInput {
+        async getPrimaryVideoTrack() {
+            return { canDecode: async () => true, getFirstTimestamp: async () => 0 };
+        }
+        dispose() {}
+    }
+    globalThis.ClipExportService = {
+        loadLibrary: async () => ({
+            ALL_FORMATS: [],
+            Input: FakeInput,
+            UrlSource: class {},
+            CanvasSink: class {
+                constructor(_track, options) { sinkOptions = options; }
+                async getCanvas(timestamp) {
+                    return {
+                        timestamp,
+                        canvas: { width: 1, height: 1, convertToBlob: async () => new Blob(['x'], { type: 'image/png' }) }
+                    };
+                }
+            }
+        })
+    };
+
+    try {
+        await ScreenshotService.captureFrame('movie.mp4', 1, {
+            navigator: { userAgent: 'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36' }
+        });
+        assert.deepEqual(sinkOptions, { alpha: false });
+    } finally {
+        delete globalThis.ClipExportService;
+    }
+});
+
 test('capture starts clipboard delivery with the pending MediaBunny PNG promise', () => {
     const captureMethod = plugin.match(/async capture\(\)\s*\{[\s\S]*?\n        \}/)?.[0] || '';
     assert.match(captureMethod, /const capturePromise = this\.captureWithFallback\(sourceUrl, timestamp\)/);
