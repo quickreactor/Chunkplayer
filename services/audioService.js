@@ -80,11 +80,18 @@ class AudioService {
      */
     showSonic() {
         const sonic = document.querySelector("#sonic");
+        if (!sonic) return;
+
+        // Restart cleanly when the effect is triggered repeatedly from Debug.
+        sonic.classList.remove("animate");
+        void sonic.offsetWidth;
         sonic.style.display = "block";
         sonic.classList.add("animate");
-        setTimeout(() => {
+
+        sonic.addEventListener("animationend", () => {
             sonic.style.display = "none";
-        }, 6000);
+            sonic.classList.remove("animate");
+        }, { once: true });
     }
 
     /**

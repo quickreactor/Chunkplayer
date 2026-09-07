@@ -1470,6 +1470,22 @@ window.Debug = {
     },
 
     /**
+     * Trigger the roll-20 Riker fly-by without running the dice or reward flow.
+     * @example Debug.testRiker()
+     */
+    testRiker() {
+        const audioService = window.chunkPlayerApp?.audioService;
+        if (!audioService) {
+            console.error('%c[Debug] App not initialized', 'color: #ff0000; font-weight: bold');
+            return false;
+        }
+
+        console.log('%c[Debug] Triggering Riker fly-by...', 'color: #00ff00; font-weight: bold');
+        audioService.showSonic();
+        return true;
+    },
+
+    /**
      * Drop the currently mounted Joker pile through the bottom of the poster.
      * This only tests the visual physics and does not change game or API state.
      * @example Debug.dropJokers()
