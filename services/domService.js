@@ -166,6 +166,13 @@ class DOMService {
             controls.splice(5, 0, "clip-export");
         }
 
+        // A non-looping GIF can remain on its final frame when the browser
+        // reuses the decoded image after a reload. Give the poster a unique
+        // URL for this page load so its animation reliably starts again.
+        const posterUrl = new URL(this.elements.videoPlayer.dataset.poster, window.location.href);
+        posterUrl.searchParams.set('play', String(Date.now()));
+        this.elements.videoPlayer.dataset.poster = posterUrl.href;
+
         this.player = new Plyr("#videoPlayer", {
             // The whole video surface is handled below so mouse and touch input
             // behave consistently instead of requiring the small play control.
