@@ -530,7 +530,8 @@ window.CHUNKPLAYER_VERIFIED_CONNECTIONS = [
     "type": "person",
     "movies": [
       "maximum-overdrive",
-      "the-dead-zone"
+      "the-dead-zone",
+      "the-running-man"
     ],
     "roleByMovie": {
       "maximum-overdrive": [
@@ -540,6 +541,9 @@ window.CHUNKPLAYER_VERIFIED_CONNECTIONS = [
       ],
       "the-dead-zone": [
         "Novel"
+      ],
+      "the-running-man": [
+        "Novel — as Richard Bachman"
       ]
     },
     "tmdbId": 3027,

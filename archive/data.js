@@ -1,6 +1,7 @@
-/* Canonical, browser-local research data. No fetch is used so the map works from file://. */
+/* Canonical local research data. Worker history may augment dates when served over HTTP. */
 window.CHUNKPLAYER_ARCHIVE = {
-  generated: "2026-08-10",
+  generated: "2026-09-07",
+  movieStartHistoryUrl: "https://chunkplayerneo.quickreactor.workers.dev/movie-start-history",
   chooserByMovie: {
     "unfrosted": "barnaby",
     "madame-web": "tom",
@@ -37,7 +38,9 @@ window.CHUNKPLAYER_ARCHIVE = {
     "the-dead-zone": "tom",
     "the-napa-boys": "barnaby",
     "cherry-2000": "robert",
-    "from-beyond": "tom"
+    "from-beyond": "tom",
+    "mockbuster": "barnaby",
+    "the-running-man": "robert"
   },
   timelineEvents: [
     {
@@ -484,6 +487,33 @@ window.CHUNKPLAYER_ARCHIVE = {
       sources: sourceSet("https://www.themoviedb.org/movie/14510-from-beyond", "https://www.imdb.com/title/tt0091083/", "https://en.wikipedia.org/wiki/From_Beyond_(film)")
     },
     {
+      id: "mockbuster", workerName: "mock", title: "Mockbuster", alternateTitles: [], type: "film", releaseYear: 2025,
+      watchedDate: "2026-08-10", dateConfidence: "confirmed", category: "normal", chunkCount: null,
+      runtime: 90, genres: ["Documentary", "Comedy"], poster: "assets/posters/mockbuster.jpg",
+      directors: ["Anthony Frith"], producers: ["David Elliot-Jones", "Sandy Cameron", "Naomi Ball"], writers: ["Anthony Frith", "Sandy Cameron"],
+      cast: ["Anthony Frith", "Eric Roberts", "Michelle Bauer", "Danny Philippou", "Michael Philippou"],
+      synopsis: "Filmmaker Anthony Frith shadows The Asylum as it attempts to make the dinosaur adventure The Land That Time Forgot in only six days.",
+      trivia: ["The documentary was filmed alongside the feature it chronicles during the same six-day production.", "It premiered at the 2025 Adelaide Film Festival.", "It won the festival's Feature Documentary Audience Award."],
+      sources: [
+        { label: "Sydney Film Festival", url: "https://www.sff.org.au/program/event/mockbuster/" },
+        { label: "IMDb", url: "https://www.imdb.com/title/tt32377397/" }
+      ]
+    },
+    {
+      id: "the-running-man", workerName: "running", title: "The Running Man", alternateTitles: [], type: "film", releaseYear: 1987,
+      watchedDate: "2026-08-29", dateConfidence: "confirmed", category: "normal", chunkCount: null,
+      runtime: 101, genres: ["Action", "Science fiction", "Thriller"], poster: "assets/posters/the-running-man.jpg",
+      directors: ["Paul Michael Glaser"], producers: ["George Linder", "Tim Zinnemann"], writers: ["Steven E. de Souza", "Stephen King (as Richard Bachman)"],
+      cast: ["Arnold Schwarzenegger", "María Conchita Alonso", "Richard Dawson", "Yaphet Kotto", "Jim Brown"],
+      synopsis: "A falsely convicted police pilot is forced into a deadly television game show where state-sponsored killers hunt contestants for ratings.",
+      trivia: ["Richard Dawson, the longtime host of Family Feud, plays the murderous game show's host.", "Paul Michael Glaser replaced Andrew Davis as director shortly after production began.", "The film is loosely based on Stephen King's novel published under his Richard Bachman pen name."],
+      sources: [
+        { label: "Paramount", url: "https://www.paramountpictures.com/movies/the-running-man" },
+        { label: "TMDB", url: "https://www.themoviedb.org/movie/865-the-running-man" },
+        { label: "AFI Catalog", url: "https://catalog.afi.com/Film/57805-THE-RUNNING-MAN" }
+      ]
+    },
+    {
       id: "morbius", title: "Morbius", alternateTitles: [], type: "film", releaseYear: 2022,
       watchedDate: null, punishmentStartDate: "2024-05-07", dateConfidence: "confirmed", category: "punishment", chunkCount: null,
       runtime: 104, genres: ["Superhero", "Horror"], poster: "assets/posters/morbius.jpg",
@@ -535,8 +565,8 @@ window.CHUNKPLAYER_ARCHIVE = {
     },
     {
       id: "theme-dinosaurs", label: "Dinosaurs", type: "theme",
-      movies: ["tammy-and-the-t-rex", "clifford"],
-      roleByMovie: { "tammy-and-the-t-rex": ["Robotic T-Rex body"], "clifford": ["Dinosaur World obsession"] }
+      movies: ["tammy-and-the-t-rex", "clifford", "mockbuster"],
+      roleByMovie: { "tammy-and-the-t-rex": ["Robotic T-Rex body"], "clifford": ["Dinosaur World obsession"], "mockbuster": ["Documents a six-day dinosaur-film shoot"] }
     },
     {
       id: "theme-killer-animals", label: "Killer animals", type: "theme",

@@ -107,22 +107,7 @@
     });
   svg.call(zoom).on("dblclick.zoom", null);
 
-  document.getElementById("movie-count").textContent = movies.length;
-  const dated = movies.filter(movie => movie.watchedDate).map(movie => movie.watchedDate).sort();
-  const archiveAge = dated.length ? formatCompactCalendarDuration(dated[0], new Date()) : "—";
-  document.getElementById("archive-age").textContent = archiveAge;
-  if (dated.length) {
-    const firstChunkDate = dateFormatter.format(new Date(`${dated[0]}T12:00:00`));
-    document.getElementById("archive-start").textContent = firstChunkDate;
-    document.getElementById("archive-age-stat").title = `Elapsed time from ${firstChunkDate} to today`;
-    document.getElementById("archive-age-stat").setAttribute("aria-label", `Established ${firstChunkDate}; ${archiveAge} since the first chunk`);
-  }
-  const totalRuntime = movies.reduce((sum, movie) => sum + (Number.isFinite(movie.runtime) ? movie.runtime : 0), 0);
-  const totalChunks = movies.reduce((sum, movie) => sum + (movie.chunkCount || 0), 0);
-  document.getElementById("runtime-total").textContent = formatRuntime(totalRuntime);
-  document.getElementById("chunk-total").textContent = totalChunks.toLocaleString("en-NZ");
-  document.getElementById("runtime-stat").setAttribute("aria-label", `${totalRuntime.toLocaleString("en-NZ")} minutes total runtime`);
-  document.getElementById("chunk-stat").setAttribute("aria-label", `${totalChunks.toLocaleString("en-NZ")} total chunks`);
+  updateArchiveStats();
 
   function chunkCountForRuntime(runtime) {
     return Number.isFinite(runtime) ? Math.floor(runtime / 5) : null;
@@ -168,6 +153,81 @@
 
   function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
   function dayNumber(date) { return Math.round(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000); }
+
+  function updateArchiveStats() {
+    document.getElementById("movie-count").textContent = movies.length;
+    const dated = movies.filter(movie => movie.watchedDate).map(movie => movie.watchedDate).sort();
+    const archiveAge = dated.length ? formatCompactCalendarDuration(dated[0], new Date()) : "—";
+    document.getElementById("archive-age").textContent = archiveAge;
+    if (dated.length) {
+      const firstChunkDate = dateFormatter.format(new Date(`${dated[0]}T12:00:00`));
+      document.getElementById("archive-start").textContent = firstChunkDate;
+      document.getElementById("archive-age-stat").title = `Elapsed time from ${firstChunkDate} to today`;
+      document.getElementById("archive-age-stat").setAttribute("aria-label", `Established ${firstChunkDate}; ${archiveAge} since the first chunk`);
+    }
+    const totalRuntime = movies.reduce((sum, movie) => sum + (Number.isFinite(movie.runtime) ? movie.runtime : 0), 0);
+    const totalChunks = movies.reduce((sum, movie) => sum + (movie.chunkCount || 0), 0);
+    document.getElementById("runtime-total").textContent = formatRuntime(totalRuntime);
+    document.getElementById("chunk-total").textContent = totalChunks.toLocaleString("en-NZ");
+    document.getElementById("runtime-stat").setAttribute("aria-label", `${totalRuntime.toLocaleString("en-NZ")} minutes total runtime`);
+    document.getElementById("chunk-stat").setAttribute("aria-label", `${totalChunks.toLocaleString("en-NZ")} total chunks`);
+  }
+
+  function isValidHistoryDate(value) {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  }
+
+  function historyEndpoint() {
+    if (window.location.protocol === "file:") return null;
+    if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+      return "http://localhost:8787/movie-start-history";
+    }
+    return archive.movieStartHistoryUrl || null;
+  }
+
+  async function loadMovieStartHistory() {
+    const endpoint = historyEndpoint();
+    if (!endpoint) return;
+
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (payload?.schemaVersion !== 1 || !Array.isArray(payload.records)) return;
+
+      let changed = false;
+      payload.records.forEach(record => {
+        if (!record || typeof record.archiveId !== "string" || !isValidHistoryDate(record.startedOn)) return;
+        if (!["normal", "punishment"].includes(record.category) || !["confirmed", "estimated"].includes(record.dateConfidence)) return;
+        const movie = movieById.get(record.archiveId);
+        if (!movie || movie.category !== record.category) return;
+        const dateKey = record.category === "punishment" ? "punishmentStartDate" : "watchedDate";
+        if (movie[dateKey] === record.startedOn && movie.dateConfidence === record.dateConfidence) return;
+        movie[dateKey] = record.startedOn;
+        movie.dateConfidence = record.dateConfidence;
+        const visibleNode = currentNodes.find(node => node.kind === "movie" && node.id === movie.id);
+        if (visibleNode) {
+          visibleNode[dateKey] = record.startedOn;
+          visibleNode.dateConfidence = record.dateConfidence;
+        }
+        changed = true;
+      });
+
+      if (!changed) return;
+      updateArchiveStats();
+      if (layout === "timeline") {
+        closeTimelineEvent();
+        draw();
+        applySearchAndSelection();
+        status.textContent = "Watch-order dates updated from the Chunkplayer archive.";
+      }
+      if (!panel.hidden && currentDetail?.kind === "movie") showMovie(currentDetail.id);
+    } catch {
+      /* The browser-local dates are the deliberate offline fallback. */
+    }
+  }
 
   function setControlsExpanded(expanded, announce = false) {
     controlsPanel.hidden = !expanded;
@@ -1292,4 +1352,5 @@
   new ResizeObserver(resize).observe(mapElement);
   resize();
   rebuild();
+  void loadMovieStartHistory();
 })();
