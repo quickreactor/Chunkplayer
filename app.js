@@ -31,6 +31,7 @@ class ChunkPlayerApp {
         this.chunkArray = [];
         this.titleArray = [];
         this.selectedPunishmentPosterFile = null;
+        this.finishActiveNormalMoviePreview = null;
 
         // Use cases (initialized later)
         this.videoPlaybackUseCase = null;
@@ -569,6 +570,26 @@ class ChunkPlayerApp {
             } finally {
                 button.disabled = false;
             }
+        });
+
+        this.domService.elements.finishActiveNormalMovieBtn?.addEventListener("click", () => {
+            void this.openFinishActiveNormalMovieDialog();
+        });
+
+        this.domService.elements.finishMovieConfirmInput?.addEventListener("input", () => {
+            const preview = this.finishActiveNormalMoviePreview;
+            const input = this.domService.elements.finishMovieConfirmInput;
+            const confirmButton = this.domService.elements.finishMovieConfirmBtn;
+            confirmButton.disabled = !preview || input.value !== preview.activeMovie.name;
+            this.domService.elements.finishMovieConfirmError.textContent = '';
+        });
+
+        this.domService.elements.finishMovieCancelBtn?.addEventListener("click", () => {
+            this.closeFinishActiveNormalMovieDialog();
+        });
+
+        this.domService.elements.finishMovieConfirmBtn?.addEventListener("click", () => {
+            void this.confirmFinishActiveNormalMovie();
         });
 
         // Test Flip Counter button
@@ -1165,6 +1186,97 @@ class ChunkPlayerApp {
     async morb(isFirst = false) {
         const punishmentMovie = CONFIG.movieData.punishmentMovie;
         await this.videoPlaybackUseCase.playPunishmentChunk(punishmentMovie, isFirst);
+    }
+
+    async openFinishActiveNormalMovieDialog() {
+        const button = this.domService.elements.finishActiveNormalMovieBtn;
+        const status = this.domService.elements.finishActiveNormalMovieStatus;
+        button.disabled = true;
+        status.textContent = 'Checking the normal movie queue...';
+        status.className = 'upload-status';
+
+        try {
+            const preview = await this.apiService.getFinishActiveNormalMoviePreview();
+            if (!preview.canFinish) {
+                status.textContent = preview.reason;
+                status.className = 'upload-status error';
+                this.adminService.showToast(preview.reason, 'error');
+                return;
+            }
+
+            this.finishActiveNormalMoviePreview = preview;
+            this.domService.elements.finishMovieSummary.textContent =
+                `Today remains ${preview.todayMovie.name}, chunk ${preview.todayMovie.pointer}.`;
+            this.domService.elements.finishMovieNextSummary.textContent =
+                `${preview.activeMovie.name} will leave the queue. ${preview.nextMovie.name} will begin at chunk 1 on the next normal day.`;
+            this.domService.elements.finishMovieConfirmLabel.textContent =
+                `Type “${preview.activeMovie.name}” to confirm:`;
+            this.domService.elements.finishMovieConfirmInput.value = '';
+            this.domService.elements.finishMovieConfirmError.textContent = '';
+            this.domService.elements.finishMovieConfirmBtn.disabled = true;
+            this.domService.elements.finishMovieDialog.classList.remove('hidden');
+            this.domService.elements.finishMovieConfirmInput.focus({ preventScroll: true });
+            status.textContent = '';
+            status.className = 'upload-status';
+        } catch (error) {
+            console.error('Failed to inspect the normal movie queue:', error);
+            status.textContent = error.message || 'Failed to inspect the normal movie queue';
+            status.className = 'upload-status error';
+            this.adminService.showToast(status.textContent, 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    closeFinishActiveNormalMovieDialog() {
+        this.domService.elements.finishMovieDialog.classList.add('hidden');
+        this.domService.elements.finishMovieConfirmInput.value = '';
+        this.domService.elements.finishMovieConfirmError.textContent = '';
+        this.domService.elements.finishMovieConfirmBtn.disabled = true;
+        this.domService.elements.finishMovieCancelBtn.disabled = false;
+        this.finishActiveNormalMoviePreview = null;
+    }
+
+    async confirmFinishActiveNormalMovie() {
+        const preview = this.finishActiveNormalMoviePreview;
+        const confirmationName = this.domService.elements.finishMovieConfirmInput.value;
+        if (!preview || confirmationName !== preview.activeMovie.name) return;
+
+        const actionButton = this.domService.elements.finishActiveNormalMovieBtn;
+        const confirmButton = this.domService.elements.finishMovieConfirmBtn;
+        const cancelButton = this.domService.elements.finishMovieCancelBtn;
+        const errorElement = this.domService.elements.finishMovieConfirmError;
+        const status = this.domService.elements.finishActiveNormalMovieStatus;
+        actionButton.disabled = true;
+        confirmButton.disabled = true;
+        cancelButton.disabled = true;
+        errorElement.textContent = '';
+
+        let succeeded = false;
+        try {
+            const result = await this.apiService.finishActiveNormalMovie(preview, confirmationName);
+            succeeded = true;
+            this.closeFinishActiveNormalMovieDialog();
+            actionButton.disabled = true;
+            status.textContent = `${result.removedMovie.name} finished. ${result.nextMovie.name} will begin at chunk 1 on the next normal day.`;
+            status.className = 'upload-status success';
+            this.adminService.showToast(
+                'Current movie finished. Next movie will begin at chunk 1 on the next normal day. Today’s chunk is unchanged.',
+                'success'
+            );
+        } catch (error) {
+            console.error('Failed to finish the active normal movie:', error);
+            errorElement.textContent = error.message || 'Failed to finish the active normal movie';
+            status.textContent = errorElement.textContent;
+            status.className = 'upload-status error';
+            this.adminService.showToast(errorElement.textContent, 'error');
+        } finally {
+            cancelButton.disabled = false;
+            if (!succeeded) {
+                actionButton.disabled = false;
+                confirmButton.disabled = confirmationName !== preview.activeMovie.name;
+            }
+        }
     }
 
     /**

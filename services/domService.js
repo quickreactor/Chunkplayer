@@ -89,6 +89,18 @@ class DOMService {
             adminTestFlipInput: document.getElementById("test-flip-input"),
             adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
             adminRefreshDailyDataBtn: document.getElementById("refresh-daily-data-btn"),
+            finishActiveNormalMovieBtn: document.getElementById("finish-active-normal-movie-btn"),
+            finishActiveNormalMovieStatus: document.getElementById("finish-active-normal-movie-status"),
+
+            // Finish active normal movie confirmation
+            finishMovieDialog: document.getElementById("finish-movie-dialog"),
+            finishMovieSummary: document.getElementById("finish-movie-summary"),
+            finishMovieNextSummary: document.getElementById("finish-movie-next-summary"),
+            finishMovieConfirmLabel: document.getElementById("finish-movie-confirm-label"),
+            finishMovieConfirmInput: document.getElementById("finish-movie-confirm-input"),
+            finishMovieConfirmError: document.getElementById("finish-movie-confirm-error"),
+            finishMovieConfirmBtn: document.getElementById("finish-movie-confirm-btn"),
+            finishMovieCancelBtn: document.getElementById("finish-movie-cancel-btn"),
 
             // Test date controls
             testDateDay: document.getElementById("test-date-day"),

@@ -163,6 +163,33 @@ class ApiService {
         return result;
     }
 
+    async getFinishActiveNormalMoviePreview() {
+        const response = await this.adminFetch('/admin/finish-active-normal-movie');
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to inspect the normal movie queue');
+        }
+        return result;
+    }
+
+    async finishActiveNormalMovie(preview, confirmationName) {
+        const response = await this.adminFetch('/admin/finish-active-normal-movie', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                confirmationName,
+                expectedCurrentName: preview.activeMovie.name,
+                expectedCurrentPointer: preview.activeMovie.pointer,
+                expectedNextName: preview.nextMovie.name
+            })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to finish the active normal movie');
+        }
+        return result;
+    }
+
     async getForcedRoll() {
         const response = await this.adminFetch('/admin/forced-roll');
         return await response.json();

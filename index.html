@@ -7,7 +7,7 @@
     <link href="images/movie-favicon.png" rel="icon" type="image/x-icon" id="dynamic-favicon">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link href="utils/flip/flip.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=roll-screen-controls-20260831">
+    <link rel="stylesheet" href="style.css?v=finish-active-movie-20260922">
     <link rel="stylesheet" href="clip-export.css?v=mobile-control-clearance-20260825">
     <link rel="stylesheet" href="screenshot.css?v=mediabunny-capture-20260829">
 
@@ -34,13 +34,13 @@
     <script src="repositories/visitRepository.js"></script>
 
     <!-- Services -->
-    <script src="services/apiService.js?v=refresh-daily-data-20260922"></script>
+    <script src="services/apiService.js?v=finish-active-movie-20260922"></script>
     <script src="services/audioService.js?v=joker-impact-audio-volume-20260809"></script>
     <script src="services/dateService.js"></script>
     <script src="services/clipExportService.js?v=premiere-timecode-20260825"></script>
     <script src="services/screenshotService.js?v=firefox-detached-webgl-capture-20260901"></script>
     <script src="utils/plyr-plugin-clip-export.js?v=premiere-timecode-20260825"></script>
-    <script src="services/domService.js?v=refresh-daily-data-20260922"></script>
+    <script src="services/domService.js?v=finish-active-movie-20260922"></script>
     <script src="services/effectService.js"></script>
     <script src="services/posterService.js?v=poster-preload-20260818"></script>
     <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
@@ -72,7 +72,7 @@
 
 
     <!-- Main Application -->
-    <script src="app.js?v=refresh-daily-data-20260922" defer></script>
+    <script src="app.js?v=finish-active-movie-20260922" defer></script>
 
     <title>Movie Chunk Player</title>
 </head>
@@ -322,6 +322,14 @@
                     <button id="clear-last-visit-btn" class="admin-action-btn">Clear Last Visit</button>
                     <button id="refresh-daily-data-btn" class="admin-action-btn">Refresh Daily Data</button>
 
+                    <div class="admin-pointer-control finish-movie-control">
+                        <label>Normal Movie Queue</label>
+                        <button id="finish-active-normal-movie-btn" class="admin-action-btn danger" type="button">
+                            Finish current movie after today
+                        </button>
+                        <div id="finish-active-normal-movie-status" class="upload-status" aria-live="polite"></div>
+                    </div>
+
                     <hr class="admin-divider">
 
                     <div class="admin-pointer-control">
@@ -420,6 +428,23 @@
                 <div class="confirm-buttons">
                     <button id="confirm-yes" class="confirm-btn yes">Yes, I morbed</button>
                     <button id="confirm-no" class="confirm-btn no">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="finish-movie-dialog" class="confirm-dialog hidden" role="dialog" aria-modal="true"
+            aria-labelledby="finish-movie-dialog-title">
+            <div class="confirm-content finish-movie-confirm-content">
+                <h3 id="finish-movie-dialog-title">Finish current movie after today</h3>
+                <p id="finish-movie-summary"></p>
+                <p id="finish-movie-next-summary" class="confirm-secondary"></p>
+                <label for="finish-movie-confirm-input" id="finish-movie-confirm-label"></label>
+                <input id="finish-movie-confirm-input" class="finish-movie-confirm-input" type="text"
+                    autocomplete="off" spellcheck="false">
+                <div id="finish-movie-confirm-error" class="admin-error" aria-live="polite"></div>
+                <div class="confirm-buttons">
+                    <button id="finish-movie-confirm-btn" class="confirm-btn yes" type="button" disabled>Finish movie</button>
+                    <button id="finish-movie-cancel-btn" class="confirm-btn no" type="button">Cancel</button>
                 </div>
             </div>
         </div>

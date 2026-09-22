@@ -1230,6 +1230,60 @@ option {
     color: white;
 }
 
+.finish-movie-confirm-content {
+    width: min(420px, calc(100vw - 32px));
+    min-width: 0;
+    text-align: left;
+}
+
+.finish-movie-confirm-content h3 {
+    margin: 0 0 16px;
+    color: white;
+}
+
+.finish-movie-confirm-content p {
+    margin: 0 0 10px;
+}
+
+.finish-movie-confirm-content .confirm-secondary {
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 15px;
+}
+
+.finish-movie-confirm-content label {
+    display: block;
+    margin-bottom: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+.finish-movie-confirm-input {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 11px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 6px;
+    background: #0d0d0d;
+    color: white;
+    font: inherit;
+}
+
+.finish-movie-confirm-input:focus {
+    border-color: #ff6666;
+    outline: 2px solid rgba(255, 68, 68, 0.25);
+}
+
+.finish-movie-confirm-content .admin-error {
+    min-height: 20px;
+    margin-bottom: 10px;
+}
+
+.finish-movie-confirm-content .confirm-buttons {
+    margin-top: 4px;
+}
+
 .confirm-buttons {
     display: flex;
     gap: 10px;
@@ -1252,6 +1306,11 @@ option {
 
 .confirm-btn.yes:hover {
     background: #cc0000;
+}
+
+.confirm-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
 }
 
 .confirm-btn.no {
