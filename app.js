@@ -1589,7 +1589,7 @@ window.Debug = {
     },
 
     /**
-     * Refresh today's KV digest from app_state without rolling or moving pointers.
+     * Rebuild today's KV digest from app_state without rolling or modifying state.
      * Requires an active Level 2 admin session.
      * @returns {Promise<Object|null>} Refreshed daily data
      * @example await Debug.refreshDailyData()
