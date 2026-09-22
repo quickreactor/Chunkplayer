@@ -11,6 +11,7 @@ const domService = fs.readFileSync(path.join(projectRoot, 'services', 'domServic
 const adminService = fs.readFileSync(path.join(projectRoot, 'services', 'adminService.js'), 'utf8');
 const mainStyles = fs.readFileSync(path.join(projectRoot, 'style.css'), 'utf8');
 const index = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf8');
+const apiService = fs.readFileSync(path.join(projectRoot, 'services', 'apiService.js'), 'utf8');
 
 test('clip editor exposes a full overview plus separate In, Out, and CTI drag controls', () => {
     assert.match(plugin, /data-clip="overview"/);
@@ -101,6 +102,16 @@ test('mobile editor stays compact, bottom-mounted, and touch enabled', () => {
     assert.match(styles, /max-width:\s*760px/);
     assert.match(styles, /orientation:\s*landscape/);
     assert.doesNotMatch(styles, /left:\s*auto/);
+});
+
+test('completed normal-movie clips are archived silently without changing delivery actions', () => {
+    assert.match(plugin, /this\.queueCommunityClipUpload\(file, result\)/);
+    assert.match(plugin, /sourceChunkIndex = chunks\.findIndex/);
+    assert.match(plugin, /if \(!apiService\?\.uploadCommunityClip \|\| !normalMovie \|\| sourceChunkIndex < 0\) return/);
+    assert.match(plugin, /void apiService\.uploadCommunityClip\(file, metadata\)\.catch/);
+    assert.match(apiService, /async uploadCommunityClip\(file, metadata\)/);
+    assert.match(apiService, /\/community-clips/);
+    assert.doesNotMatch(plugin, /runId/i);
 });
 
 test('clip editor removes the fixed utility dock from its visual and pointer area', () => {

@@ -1,6 +1,6 @@
 /* Canonical local research data. Worker history may augment dates when served over HTTP. */
 window.CHUNKPLAYER_ARCHIVE = {
-  generated: "2026-09-07",
+  generated: "2026-09-23",
   movieStartHistoryUrl: "https://chunkplayerneo.quickreactor.workers.dev/movie-start-history",
   chooserByMovie: {
     "unfrosted": "barnaby",
@@ -545,6 +545,20 @@ window.CHUNKPLAYER_ARCHIVE = {
       trivia: ["The sequel incorporates musical performances and reinterpretations of existing songs.", "Joaquin Phoenix returned after winning the Academy Award for the first film.", "The title is a psychiatric term for a delusion shared by two people."],
       connections: [hub("zazie-beetz", "Zazie Beetz", "person")],
       sources: sourceSet("https://www.themoviedb.org/movie/889737-joker-folie-deux", "https://www.imdb.com/title/tt11315808/", "https://en.wikipedia.org/wiki/Joker:_Folie_%C3%A0_Deux")
+    },
+    {
+      id: "peter-five-eight", workerName: "peter", title: "Peter Five Eight", alternateTitles: ["Peter 5 Eight"], type: "film", releaseYear: 2024,
+      watchedDate: null, punishmentStartDate: "2026-09-23", dateConfidence: "estimated", category: "punishment", chunkCount: 20,
+      runtime: 100, genres: ["Thriller", "Comedy", "Crime"], poster: "assets/posters/peter-five-eight.jpg",
+      directors: ["Michael Zaiko Hall"], producers: ["Chavez Fred", "Michael Zaiko Hall", "Jet Jandreau", "John Lerchen"], writers: ["Michael Zaiko Hall"],
+      cast: ["Kevin Spacey", "Rebecca De Mornay", "Jet Jandreau", "Jake Weber", "Michael Emery"],
+      synopsis: "A charismatic man in black arrives in a small mountain town to confront a glamorous real-estate agent whose polished life conceals alcoholism and a dangerous secret.",
+      trivia: ["The title refers to 1 Peter 5:8, a Bible verse quoted at the beginning of the film.", "The production filmed in Dunsmuir, California.", "Michael Zaiko Hall wrote, directed, and produced the film."],
+      sources: [
+        { label: "Apple TV", url: "https://tv.apple.com/ca/movie/peter-five-eight/umc.cmc.5qmofpgxiqh95c7ysh7bka0ue" },
+        { label: "IMDb", url: "https://www.imdb.com/title/tt15005606/" },
+        { label: "Tubi", url: "https://tubitv.com/movies/100052599/peter-five-eight" }
+      ]
     }
   ],
   themes: [

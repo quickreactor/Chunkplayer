@@ -358,6 +358,30 @@ class ApiService {
             throw error;
         }
     }
+
+    /**
+     * Save a completed community clip for the current normal movie. This is a
+     * public, server-validated upload; it deliberately does not use an admin
+     * session so the clip maker works for every viewer.
+     * @param {File} file - Encoded MP4 from the clip maker
+     * @param {Object} metadata - Source movie and trim metadata
+     * @returns {Promise<Object>} Stored clip details
+     */
+    async uploadCommunityClip(file, metadata) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('metadata', JSON.stringify(metadata));
+
+        const response = await fetch(`${this.baseUrl}/community-clips`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'The community clip could not be saved.');
+        }
+        return result;
+    }
 }
 
 // Export for use in other modules

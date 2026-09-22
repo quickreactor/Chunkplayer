@@ -1069,6 +1069,7 @@
                     filename,
                     signature: this.getExportSignature()
                 };
+                this.queueCommunityClipUpload(file, result);
                 deliveryReady = true;
                 if (this.elements?.progressBar) this.elements.progressBar.style.width = '100%';
                 const shareCapability = ClipExportService.getFileShareCapability(file);
@@ -1341,6 +1342,50 @@
             const episodeTitle = document.querySelector('.ep-title')?.textContent?.trim();
             if (episodeTitle) return episodeTitle;
             return document.title.replace(/\s+Chunk Player$/i, '').trim() || 'chunkplayer-clip';
+        }
+
+        queueCommunityClipUpload(file, result) {
+            const normalMovie = CONFIG.movieData?.normalMovie;
+            const chunks = Array.isArray(normalMovie?.chunks) ? normalMovie.chunks : [];
+            const normalizeUrl = value => {
+                try {
+                    return new URL(value, window.location.href).href;
+                } catch {
+                    return '';
+                }
+            };
+            const sourceUrl = normalizeUrl(this.sourceUrl);
+            const sourceChunkIndex = chunks.findIndex(chunk => normalizeUrl(chunk) === sourceUrl);
+            const apiService = window.chunkPlayerApp?.apiService;
+
+            // Punishment/reward clips remain local. Only a source belonging to
+            // today's normal movie is eligible for the community reel.
+            if (!apiService?.uploadCommunityClip || !normalMovie || sourceChunkIndex < 0) return;
+
+            const archiveId = normalMovie.archiveId
+                || String(normalMovie.name || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '');
+            if (!archiveId) return;
+
+            const metadata = {
+                archiveId,
+                movieName: normalMovie.name || '',
+                movieTitle: normalMovie.archiveTitle || normalMovie.title || '',
+                sourceUrl: chunks[sourceChunkIndex],
+                sourceChunkIndex,
+                startTime: result.startTime,
+                endTime: result.endTime,
+                includeAudio: this.includeAudio,
+                createdAt: new Date().toISOString()
+            };
+
+            // Saving is intentionally silent and independent from Share and
+            // Download. A storage outage must never spoil the user's export.
+            void apiService.uploadCommunityClip(file, metadata).catch(error => {
+                console.warn('[Clip Export] Community archive upload failed:', error);
+            });
         }
 
         formatTime(seconds) {
