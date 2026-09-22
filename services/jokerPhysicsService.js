@@ -48,30 +48,10 @@ class JokerPhysicsService {
 
         this.tiltControl?.addEventListener('click', this.boundTiltControlClick);
 
-        this.imageSources = [
-            'images/jokers/jokerhammil.jpg',
-            'images/jokers/jokerhammil2.jpg',
-            'images/jokers/jokerheath.jpg',
-            'images/jokers/jokerheath2.jpg',
-            'images/jokers/jokerjack.jpg',
-            'images/jokers/jokerjack2.jpg',
-            'images/jokers/jokerleto.jpg',
-            'images/jokers/jokerleto2.jpg',
-            'images/jokers/jokermorag.jpg',
-            'images/jokers/jokermorag2.jpg',
-            'images/jokers/jokeromero.jpg',
-            'images/jokers/jokeromero2.jpg',
-            'images/jokers/jokerphoenix.jpg',
-            'images/jokers/jokerphoeni2x.jpg',
-            'images/jokers/jokertoon1.jpg',
-            'images/jokers/jokertoon2.jpg',
-            'images/jokers/jokerbonus1.jpeg',
-            'images/jokers/jokerbonus2.jpeg',
-            'images/jokers/jokerbonus3.jpeg',
-            'images/jokers/jokerbonus4.jpeg',
-            'images/jokers/jokerbonus5.jpeg',
-            'images/jokers/jokerbonus6.jpeg'
-        ];
+        this.imageSources = Array.from(
+            { length: 22 },
+            (_, index) => `images/kevins/kevin${String(index + 1).padStart(2, '0')}.jpg`
+        );
     }
 
     static normalizeAngle(angle) {

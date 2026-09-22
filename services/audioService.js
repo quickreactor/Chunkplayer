@@ -100,7 +100,8 @@ class AudioService {
     playMorbiusSound() {
         const audio = document.getElementById("morbius-sound");
         if (CONFIG.movieData && CONFIG.movieData.punishmentMovie) {
-            audio.src = CONFIG.movieData.punishmentMovie.sound;
+            const configuredSound = CONFIG.movieData.punishmentMovie.sound;
+            audio.src = configuredSound === 'audio/joker.mp3' ? 'audio/kevin.mp3' : configuredSound;
             audio.play();
         }
     }

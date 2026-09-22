@@ -920,7 +920,7 @@ class ChunkPlayerApp {
         if (!container) return;
         container.innerHTML = '';
 
-        const jokerImages = this.jokerPhysicsService.imageSources;
+        const kevinImages = this.jokerPhysicsService.imageSources;
 
         let intensity = 0;
         if (count >= 30) {
@@ -970,8 +970,8 @@ class ChunkPlayerApp {
             visual.className = 'joker-card-visual';
 
             const img = document.createElement('img');
-            img.src = jokerImages[Math.floor(Math.random() * jokerImages.length)];
-            img.alt = 'Joker';
+            img.src = kevinImages[Math.floor(Math.random() * kevinImages.length)];
+            img.alt = 'Kevin Spacey';
             const rotation = Math.random() * 360;
             visual.style.setProperty('--rotation', `${rotation}deg`);
             visual.style.animationDelay = `${i * 0.05}s`;
@@ -1261,7 +1261,7 @@ class ChunkPlayerApp {
             status.textContent = `${result.removedMovie.name} finished. ${result.nextMovie.name} will begin at chunk 1 on the next normal day.`;
             status.className = 'upload-status success';
             this.adminService.showToast(
-                'Current movie finished. Next movie will begin at chunk 1 on the next normal day. Today’s chunk is unchanged.',
+                `Movie finished — ${result.nextMovie.name} starts at chunk 1 next normal day`,
                 'success'
             );
         } catch (error) {

@@ -97,7 +97,7 @@
                 "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AOgyaNLxfjttIS2veJScoCY/joker26.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1"
             ],
             "title": "It's Jokerin' Time",
-            "sound": "audio/joker.mp3",
+            "sound": "audio/kevin.mp3",
             "poster": "images/joker.jpg",
             "favicon": "images/favicons/morb.png"
         }
@@ -251,7 +251,7 @@
             "https://www.dropbox.com/scl/fo/1vjspt7y2wbysp0b5qwy4/AOgyaNLxfjttIS2veJScoCY/joker26.mp4?rlkey=q70q84lbd413znh7tr24e3z52&raw=1"
         ],
         "title": "It's Jokerin' Time",
-        "sound": "audio/joker.mp3",
+        "sound": "audio/kevin.mp3",
         "posterUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/poster.jpg",
         "faviconUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/favicon.png"
     },

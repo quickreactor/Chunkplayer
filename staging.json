@@ -129,7 +129,7 @@
         "titles": [
             "It's Jokerin' Time"
         ],
-        "sound": "audio/joker.mp3",
+        "sound": "audio/kevin.mp3",
         "posterUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/poster.jpg",
         "faviconUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/favicon.png"
     },
@@ -299,7 +299,7 @@
             "titles": [
                 "It's Jokerin' Time"
             ],
-            "sound": "audio/joker.mp3",
+            "sound": "audio/kevin.mp3",
             "posterUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/poster.jpg",
             "faviconUrl": "https://chunkplayer.barnaby.tv/jokerchunks/other/favicon.png"
         }
