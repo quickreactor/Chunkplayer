@@ -22,7 +22,7 @@ test('admin panel helper synchronizes visibility, accessibility, and picker clea
     assert.match(app, /panel\.classList\.toggle\('hidden', !isOpen\)/);
     assert.match(app, /toggle\.setAttribute\('aria-expanded', String\(isOpen\)\)/);
     assert.match(app, /this\.logoBgPickr\?\.hide\?\.\(\)/);
-    assert.match(index, /app\.js\?v=roll-screen-controls-20260831/);
+    assert.match(index, /app\.js\?v=refresh-daily-data-20260922/);
 });
 
 test('admin controls use in-page slots without becoming a floating dock', () => {
@@ -61,4 +61,14 @@ test('controls move from the roll screen to the player with tilt hidden and disa
     assert.equal(hidden.has('hidden'), false);
     assert.equal(elements.jokerTiltControl.hidden, true);
     assert.equal(elements.jokerTiltControl.disabled, true);
+});
+
+test('Level 2 exposes the daily-data refresh control and Debug helper', () => {
+    const apiService = fs.readFileSync(path.join(projectRoot, 'services', 'apiService.js'), 'utf8');
+    const domService = fs.readFileSync(path.join(projectRoot, 'services', 'domService.js'), 'utf8');
+    assert.match(index, /id="refresh-daily-data-btn"[^>]*>Refresh Daily Data</);
+    assert.match(domService, /adminRefreshDailyDataBtn: document\.getElementById\("refresh-daily-data-btn"\)/);
+    assert.match(apiService, /adminFetch\('\/refresh-daily-data', \{ method: 'POST' \}\)/);
+    assert.match(app, /async refreshDailyData\(\)/);
+    assert.match(app, /await Debug\.refreshDailyData\(\)/);
 });

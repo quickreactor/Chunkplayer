@@ -556,6 +556,21 @@ class ChunkPlayerApp {
             this.adminService.clearLastVisitAndReload();
         });
 
+        // Refresh Daily Data button
+        this.domService.elements.adminRefreshDailyDataBtn?.addEventListener("click", async () => {
+            const button = this.domService.elements.adminRefreshDailyDataBtn;
+            button.disabled = true;
+            try {
+                await Debug.refreshDailyData();
+                this.adminService.showToast('Daily data refreshed from state', 'success');
+            } catch (error) {
+                console.error('Failed to refresh daily data:', error);
+                this.adminService.showToast(error.message || 'Failed to refresh daily data', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
         // Test Flip Counter button
         this.domService.elements.adminTestFlipBtn?.addEventListener("click", () => {
             const targetValue = parseInt(this.domService.elements.adminTestFlipInput.value);
@@ -1459,6 +1474,25 @@ window.Debug = {
      */
     showStorageData() {
         CONFIG.debug.showStorageData();
+    },
+
+    /**
+     * Refresh today's KV digest from app_state without rolling or moving pointers.
+     * Requires an active Level 2 admin session.
+     * @returns {Promise<Object|null>} Refreshed daily data
+     * @example await Debug.refreshDailyData()
+     */
+    async refreshDailyData() {
+        const apiService = window.chunkPlayerApp?.apiService;
+        if (!apiService) {
+            console.error('%c[Debug] App not initialized yet', 'color: #ff0000; font-weight: bold');
+            return null;
+        }
+
+        const result = await apiService.refreshDailyData();
+        CONFIG.movieData = result.dailyData;
+        console.log('%c[Debug] Daily data refreshed from app_state', 'color: #00ff00; font-weight: bold', result.dailyData);
+        return result.dailyData;
     },
 
     /**

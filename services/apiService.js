@@ -150,6 +150,19 @@ class ApiService {
         return await response.json();
     }
 
+    /**
+     * Refresh today's cached digest from the current app state.
+     * @returns {Promise<Object>} Response containing the refreshed daily data
+     */
+    async refreshDailyData() {
+        const response = await this.adminFetch('/refresh-daily-data', { method: 'POST' });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to refresh daily data');
+        }
+        return result;
+    }
+
     async getForcedRoll() {
         const response = await this.adminFetch('/admin/forced-roll');
         return await response.json();

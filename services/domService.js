@@ -88,6 +88,7 @@ class DOMService {
             adminTestFlipBtn: document.getElementById("test-flip-btn"),
             adminTestFlipInput: document.getElementById("test-flip-input"),
             adminClearLastVisitBtn: document.getElementById("clear-last-visit-btn"),
+            adminRefreshDailyDataBtn: document.getElementById("refresh-daily-data-btn"),
 
             // Test date controls
             testDateDay: document.getElementById("test-date-day"),
