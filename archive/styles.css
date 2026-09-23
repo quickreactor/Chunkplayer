@@ -489,6 +489,9 @@ main { position: relative; }
 
 footer { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 1rem; padding: .85rem clamp(1rem, 3vw, 3rem) 1.4rem; color: var(--muted); font-size: .72rem; }
 footer p { margin: 0; }
+.tmdb-attribution { display: inline-flex; align-items: center; gap: .7rem; max-width: 34rem; color: var(--muted); font-size: .72rem; line-height: 1.35; text-decoration: none; }
+.tmdb-attribution:hover, .tmdb-attribution:focus-visible { color: var(--ink); }
+.tmdb-attribution img { width: 5.8rem; height: auto; flex: 0 0 auto; }
 .legend-stack { display: grid; gap: .35rem; }
 .legend { display: flex; align-items: center; gap: .35rem; white-space: nowrap; }
 .legend-label { min-width: 4.8rem; color: var(--ink); font-weight: 650; }
@@ -518,6 +521,7 @@ footer p { margin: 0; }
   .detail-panel { left: .6rem; right: .6rem; width: auto; }
   footer { display: block; }
   footer .legend-stack { margin-top: .55rem; }
+  .tmdb-attribution { margin-top: 1rem; }
   footer .legend { flex-wrap: wrap; white-space: normal; }
   footer .legend-label { flex: 0 0 100%; min-width: 0; }
 }

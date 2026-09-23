@@ -1,7 +1,8 @@
-(function () {
+(async function () {
   "use strict";
 
-  const archive = window.CHUNKPLAYER_ARCHIVE;
+  const staticArchive = window.CHUNKPLAYER_ARCHIVE;
+  const archive = await loadChunkiverseArchive(staticArchive);
   const chooserByMovie = archive.chooserByMovie || {};
   const timelineEvents = archive.timelineEvents || [];
   const movies = archive.movies.map(movie => ({
@@ -22,8 +23,8 @@
 
   function slugify(value) { return normalizePersonName(value).replace(/ /g, "-"); }
 
-  const connectionImages = window.CHUNKPLAYER_CONNECTION_IMAGES || {};
-  const verifiedConnections = window.CHUNKPLAYER_VERIFIED_CONNECTIONS || [];
+  const connectionImages = archive.connectionImages || window.CHUNKPLAYER_CONNECTION_IMAGES || {};
+  const verifiedConnections = archive.verifiedConnections || window.CHUNKPLAYER_VERIFIED_CONNECTIONS || [];
   const verifiedNames = new Set(verifiedConnections.map(connection => normalizePersonName(connection.label)));
   const hubIndex = new Map(verifiedConnections.map(connection => [connection.id, { ...connection, kind: "hub" }]));
 
@@ -73,6 +74,40 @@
   let activeTimelineEventAnchor = null;
   let activeTimelineEventTrigger = null;
   const savedPositions = new Map();
+
+  async function loadChunkiverseArchive(fallback) {
+    if (window.location.protocol === "file:") return fallback;
+    const local = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const workerBase = local ? "http://localhost:8787" : "https://chunkplayerneo.quickreactor.workers.dev";
+    const params = new URLSearchParams(window.location.search);
+    const previewJobId = params.get("chunkiverseDryRun");
+    const previewToken = params.get("previewToken");
+    const endpoint = previewJobId && previewToken
+      ? `${workerBase}/chunkiverse/dry-run/preview?jobId=${encodeURIComponent(previewJobId)}&token=${encodeURIComponent(previewToken)}`
+      : `${workerBase}/chunkiverse-state`;
+
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Chunkiverse state returned ${response.status}`);
+      const state = await response.json();
+      if (state?.schemaVersion !== 1 || !state.moviesById || !state.confirmedConnectionsById) {
+        throw new Error("Chunkiverse state has an unsupported schema");
+      }
+      return {
+        generated: state.updatedAt,
+        movieStartHistoryUrl: fallback.movieStartHistoryUrl,
+        chooserByMovie: state.chooserByMovie || {},
+        timelineEvents: state.timelineEvents || [],
+        movies: Object.values(state.moviesById),
+        themes: Object.values(state.themeRegistry || {}).filter(theme => theme.status === "confirmed" && theme.movies?.length > 1),
+        verifiedConnections: Object.values(state.confirmedConnectionsById || {}).filter(connection => connection.movies?.length > 1),
+        connectionImages: state.connectionImages || {}
+      };
+    } catch (error) {
+      console.warn("Using the static Chunkiverse fallback.", error);
+      return fallback;
+    }
+  }
 
   function trackTouchGesture(event) {
     if (event.touches.length >= 2) {
